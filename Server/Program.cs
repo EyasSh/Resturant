@@ -73,44 +73,70 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllHosts", policy =>
     {
-        policy.AllowAnyOrigin()
-        .WithMethods("GET", "POST", "PUT", "DELETE")
-        .WithHeaders(
-            "Content-Type",
-            "X-Auth-Token",
-            "content-type",
-            "x-auth-token",
-            "Accept",
-            "Authorization",
-            "User-Agent",
-            "X-Requested-With",
-            "Referer",
-            "Connection",
-            "Sec-WebSocket-Protocol",
-            "Sec-WebSocket-Key",
-            "Sec-WebSocket-Version",
-            "Origin",
-            "x-signalr-user-agent" // Add this header
-        )
-        .WithExposedHeaders(
-            "X-Auth-Token",
-            "x-auth-token",
-            "Content-Type",
-            "Accept",
-            "Authorization",
-            "User-Agent",
-            "X-Requested-With",
-            "Referer",
-            "Connection",
-            "Sec-WebSocket-Protocol",
-            "Sec-WebSocket-Key",
-            "Sec-WebSocket-Version",
-            "Origin",
-            "x-signalr-user-agent" // Expose this header as well
-        )
-        .AllowCredentials();
+        // Base origins for Expo and localhost
+        var allowedOrigins = new List<string>
+        {
+            "http://localhost:19000",    // Expo Metro bundler
+            "http://localhost:19006",    // Expo Debugging tools
+            "http://127.0.0.1:19000",    // Loopback for Metro bundler
+            "http://127.0.0.1:19006",
+            "http://localhost:5173",
+             "http://localhost:5174",
+             "http://localhost:5176",
+             "http://localhost:5177"    // Loopback for Debugging tools
+        };
+
+        // Dynamically add LAN IPs
+        var hostName = System.Net.Dns.GetHostName();
+        var localAddresses = System.Net.Dns.GetHostAddresses(hostName)
+            .Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork); // Only IPv4
+
+        foreach (var ip in localAddresses)
+        {
+            allowedOrigins.Add($"http://{ip}:19000"); // Add port 19000
+            allowedOrigins.Add($"http://{ip}:19006"); // Add port 19006
+        }
+
+        // Apply the CORS policy
+        policy.WithOrigins(allowedOrigins.ToArray())
+            .WithMethods("GET", "POST", "PUT", "DELETE")
+            .WithHeaders(
+                "Content-Type",
+                "X-Auth-Token",
+                "content-type",
+                "x-auth-token",
+                "Accept",
+                "Authorization",
+                "User-Agent",
+                "X-Requested-With",
+                "Referer",
+                "Connection",
+                "Sec-WebSocket-Protocol",
+                "Sec-WebSocket-Key",
+                "Sec-WebSocket-Version",
+                "Origin",
+                "x-signalr-user-agent" // Include this custom header
+            )
+            .WithExposedHeaders(
+                "X-Auth-Token",
+                "x-auth-token",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "User-Agent",
+                "X-Requested-With",
+                "Referer",
+                "Connection",
+                "Sec-WebSocket-Protocol",
+                "Sec-WebSocket-Key",
+                "Sec-WebSocket-Version",
+                "Origin",
+                "x-signalr-user-agent" // Expose this custom header
+            )
+            .AllowCredentials();
     });
 });
+
 
 
 var app = builder.Build();

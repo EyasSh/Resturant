@@ -95,6 +95,10 @@ builder.Services.AddCors(options =>
         {
             allowedOrigins.Add($"http://{ip}:19000"); // Add port 19000
             allowedOrigins.Add($"http://{ip}:19006"); // Add port 19006
+            allowedOrigins.Add($"http://{ip}:5173");
+            allowedOrigins.Add($"http://{ip}:5174");
+            allowedOrigins.Add($"http://{ip}:5176");
+            allowedOrigins.Add($"http://{ip}:5177");
         }
 
         // Apply the CORS policy

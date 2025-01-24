@@ -1,3 +1,7 @@
+# ----------------------------------------------------------------
+# Existing Rules
+# ----------------------------------------------------------------
+
 # Common
 .DS_Store
 Thumbs.db
@@ -76,3 +80,21 @@ dist/
 # Ensure bin/ and obj/ inside Server are ignored
 Server/[Bb]in/
 Server/[Oo]bj/
+
+# ----------------------------------------------------------------
+# Expo / React Native (Resturant folder)
+# ----------------------------------------------------------------
+
+# Ignore Expo's local project data
+Resturant/.expo/
+Resturant/.expo-shared/
+
+# If you're using a Bare workflow and don't want to commit native builds:
+Resturant/android/
+Resturant/ios/
+
+# Optionally ignore web-build if you build web bundles
+Resturant/web-build/
+
+# If you generate any expo build artifacts
+Resturant/expo-build-artifacts/

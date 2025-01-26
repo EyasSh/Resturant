@@ -1,11 +1,12 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
-import { TextInput, StyleSheet, Button } from 'react-native';
+import { TextInput, StyleSheet, Button, View } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import Logo from "@/components/ui/Logo";
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -27,7 +28,7 @@ export default function Login() {
   return (
     
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.emailText}>Enter your Email and Password</ThemedText>
+      <Logo />
       <TextInput
         style={styles.input}
         placeholder="example@domain.com"
@@ -53,6 +54,14 @@ export default function Login() {
         onPress={handleLogin}
         color={colors.primary}
       />
+      <View style={styles.signupContainer}>
+        <ThemedText style={styles.emailText}>Don't have an account?</ThemedText>
+        <Button
+          title="Sign Up"
+          onPress={() => router.push("../(signup)/signup")}
+          color={'backgroundColor:rgb(134, 0, 175)'}
+          />
+      </View>
     </ThemedView>
   );
 }
@@ -83,6 +92,13 @@ const styles = StyleSheet.create({
   },
   emailText: {
     fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
+  signupContainer:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+  }
 });

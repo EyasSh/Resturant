@@ -40,9 +40,7 @@ export default function RootLayout() {
       />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={
-          { headerShown: false 
-
-          }}/>
+          { headerShown: false  }}/>
         {/* Tabs layout */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {/* 404 or fallback */}

@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: 'rgba(75, 75, 75, 0.5)',
         gap: 20,
       },
     header:{
@@ -93,18 +92,16 @@ const styles = StyleSheet.create({
         fontSize: 25,
         
     },
-
-  
-      input: {
+    input: {
         height: 40,
         width: '100%',
-        borderWidth: 1.2,
+        borderWidth: 0,
         borderRadius: 10,
-        borderColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgb(81, 80, 80)',
         paddingHorizontal: 10,
         marginBottom: 20,
         color: 'white',
-      },
+    },
     button: {
         marginTop: 20,
         backgroundColor: 'rgb(134, 0, 175)',

@@ -18,7 +18,7 @@ export default function Login() {
     // Perform login validation (optional)
     if (email && password) {
       // Navigate to the tabs layout
-      router.replace('/(tabs)/explore');
+      router.replace('../(tabs)/Home');
       
     } else {
       alert('Please enter email and password!');
@@ -77,15 +77,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'rgba(75, 75, 75, 0.5)',
     gap: 20,
   },
   input: {
     height: 40,
     width: '100%',
-    borderWidth: 1.2,
+    borderWidth: 0,
     borderRadius: 10,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgb(81, 80, 80)',
     paddingHorizontal: 10,
     marginBottom: 20,
     color: 'white',

@@ -27,7 +27,7 @@ export default function Signup() {
             <TextInput
                 style={styles.input}
                 placeholder="example@domain.com"
-                placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+                placeholderTextColor={'rgb(0, 0, 0)'}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -37,7 +37,7 @@ export default function Signup() {
             <TextInput
                 style={styles.input}
                 placeholder="Password"
-                placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+                placeholderTextColor={'rgb(0, 0, 0)'}
                 secureTextEntry={true}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -48,7 +48,7 @@ export default function Signup() {
                 <TextInput
                     style={styles.input}
                     placeholder="Date of Birth"
-                    placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+                    placeholderTextColor={'rgb(0, 0, 0)'}
                     value={dob}
                     editable={false} // Make input non-editable
                 />
@@ -64,7 +64,7 @@ export default function Signup() {
             <TextInput
                 style={styles.input}
                 placeholder="Phone Number"
-                placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+                placeholderTextColor={'rgb(0, 0, 0)'}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="phone-pad"
@@ -97,11 +97,11 @@ const styles = StyleSheet.create({
         width: '100%',
         borderWidth: 0,
         borderRadius: 10,
-        backgroundColor: 'rgb(81, 80, 80)',
+        backgroundColor: 'rgb(160, 160, 160)',
         paddingHorizontal: 10,
         marginBottom: 20,
-        color: 'white',
-    },
+        color: 'black',
+      },
     button: {
         marginTop: 20,
         backgroundColor: 'rgb(134, 0, 175)',

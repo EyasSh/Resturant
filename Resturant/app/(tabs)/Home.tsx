@@ -3,10 +3,11 @@ import Logo from "@/components/ui/Logo";import { ThemedText } from '@/components
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
 import { TextInput, StyleSheet, Button, TouchableOpacity, View } from 'react-native';
+import TableCard from '@/components/TableCard';
 export default function MainPage() {
  return(
     <ThemedView style={styles.container}>
-        <ThemedText style={styles.text}>Welcome to the Main Page</ThemedText>
+       <TableCard />
     </ThemedView>
  );   
 }

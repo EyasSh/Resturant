@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import Logo from "@/components/ui/Logo";
+import CurvedButton from '@/components/ui/CurvedButton';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -32,7 +33,7 @@ export default function Login() {
       <TextInput
         style={styles.input}
         placeholder="example@domain.com"
-        placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+        placeholderTextColor={'rgb(0, 0, 0)'}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -42,24 +43,24 @@ export default function Login() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor={'rgba(255, 255, 255, 0.4)'}
+        placeholderTextColor={'rgb(0, 0, 0)'}
         secureTextEntry={true}
         autoCapitalize="none"
         autoCorrect={false}
         onChangeText={(text) => setPassword(text)}
         value={password}
       />
-      <Button
+      <CurvedButton
         title="Login"
-        onPress={handleLogin}
-        color={colors.primary}
+        action={handleLogin}
+        style={{ backgroundColor: '#34baeb'}}
       />
       <View style={styles.signupContainer}>
         <ThemedText style={styles.emailText}>Don't have an account?</ThemedText>
-        <Button
+        <CurvedButton
           title="Sign Up"
-          onPress={() => router.push("../(signup)/signup")}
-          color={'backgroundColor:rgb(134, 0, 175)'}
+          action={() => router.push("../(signup)/signup")}
+          style={{backgroundColor:"rgb(134, 0, 175)"}}
           />
       </View>
     </ThemedView>
@@ -84,10 +85,10 @@ const styles = StyleSheet.create({
     width: '100%',
     borderWidth: 0,
     borderRadius: 10,
-    backgroundColor: 'rgb(81, 80, 80)',
+    backgroundColor: 'rgb(160, 160, 160)',
     paddingHorizontal: 10,
     marginBottom: 20,
-    color: 'white',
+    color: 'black',
   },
   emailText: {
     fontSize: 16,

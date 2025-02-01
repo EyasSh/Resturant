@@ -13,7 +13,7 @@ export default function TableCard() {
       <ThemedText style={styles.text}>Table 1</ThemedText>
       
       <ThemedView style={styles.bottomInfoContainer}>
-        <ThemedText style={styles.bottomInfoText}>Status: Occupied</ThemedText>
+        <ThemedText style={styles.bottomInfoText}>Status: Not Occupied</ThemedText>
         <ThemedText style={styles.bottomInfoText}>Window Side Table</ThemedText>
       </ThemedView>
     </ThemedView>
@@ -70,5 +70,6 @@ const styles = StyleSheet.create({
   {
     fontSize: 16,
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
     },
 });

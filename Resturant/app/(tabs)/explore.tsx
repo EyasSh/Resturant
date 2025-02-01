@@ -9,7 +9,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 export default function TabTwoScreen() {
   return (
       <ThemedView style={styles.titleContainer}>
-          <ThemedText style={styles.text}>Welcome to the Explore Page</ThemedText>
+          <ThemedText style={styles.text}>Welcome to the Explore Page " this Page going to change to profile page"
+          </ThemedText>
     </ThemedView>
   );
 }

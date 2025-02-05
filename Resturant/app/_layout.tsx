@@ -38,6 +38,8 @@ export default function RootLayout() {
           headerShown: false
         }}
       />
+      <Stack.Screen name="(Menu)/Menu"  options={
+          { headerShown: false  }} />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={
           { headerShown: false  }}/>

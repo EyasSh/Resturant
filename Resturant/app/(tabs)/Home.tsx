@@ -7,9 +7,7 @@ import TableCard from '@/components/TableCard';
 export default function MainPage() {
  return(
     <ThemedView style={styles.container}>
-    <TouchableOpacity onPress={() => alert('Hi in menu page')}>
         <TableCard />
-    </TouchableOpacity>
     </ThemedView>
  );   
 }

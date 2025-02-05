@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { StyleSheet, Image, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
-
+import { useRouter } from 'expo-router';
 export default function TableCard() {
   const [isOccupied, setIsOccupied] = useState(false);
-
+  const router = useRouter();
   const handlePress = () => {
     setIsOccupied(!isOccupied);
+    router.push('../(Menu)/Menu');
   };
 
   return (

@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Button } from "react-native";
 
 const menuItems = [
     { id: 1, name: "Burger", price: 12.99 },
@@ -18,6 +18,7 @@ export default function Menu() {
                 <View key={item.id} style={styles.menuItem}>
                     <Text style={styles.name}>{item.name}</Text>
                     <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+                    <Button title="Add" onPress={() => {alert("Added Item")}} />
                 </View>
             ))}
         </ThemedView>

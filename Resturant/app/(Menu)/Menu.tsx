@@ -46,7 +46,6 @@ export default function Menu() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Menu</ThemedText>
 
       {menuItems.map((item) => {
         // Find the current quantity in 'list' for this item
@@ -55,7 +54,7 @@ export default function Menu() {
         const currentQuantity = selectedItem ? selectedItem.quantity : item.quantity;
 
         return (
-          <View key={item.id} style={styles.menuItem}>
+          <ThemedView key={item.id} style={styles.menuItem}>
             <ThemedText style={styles.name}>{item.name}</ThemedText>
             {/* Show total price for that item = price * current quantity */}
             <ThemedText style={styles.price}>
@@ -63,7 +62,7 @@ export default function Menu() {
             </ThemedText>
             <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
             <Button title="Add" onPress={() => addItemToList(item)} />
-          </View>
+          </ThemedView>
         );
       })}
 
@@ -94,7 +93,9 @@ export default function Menu() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 30,
+    height: "100%",
+   
   },
   title: {
     fontSize: 24,

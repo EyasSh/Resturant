@@ -8,6 +8,8 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import Logo from "@/components/ui/Logo";
 import CurvedButton from '@/components/ui/CurvedButton';
+import axios from 'axios';
+import { Constants } from 'expo-constants';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -25,7 +27,23 @@ export default function Login() {
       alert('Please enter email and password!');
     }
   };
-
+  //WORKS ON pc NOT ON PHONE
+  const handleTestCall = async() => {
+   
+    try{
+     
+      const res = await axios.get("http://10.0.0.140:5256/api/user/test")
+     
+      if(res && res.status===200){
+        alert(res.data);
+        
+      }
+    }
+    catch(e:any){
+      alert(e.message);
+      
+    }
+  }
   return (
     
     <ThemedView style={styles.container}>
@@ -62,7 +80,13 @@ export default function Login() {
           action={() => router.push("../(signup)/signup")}
           style={{backgroundColor:"rgb(134, 0, 175)"}}
           />
+          
       </View>
+      <CurvedButton
+            title='Invoke api test method'
+            action={async()=>await handleTestCall()}
+            style={{backgroundColor:"rgb(247, 255, 5)"}}
+           />
     </ThemedView>
   );
 }

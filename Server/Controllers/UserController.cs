@@ -207,6 +207,7 @@ namespace Server.Controllers
         /// </summary>
         /// <returns>A successful status code (200) if the test request was successful.</returns>
         [HttpGet("test")]
+        [AllowAnonymous]
         public IActionResult Test() => Ok("Test Successful");
         private string Encrypt(string password)
         {

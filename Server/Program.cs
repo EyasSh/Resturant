@@ -76,10 +76,10 @@ builder.Services.AddCors(options =>
         // Base origins for Expo and localhost
         var allowedOrigins = new List<string>
         {
-            "http://localhost:19000",    // Expo Metro bundler
-            "http://localhost:19006",    // Expo Debugging tools
-            "http://127.0.0.1:19000",    // Loopback for Metro bundler
-            "http://127.0.0.1:19006",
+            "http://localhost:8081",    // Expo Metro bundler
+            "http://localhost:8081",    // Expo Debugging tools
+            "http://127.0.0.1:8081",    // Loopback for Metro bundler
+            "http://127.0.0.1:8081",
             "http://localhost:5173",
              "http://localhost:5174",
              "http://localhost:5176",
@@ -93,14 +93,17 @@ builder.Services.AddCors(options =>
 
         foreach (var ip in localAddresses)
         {
-            allowedOrigins.Add($"http://{ip}:19000"); // Add port 19000
-            allowedOrigins.Add($"http://{ip}:19006"); // Add port 19006
+            System.Console.WriteLine(ip);
+            allowedOrigins.Add($"http://{ip}:8081"); // Add port 19000
+            allowedOrigins.Add($"http://{ip}:8081"); // Add port 19006
             allowedOrigins.Add($"http://{ip}:5173");
             allowedOrigins.Add($"http://{ip}:5174");
             allowedOrigins.Add($"http://{ip}:5176");
             allowedOrigins.Add($"http://{ip}:5177");
         }
-
+        allowedOrigins.Add("http://10.0.0.140:8081");
+        allowedOrigins.Add("http://localhost:8081");
+        allowedOrigins.Add("http://10.0.0.159:8081");
         // Apply the CORS policy
         policy.WithOrigins(allowedOrigins.ToArray())
             .WithMethods("GET", "POST", "PUT", "DELETE")
@@ -141,6 +144,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.WebHost.UseUrls("http://0.0.0.0:5256");
 
 
 var app = builder.Build();

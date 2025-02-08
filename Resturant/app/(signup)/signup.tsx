@@ -1,15 +1,17 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
-import { TextInput, StyleSheet, Button, TouchableOpacity, View } from 'react-native';
+import { TextInput, StyleSheet, Button, TouchableOpacity, View, Text } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";
-
+import axios from 'axios';
 export default function Signup() {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [dob, setDob] = useState('');
+    const [phone, setPhone] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const { colors } = useTheme();
 
@@ -19,11 +21,33 @@ export default function Signup() {
             setDob(selectedDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
         }
     };
-
+    const handleSignup = async() => {
+        try{
+            const res = await axios.post("http://10.0.0.161:5256/api/user/signup",{
+                name:name,
+                email: email,
+                password: password,
+                date: dob,
+                phone: phone
+            })
+            if(res && res.status===200){
+                alert(res.data);
+            }
+        }
+        catch(e:any){
+            alert(e.message);
+        }
+    };
     return (
         <ThemedView style={styles.container}>
             <Logo />
             <ThemedText style={styles.header}>Sign up</ThemedText>
+            <TextInput 
+                style={styles.input} placeholder="Name" 
+                placeholderTextColor={'rgb(0, 0, 0)'} 
+                autoCapitalize="none" autoCorrect={false} 
+                onChangeText={(text) => setName(text)} 
+                value={name}/>
             <TextInput
                 style={styles.input}
                 placeholder="example@domain.com"
@@ -68,10 +92,12 @@ export default function Signup() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="phone-pad"
+                onChangeText={(text) => setPhone(text)}
+                value={phone}
             />
             <Button
                 title="Signup"
-                onPress={() => {}}
+                onPress={async() => await handleSignup()}
                 color={' backgroundColor: rgb(134, 0, 175)'}
                 
             />

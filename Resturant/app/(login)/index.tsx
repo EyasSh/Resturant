@@ -32,7 +32,7 @@ export default function Login() {
    
     try{
      
-      const res = await axios.get("http://10.0.0.140:5256/api/user/test")
+      const res = await axios.get("http://10.0.0.161:5256/api/user/test")
      
       if(res && res.status===200){
         alert(res.data);

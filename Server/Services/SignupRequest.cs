@@ -5,4 +5,5 @@ public class SignupRequest
     public required string Email { get; set; }
     public required string Password { get; set; }
     public required DateOnly date { get; set; }
+    public required string phone { get; set; }
 }

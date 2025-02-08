@@ -63,7 +63,7 @@ namespace Server.Controllers
                 {
                     var token = GenerateJwtToken(user.Id ?? new Guid().ToString(), request.Email);
                     var resbod = new User
-                    { Id = user.Id, Name = user.Name, Email = user.Email, Password = user.Password, date = user.date };
+                    { Id = user.Id, Name = user.Name, Email = user.Email, Password = user.Password, date = user.date, phone = user.phone };
                     Response.Headers["X-Auth-Token"] = token;
                     return Ok(new { User = resbod });
                 }
@@ -164,13 +164,14 @@ namespace Server.Controllers
                     Name = request.Name,
                     Email = request.Email,
                     Password = Encrypt(request.Password),
-                    date = request.date
+                    date = request.date,
+                    phone = request.phone
                 };
                 _users.InsertOne(user);
                 await _emailService.SendEmailAsync(user.Email, "Welcome to The Service"
                 ,
-                $@"<html><body>Hello {user.Name}, <p>Welcome to Plant Nurser. 
-                We're glad you're here. We're here to make it easier for you to grow your plants.</p>
+                $@"<html><body>Hello {user.Name}, <p>Welcome to Bite Byte. 
+                We're glad you're here. We're here to make it easier for you to dine out.</p>
                 <br /> 
                 <p>We hope you have a nice day!</p>
                 The ReCoursia Team</body></html>");

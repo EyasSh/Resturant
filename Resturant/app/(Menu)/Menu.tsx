@@ -58,7 +58,7 @@ export default function Menu() {
             <ThemedText style={styles.name}>{item.name}</ThemedText>
             {/* Show total price for that item = price * current quantity */}
             <ThemedText style={styles.price}>
-              ${ item.price.toFixed(2) }
+              { item.price.toFixed(2) +" ₪"  }
             </ThemedText>
             <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
             <Button title="Add" onPress={() => addItemToList(item)} />
@@ -76,7 +76,7 @@ export default function Menu() {
               <ThemedText>
                 {item.name} x {item.quantity}
               </ThemedText>
-              <ThemedText>${(item.price * item.quantity).toFixed(2)}</ThemedText>
+              <ThemedText>{(item.price * item.quantity).toFixed(2)} ₪</ThemedText>
             </View>
           )}
         />
@@ -85,7 +85,7 @@ export default function Menu() {
       )}
 
       <ThemedText style={styles.total}>
-        Total: ${calculateTotal()}
+        Total: {calculateTotal()} ₪
       </ThemedText>
     </ThemedView>
   );

@@ -3,10 +3,15 @@ import { StyleSheet, Image, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
+import CurvedButton from "./ui/CurvedButton";
 export default function TableCard() {
   const [isOccupied, setIsOccupied] = useState(false);
   const router = useRouter();
   const handlePress = () => {
+    if(isOccupied){
+      alert("Table is already occupied");
+      return
+    }
     setIsOccupied(!isOccupied);
     router.push('../(Menu)/Menu');
   };
@@ -15,7 +20,7 @@ export default function TableCard() {
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={styles.container}>
         <ThemedView style={styles.imageContainer}>
-          <Image source={require("@/assets/images/favicon.png")} style={styles.image} />
+          <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>
         <ThemedText style={styles.text}>Table 1</ThemedText>
         <ThemedView style={styles.bottomInfoContainer}>
@@ -23,6 +28,16 @@ export default function TableCard() {
             Status: {isOccupied ? "Occupied" : "Not Occupied"}
           </ThemedText>
           <ThemedText style={styles.bottomInfoText}>Window Side Table</ThemedText>
+          <ThemedView style={styles.bottomTableFunctions}>
+          <TouchableOpacity style={styles.touchop} onPress={()=>alert("image pressed")}>
+          <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
+          <ThemedText style={styles.bottomInfoText}> Call Waiter</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchop}>
+          <Image style={styles.image} source={require("@/assets/images/dining.png")} />
+          <ThemedText style={styles.bottomInfoText}>Meal status</ThemedText>
+          </TouchableOpacity>
+          </ThemedView>
         </ThemedView>
       </ThemedView>
     </TouchableOpacity>
@@ -31,19 +46,16 @@ export default function TableCard() {
 
 const styles = StyleSheet.create({
   container: {
-    width: 180,
+    width: 230,
     padding: 10,
     borderRadius: 10,
+    borderColor:"grey",
+    borderWidth: 1,
     marginVertical: 10,
-    backgroundColor: 'rgb(160, 160, 160)',
+    backgroundColor: 'transparent',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
   },
   imageContainer: {
     borderRadius: 10,
@@ -72,4 +84,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     backgroundColor: 'transparent',
   },
+  touchop:{
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  bottomTableFunctions:{
+    
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: 200,
+    backgroundColor: 'transparent',
+    gap: 10,
+  }
 });

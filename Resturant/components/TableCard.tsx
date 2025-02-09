@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { StyleSheet, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, Image, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
 import CurvedButton from "./ui/CurvedButton";
+import ChatLogo from "./ui/ChatLogo";
 export default function TableCard() {
   const [isOccupied, setIsOccupied] = useState(false);
   const router = useRouter();
@@ -19,6 +20,9 @@ export default function TableCard() {
   return (
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={styles.container}>
+        <TouchableOpacity style={styles.message}  onPress={() =>alert("message pressed")}>
+          <ChatLogo />
+        </TouchableOpacity>
         <ThemedView style={styles.imageContainer}>
           <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>
@@ -61,6 +65,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'transparent',
     marginBottom: 10,
+  },
+  message:{
+    position: 'absolute',
+    top: -20,
+    right: -16.5,
+    width:'19%',
+    height: '19%',
+    backgroundColor: 'rgb(0, 177, 0)',
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   image: {
     width: 50,

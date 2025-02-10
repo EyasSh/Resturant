@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'react-native';
+import { Button, TouchableOpacity } from 'react-native';
 import { View, Pressable,Text, StyleSheet } from 'react-native';
 import { ThemedText } from '../ThemedText';
 type CurvedButtonPropTypes = {
@@ -9,9 +9,9 @@ type CurvedButtonPropTypes = {
 }
 function CurvedButton(props: CurvedButtonPropTypes) {
     return (
-        <Pressable onPress={props.action} style={[props.style, styles.button]}>
+        <TouchableOpacity onPress={props.action} style={[props.style, styles.button]}>
           <Text style={styles.buttonText}>{props.title}</Text>  
-        </Pressable>
+        </TouchableOpacity>
     );
 }
 const styles = StyleSheet.create({

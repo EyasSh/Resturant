@@ -5,7 +5,10 @@ import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
 import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
-export default function TableCard() {
+type CardProps = {
+  width: number;
+}
+export default function TableCard(props:CardProps) {
   const [isOccupied, setIsOccupied] = useState(false);
   const router = useRouter();
   const handlePress = () => {
@@ -19,8 +22,8 @@ export default function TableCard() {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <ThemedView style={styles.container}>
-        <TouchableOpacity style={styles.message}  onPress={() =>alert("message pressed")}>
+      <ThemedView style={[styles.container,{width:props.width}]}>
+        <TouchableOpacity style={styles.message }  onPress={() =>alert("message pressed")}>
           <ChatLogo />
         </TouchableOpacity>
         <ThemedView style={styles.imageContainer}>
@@ -28,18 +31,17 @@ export default function TableCard() {
         </ThemedView>
         <ThemedText style={styles.text}>Table 1</ThemedText>
         <ThemedView style={styles.bottomInfoContainer}>
-          <ThemedText style={styles.bottomInfoText}>
-            Status: {isOccupied ? "Occupied" : "Not Occupied"}
-          </ThemedText>
+            <ThemedText style={styles.bottomInfoText}>
+              {isOccupied ? "Occupied" : "Not Occupied"}
+            </ThemedText>
           <ThemedText style={styles.bottomInfoText}>Window Side Table</ThemedText>
           <ThemedView style={styles.bottomTableFunctions}>
-          <TouchableOpacity style={styles.touchop} onPress={()=>alert("image pressed")}>
-          <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
-          <ThemedText style={styles.bottomInfoText}> Call Waiter</ThemedText>
+          <TouchableOpacity onPress={()=>alert("image pressed")}>
+            <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
+            
           </TouchableOpacity>
-          <TouchableOpacity style={styles.touchop}>
-          <Image style={styles.image} source={require("@/assets/images/dining.png")} />
-          <ThemedText style={styles.bottomInfoText}>Meal status</ThemedText>
+          <TouchableOpacity >
+            <Image style={styles.image} source={require("@/assets/images/dining.png")} />
           </TouchableOpacity>
           </ThemedView>
         </ThemedView>
@@ -61,22 +63,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  imageContainer: {
-    borderRadius: 10,
-    backgroundColor: 'transparent',
-    marginBottom: 10,
-  },
   message:{
     position: 'absolute',
     top: -20,
     right: -16.5,
-    width:'19%',
-    height: '19%',
+    width:'29%',
+    height: '20%',
     backgroundColor: 'rgb(0, 177, 0)',
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  imageContainer: {
+    borderRadius: 10,
+    backgroundColor: 'transparent',
+    marginBottom: 10,
+  },
+
   image: {
     width: 50,
     height: 50,
@@ -93,25 +96,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     width: '100%',
     backgroundColor: 'transparent',
+    gap: 10,
   },
   bottomInfoText: {
     fontSize: 16,
     fontWeight: 'bold',
     backgroundColor: 'transparent',
   },
-  touchop:{
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
   bottomTableFunctions:{
     
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    width: 200,
+    justifyContent: 'space-around',
+    width: 'auto',
     backgroundColor: 'transparent',
-    gap: 10,
-  }
+    gap: 40,
+  },
+ 
+
 });

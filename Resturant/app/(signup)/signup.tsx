@@ -6,6 +6,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";
 import axios from 'axios';
+import ip from '@/Data/Addresses'
+import CurvedButton from '@/components/ui/CurvedButton';
 export default function Signup() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ export default function Signup() {
     };
     const handleSignup = async() => {
         try{
-            const res = await axios.post("http://10.0.0.161:5256/api/user/signup",{
+            const res = await axios.post(`http://${ip.eyas.toString()}:5256/api/user/signup`,{
                 name:name,
                 email: email,
                 password: password,
@@ -95,10 +97,10 @@ export default function Signup() {
                 onChangeText={(text) => setPhone(text)}
                 value={phone}
             />
-            <Button
+            <CurvedButton
                 title="Signup"
-                onPress={async() => await handleSignup()}
-                color={' backgroundColor: rgb(134, 0, 175)'}
+                action={async() => await handleSignup()}
+                style={ {backgroundColor: "rgb(134, 0, 175)"}}
                 
             />
         </ThemedView>

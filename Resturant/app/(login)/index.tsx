@@ -11,6 +11,7 @@ import CurvedButton from '@/components/ui/CurvedButton';
 import axios from 'axios';
 import { Constants } from 'expo-constants';
 import ip from '@/Data/Addresses';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -18,33 +19,33 @@ export default function Login() {
   const { colors } = useTheme(); // Access theme colors
   const router = useRouter();
 
-  const handleLogin = () => {
+  const handleLogin = async() => {
     // Perform login validation (optional)
     if (email && password) {
-      // Navigate to the tabs layout
-      router.replace('../(tabs)/Home');
+      // Send login request to the server
+      try{
+        const res = await axios.post(`http://${ip.eyas.toString()}:5256/api/user/login`,{
+            email: email,
+            password: password
+        })
+        if(res&& res.status===200){
+           alert("status 200");
+            await AsyncStorage.setItem('token', res.headers['x-auth-token']);
+            const token =await AsyncStorage.getItem('token')
+            alert(token);
+        }
+        // Navigate to the tabs layout
+        router.replace('../(tabs)/Home');
+      }
+      catch(e:any){
+        alert(e.message);
+      }
+      
       
     } else {
       alert('Please enter email and password!');
     }
   };
-  //WORKS ON pc NOT ON PHONE
-  const handleTestCall = async() => {
-   
-    try{
-     
-      const res = await axios.get(`http://${ip.julian}:5256/api/user/test`)//10.0.0.12 Julian 
-     
-      if(res && res.status===200){
-        alert(res.data);
-        
-      }
-    }
-    catch(e:any){
-      alert(e.message);
-      
-    }
-  }
   return (
     
     <ThemedView style={styles.container}>

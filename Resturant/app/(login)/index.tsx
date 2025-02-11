@@ -10,6 +10,7 @@ import Logo from "@/components/ui/Logo";
 import CurvedButton from '@/components/ui/CurvedButton';
 import axios from 'axios';
 import { Constants } from 'expo-constants';
+import ip from '@/Data/Addresses';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -32,7 +33,7 @@ export default function Login() {
    
     try{
      
-      const res = await axios.get("http://10.0.0.12:5256/api/user/test")//10.0.0.12 Julian 
+      const res = await axios.get(`http://${ip.julian}:5256/api/user/test`)//10.0.0.12 Julian 
      
       if(res && res.status===200){
         alert(res.data);
@@ -82,11 +83,6 @@ export default function Login() {
           />
           
       </View>
-      <CurvedButton
-            title='Invoke api test method'
-            action={async()=>await handleTestCall()}
-            style={{backgroundColor:"rgb(247, 255, 5)"}}
-           />
     </ThemedView>
   );
 }

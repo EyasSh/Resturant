@@ -7,6 +7,7 @@ import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
 type CardProps = {
   width: number;
+  number:number
 }
 export default function TableCard(props:CardProps) {
   const [isOccupied, setIsOccupied] = useState(false);
@@ -29,7 +30,7 @@ export default function TableCard(props:CardProps) {
         <ThemedView style={styles.imageContainer}>
           <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>
-        <ThemedText style={styles.text}>Table 1</ThemedText>
+        <ThemedText style={styles.text}>Table {props.number}</ThemedText>
         <ThemedView style={styles.bottomInfoContainer}>
             <ThemedText style={styles.bottomInfoText}>
               {isOccupied ? "Occupied" : "Not Occupied"}

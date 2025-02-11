@@ -14,7 +14,7 @@ export default function MainPage() {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {Array.from({ length: 8 }).map((_, index) => (
-            <TableCard key={index} width={cardWidth} />
+            <TableCard key={index} width={cardWidth} number={index+1} />
           ))}
         </ThemedView>
       </ScrollView>

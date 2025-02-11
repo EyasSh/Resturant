@@ -16,7 +16,7 @@ export default function Signup() {
     const [dobDate, setDobDate] = useState(new Date(2000, 0, 1)); // Default to Year 2000
     const [phone, setPhone] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const { colors } = useTheme();
+    const { colors, dark: isDark } = useTheme();
 
     const handleDateChange = (event:any, selectedDate?:Date) => {
         if (selectedDate) {
@@ -46,20 +46,55 @@ export default function Signup() {
             alert(e.message);
         }
     };
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+            gap: 20,
+          },
+        header:{
+            fontWeight: 'bold',
+            fontSize: 25,
+            
+        },
+        input: {
+            height: 40,
+            width: '100%',
+            borderWidth: 0.5,
+            borderRadius: 10,
+            backgroundColor: 'transparent',
+            paddingHorizontal: 10,
+            marginBottom: 20,
+            color: isDark ? "white" : "black",
+          },
+        button: {
+            marginTop: 20,
+            backgroundColor: 'rgb(134, 0, 175)',
+        },
+        opacity:{
+            width: '100%',
+           justifyContent: 'center',
+           alignItems: 'center',
+        }
+    });
+
     return (
         <ThemedView style={styles.container}>
             <Logo />
             <ThemedText style={styles.header}>Sign up</ThemedText>
             <TextInput 
-                style={styles.input} placeholder="Name" 
-                placeholderTextColor={'rgb(0, 0, 0)'} 
+                style={styles.input} placeholder="Name"
+                placeholderTextColor={isDark ? "white" : "black"}  
                 autoCapitalize="none" autoCorrect={false} 
                 onChangeText={(text) => setName(text)} 
                 value={name}/>
             <TextInput
                 style={styles.input}
                 placeholder="example@domain.com"
-                placeholderTextColor={'rgb(0, 0, 0)'}
+                placeholderTextColor={isDark ? "white" : "black"}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -69,19 +104,19 @@ export default function Signup() {
             <TextInput
                 style={styles.input}
                 placeholder="Password"
-                placeholderTextColor={'rgb(0, 0, 0)'}
                 secureTextEntry={true}
                 autoCapitalize="none"
+                placeholderTextColor={isDark ? "white" : "black"}
                 autoCorrect={false}
                 onChangeText={(text) => setPassword(text)}
                 value={password}
             />
                {/* Open Date Picker */}
-               <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)}>
+               <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)} >
                 <TextInput
                     style={styles.input}
                     placeholder="Date of Birth"
-                    placeholderTextColor={'rgb(0, 0, 0)'}
+                    placeholderTextColor={isDark ? "white" : "black"}
                     value={dob} 
                     editable={false} // Prevent manual typing
                 />
@@ -92,7 +127,7 @@ export default function Signup() {
                 <DateTimePicker
                     value={dobDate} // Default date
                     mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'spinner'} // 🔥 Now "spinner" on Android
+                    display={"spinner"} // 🔥 Now "spinner" on Android
                     onChange={handleDateChange}
                     maximumDate={new Date()} // Prevent selecting future dates
                 />
@@ -100,7 +135,7 @@ export default function Signup() {
             <TextInput
                 style={styles.input}
                 placeholder="Phone Number"
-                placeholderTextColor={'rgb(0, 0, 0)'}
+                placeholderTextColor={isDark ? "white" : "black"}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="phone-pad"
@@ -116,37 +151,3 @@ export default function Signup() {
         </ThemedView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        gap: 20,
-      },
-    header:{
-        fontWeight: 'bold',
-        fontSize: 25,
-        
-    },
-    input: {
-        height: 40,
-        width: '100%',
-        borderWidth: 0,
-        borderRadius: 10,
-        backgroundColor: 'rgb(160, 160, 160)',
-        paddingHorizontal: 10,
-        marginBottom: 20,
-        color: 'black',
-      },
-    button: {
-        marginTop: 20,
-        backgroundColor: 'rgb(134, 0, 175)',
-    },
-    opacity:{
-        width: '100%',
-       justifyContent: 'center',
-       alignItems: 'center',
-    }
-});

@@ -16,9 +16,45 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const { colors } = useTheme(); // Access theme colors
+  const { colors,dark:isDark  } = useTheme(); // Access theme colors
   const router = useRouter();
 
+  const styles = StyleSheet.create({
+    headerImage: {
+      color: '#808080',
+      bottom: -90,
+      left: -35,
+      position: 'absolute',
+    },
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+      gap: 20,
+    },
+    input: {
+      height: 40,
+      width: '100%',
+      borderWidth: 0.5,
+      borderRadius: 10,
+      backgroundColor: 'transparent',
+      paddingHorizontal: 10,
+      marginBottom: 20,
+      color: isDark ? "white" : "black",
+    },
+    emailText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    signupContainer:{
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 20,
+    }
+  });
   const handleLogin = async() => {
     // Perform login validation (optional)
     if (email && password) {
@@ -55,7 +91,7 @@ export default function Login() {
       <TextInput
         style={styles.input}
         placeholder="example@domain.com"
-        placeholderTextColor={'rgb(0, 0, 0)'}
+        placeholderTextColor={isDark ? "white" : "black"}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -65,7 +101,7 @@ export default function Login() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor={'rgb(0, 0, 0)'}
+        placeholderTextColor={isDark ? "white" : "black"}
         secureTextEntry={true}
         autoCapitalize="none"
         autoCorrect={false}
@@ -89,39 +125,4 @@ export default function Login() {
     </ThemedView>
   );
 }
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    gap: 20,
-  },
-  input: {
-    height: 40,
-    width: '100%',
-    borderWidth: 0,
-    borderRadius: 10,
-    backgroundColor: 'rgb(160, 160, 160)',
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    color: 'black',
-  },
-  emailText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  signupContainer:{
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-  }
-});
+

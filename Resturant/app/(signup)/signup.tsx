@@ -111,7 +111,6 @@ export default function Signup() {
                 onChangeText={(text) => setPassword(text)}
                 value={password}
             />
-               {/* Open Date Picker */}
                <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)} >
                 <TextInput
                     style={styles.input}

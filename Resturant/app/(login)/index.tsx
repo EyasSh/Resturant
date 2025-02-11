@@ -12,6 +12,7 @@ import axios from 'axios';
 import { Constants } from 'expo-constants';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ThemedInput from '@/components/ThemedInput';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -88,16 +89,12 @@ export default function Login() {
     
     <ThemedView style={styles.container}>
       <Logo />
-      <TextInput
-        style={styles.input}
-        placeholder="example@domain.com"
-        placeholderTextColor={isDark ? "white" : "black"}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        onChangeText={(text) => setEmail(text)}
+      <ThemedInput
+        type="email-address"
         value={email}
-      />
+        placeholder="Email"
+        action={(text)=>setEmail(text)} 
+        />
       <TextInput
         style={styles.input}
         placeholder="Password"

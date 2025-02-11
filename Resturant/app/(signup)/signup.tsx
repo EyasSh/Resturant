@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
-import { TextInput, StyleSheet, Button, TouchableOpacity, View, Text } from 'react-native';
+import { TextInput, StyleSheet, Button, TouchableOpacity,Platform  } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";
@@ -12,17 +12,23 @@ export default function Signup() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [dob, setDob] = useState('');
+    const [dob, setDob] = useState(''); // Store as YYYY-MM-DD
+    const [dobDate, setDobDate] = useState(new Date(2000, 0, 1)); // Default to Year 2000
     const [phone, setPhone] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const { colors } = useTheme();
 
-    const handleDateChange = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(false); // Hide the picker when a date is selected
+    const handleDateChange = (event:any, selectedDate?:Date) => {
         if (selectedDate) {
-            setDob(selectedDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+            setDobDate(selectedDate);
+            
+            // ✅ Fix: Use toLocaleDateString() to prevent timezone issues
+            const formattedDate = selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+            setDob(formattedDate);
         }
+        setShowDatePicker(false); // Hide picker after selecting
     };
+
     const handleSignup = async() => {
         try{
             const res = await axios.post(`http://${ip.eyas.toString()}:5256/api/user/signup`,{
@@ -70,21 +76,25 @@ export default function Signup() {
                 onChangeText={(text) => setPassword(text)}
                 value={password}
             />
-            <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)}>
+               {/* Open Date Picker */}
+               <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)}>
                 <TextInput
                     style={styles.input}
                     placeholder="Date of Birth"
                     placeholderTextColor={'rgb(0, 0, 0)'}
-                    value={dob}
-                    editable={false} // Make input non-editable
+                    value={dob} 
+                    editable={false} // Prevent manual typing
                 />
             </TouchableOpacity>
+
+            {/* Show picker when `showDatePicker` is true */}
             {showDatePicker && (
                 <DateTimePicker
-                    value={dob ? new Date(dob) : new Date()}
+                    value={dobDate} // Default date
                     mode="date"
-                    display="default"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'spinner'} // 🔥 Now "spinner" on Android
                     onChange={handleDateChange}
+                    maximumDate={new Date()} // Prevent selecting future dates
                 />
             )}
             <TextInput

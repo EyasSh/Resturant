@@ -44,6 +44,7 @@ function ThemedInput(props:InputProps) {
             autoCapitalize='none'
             autoCorrect={false}
             style={styles.input}
+            placeholderTextColor={isDark ? "white" : "black"}
 
          />
         </GestureHandlerRootView>

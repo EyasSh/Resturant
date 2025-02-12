@@ -34,16 +34,6 @@ export default function Login() {
       padding: 20,
       gap: 20,
     },
-    input: {
-      height: 40,
-      width: '100%',
-      borderWidth: 0.5,
-      borderRadius: 10,
-      backgroundColor: 'transparent',
-      paddingHorizontal: 10,
-      marginBottom: 20,
-      color: isDark ? "white" : "black",
-    },
     emailText: {
       fontSize: 16,
       fontWeight: 'bold',
@@ -95,15 +85,11 @@ export default function Login() {
         placeholder="Email"
         action={(text)=>setEmail(text)} 
         />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={isDark ? "white" : "black"}
-        secureTextEntry={true}
-        autoCapitalize="none"
-        autoCorrect={false}
-        onChangeText={(text) => setPassword(text)}
+      <ThemedInput
+        placeholder='Password'
+        type="password"
         value={password}
+        action={(text) => setPassword(text) }
       />
       <CurvedButton
         title="Login"

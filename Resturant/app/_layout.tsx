@@ -38,6 +38,7 @@ export default function RootLayout() {
           headerShown: false
         }}
       />
+      <Stack.Screen name="(staff)/Main" options={{ headerShown: false }} />
       <Stack.Screen name="(Menu)/Menu"  options={{ headerShown: false }} />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={
@@ -45,9 +46,9 @@ export default function RootLayout() {
         {/* Tabs layout */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         {/* 404 or fallback */}
-        {/* <Stack.Screen name="+not-found" /> */}
+         <Stack.Screen name="+not-found" /> 
+        
       </Stack>
-      
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -19,6 +19,7 @@ function ThemedInput(props:InputProps) {
             width: '100%',
             borderWidth: 0.5,
             borderRadius: 10,
+            borderColor: isDark ? "white" : "black",
             backgroundColor: 'transparent',
             paddingHorizontal: 10,
             marginBottom: 20,

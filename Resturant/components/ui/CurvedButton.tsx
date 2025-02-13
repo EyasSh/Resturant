@@ -17,11 +17,12 @@ function CurvedButton(props: CurvedButtonPropTypes) {
 const styles = StyleSheet.create({
     button:
     {
-        width: '25%', 
+        width: 'auto', 
         borderRadius: 7,  
         padding: 5,
         alignItems: 'center',
         fontWeight: 'bold',
+        paddingHorizontal: 15,
     },
     buttonText:
     {

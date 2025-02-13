@@ -44,6 +44,13 @@ export default function Login() {
       justifyContent: 'center',
       alignItems: 'center',
       gap: 20,
+    },
+    staff:{
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      width: '100%',
+      backgroundColor:"transparent"
     }
   });
   const handleLogin = async() => {
@@ -104,6 +111,14 @@ export default function Login() {
           style={{backgroundColor:"rgb(134, 0, 175)"}}
           />
           
+      </View>
+      <View style={styles.staff}>
+          <ThemedText style={styles.emailText}>Are you staff?</ThemedText>
+          <CurvedButton
+            title="Staff Terminal"
+            action={()=>router.push("../(staff)/Main")}
+            style={{backgroundColor:"rgb(0, 175, 122)"}}
+            />
       </View>
     </ThemedView>
   );

@@ -8,6 +8,7 @@ import Logo from "@/components/ui/Logo";
 import axios from 'axios';
 import ip from '@/Data/Addresses'
 import CurvedButton from '@/components/ui/CurvedButton';
+import ThemedInput from '@/components/ThemedInput';
 export default function Signup() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -62,13 +63,14 @@ export default function Signup() {
         },
         input: {
             height: 40,
-            width: '100%',
+            width: '95%',
             borderWidth: 0.5,
             borderRadius: 10,
             backgroundColor: 'transparent',
             paddingHorizontal: 10,
             marginBottom: 20,
             color: isDark ? "white" : "black",
+            borderColor: isDark ? "white" : "black",
           },
         button: {
             marginTop: 20,
@@ -85,30 +87,22 @@ export default function Signup() {
         <ThemedView style={styles.container}>
             <Logo />
             <ThemedText style={styles.header}>Sign up</ThemedText>
-            <TextInput 
-                style={styles.input} placeholder="Name"
-                placeholderTextColor={isDark ? "white" : "black"}  
-                autoCapitalize="none" autoCorrect={false} 
-                onChangeText={(text) => setName(text)} 
+            <ThemedInput 
+                type="text"
+                 placeholder="Name"
+                action={(text) => setName(text)} 
                 value={name}/>
-            <TextInput
-                style={styles.input}
+            <ThemedInput
+                
                 placeholder="example@domain.com"
-                placeholderTextColor={isDark ? "white" : "black"}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={(text) => setEmail(text)}
+                type={"email-address"}
+                action={(text) => setEmail(text)}
                 value={email}
             />
-            <TextInput
-                style={styles.input}
+            <ThemedInput
                 placeholder="Password"
-                secureTextEntry={true}
-                autoCapitalize="none"
-                placeholderTextColor={isDark ? "white" : "black"}
-                autoCorrect={false}
-                onChangeText={(text) => setPassword(text)}
+                type="password"
+                action={(text) => setPassword(text)}
                 value={password}
             />
                <TouchableOpacity style={styles.opacity} onPress={() => setShowDatePicker(true)} >
@@ -131,14 +125,10 @@ export default function Signup() {
                     maximumDate={new Date()} // Prevent selecting future dates
                 />
             )}
-            <TextInput
-                style={styles.input}
-                placeholder="Phone Number"
-                placeholderTextColor={isDark ? "white" : "black"}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="phone-pad"
-                onChangeText={(text) => setPhone(text)}
+            <ThemedInput
+              placeholder='Phone Number'
+                type="phone-pad"
+                action={(text) => setPhone(text)}
                 value={phone}
             />
             <CurvedButton

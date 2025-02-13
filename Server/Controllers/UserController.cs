@@ -276,3 +276,102 @@ namespace Server.Controllers
 
     }
 }
+[ApiController]
+[Route("api/waiter")]
+class WaiterController : ControllerBase
+{
+    IMongoCollection<Waiter> _waiters;
+    private readonly IConfiguration _conf;
+    public WaiterController(MongoDBWrapper dBWrapper, IConfiguration conf)
+    {
+        _waiters = dBWrapper.Waiters;
+        _conf = conf;
+    }
+
+    [HttpPost("/")]
+    public async Task<IActionResult> Login([FromBody] WaiterLogin request)
+    {
+        if (string.IsNullOrEmpty(request.Email))
+        {
+            return BadRequest("Email is required.");
+        }
+        var cursor = await _waiters.FindAsync<Waiter>(waiter => waiter.Email == request.Email);
+        var waiter = cursor.FirstOrDefault();
+        if (waiter is null)
+        {
+            return BadRequest("Waiter not found.");
+        }
+        Request.Headers["X-Auth-Token"] = GenerateJwtToken(waiter.Id ?? new Guid().ToString(), request.Email);
+        return Ok(new { Waiter = waiter });
+    }
+    [HttpGet("test")]
+    public IActionResult Test() => Ok("Test Successful");
+    /// <summary>
+    /// Generates a JWT token with the given username.
+    /// </summary>
+    /// <param name="email">The email to include in the JWT token.</param>
+    /// <returns>The JWT token.</returns>
+    /// <remarks>
+    /// The JWT token is generated with the following settings:
+    /// <list type="bullet">
+    /// <item>
+    /// <term>Issuer</term>
+    /// <description>The value of the <c>Jwt:Issuer</c> configuration setting.</description>
+    /// </item>
+    /// <item>
+    /// <term>Audience</term>
+    /// <description>The value of the <c>Jwt:Audience</c> configuration setting.</description>
+    /// </item>
+    /// <item>
+    /// <term>Claims</term>
+    /// <description>
+    /// A list of claims containing the username and a unique identifier.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <term>Expiration</term>
+    /// <description>The token will expire in 30 Days.</description>
+    /// </item>
+    /// <item>
+    /// <term>Signature</term>
+    /// <description>
+    /// The token is signed with the key specified in the <c>Jwt:Key</c> configuration setting.
+    /// </description>
+    /// </item>
+    /// </list>
+    /// </remarks>
+    private string GenerateJwtToken(string Id, string email)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"] ?? string.Empty));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+                new Claim(ClaimTypes.Email, email),
+                new Claim(JwtRegisteredClaimNames.Jti,Id )
+            };
+
+        var token = new JwtSecurityToken(
+            issuer: _conf["Jwt:Issuer"],
+            audience: _conf["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(30),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+
+    }
+
+    private string Encrypt(string password)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(password);
+    }
+    /// <summary>
+    /// Validates the password by comparing it with the hashed password stored in the database.
+    /// </summary>
+    /// <param name="plainText">The plaintext password</param>
+    /// <param name="password">The hashed password</param>
+    /// <returns>True if the password is valid, false otherwise</returns>
+    private bool Validate(string plainText, string password) => BCrypt.Net.BCrypt.Verify(plainText, password);
+}

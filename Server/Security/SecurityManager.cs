@@ -72,7 +72,10 @@ public class SecurityManager
     public async Task<string> Send2FAEmailAsync(string to)
     {
         string number = GenerateSecureCode(6);
-        await _emailService.SendEmailAsync(to, "2FA Code", $"Your 2FA code is {number}");
+        await _emailService.SendEmailAsync(to, "2FA Code",
+        @$"<html><body>
+        Your 2FA code is <strong>{number}</strong>
+        </body></html>");
         return number;
     }
     /// <summary>

@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.SignalR;
+using Server.Security;
 namespace Server.Controllers
 {
     [ApiController]
@@ -21,7 +22,8 @@ namespace Server.Controllers
         private readonly IHubContext<SocketService> _hubContext;
         IMongoCollection<User> _users;
         private readonly EmailService _emailService;
-        private readonly IConfiguration _conf;
+
+        private readonly SecurityManager _securityManager;
         /*
          <summary>
          This is the user controller constructor to perform user actions
@@ -29,13 +31,14 @@ namespace Server.Controllers
          </summary>
         */
         public UserController(MongoDBWrapper dBWrapper, IConfiguration conf
-        , IHubContext<SocketService> hubContext, EmailService emailService
+        , IHubContext<SocketService> hubContext, EmailService emailService,
+        SecurityManager securityManager
         )
         {
             _users = dBWrapper.Users;
-            _conf = conf;
             _hubContext = hubContext;
             _emailService = emailService;
+            _securityManager = securityManager;
         }
 
         /// <summary>
@@ -59,9 +62,9 @@ namespace Server.Controllers
                 {
                     return BadRequest("User not found.");
                 }
-                if (user != null && Validate(request.Password, user.Password))
+                if (user != null && _securityManager.Validate(request.Password, user.Password))
                 {
-                    var token = GenerateJwtToken(user.Id ?? new Guid().ToString(), request.Email);
+                    var token = _securityManager.GenerateJwtToken(user.Id ?? new Guid().ToString(), request.Email);
                     var resbod = new User
                     { Id = user.Id, Name = user.Name, Email = user.Email, Password = user.Password, date = user.date, phone = user.phone };
                     Response.Headers["X-Auth-Token"] = token;
@@ -70,7 +73,7 @@ namespace Server.Controllers
                 else
                 {
 
-                    return BadRequest("Invalid login credentials or user not found." + $"{user?.Email ?? "No email or user found"}\nplain pass encrypted:{Encrypt(request.Password)}\nalready encrypted:{user?.Password ?? "No password found"}");
+                    return BadRequest("Invalid login credentials or user not found." + $"{user?.Email ?? "No email or user found"}\nplain pass encrypted:{_securityManager.Encrypt(request.Password)}\nalready encrypted:{user?.Password ?? "No password found"}");
                 }
             }
             catch (Exception ex)
@@ -79,61 +82,7 @@ namespace Server.Controllers
             }
 
         }
-        /// <summary>
-        /// Generates a JWT token with the given username.
-        /// </summary>
-        /// <param name="email">The email to include in the JWT token.</param>
-        /// <returns>The JWT token.</returns>
-        /// <remarks>
-        /// The JWT token is generated with the following settings:
-        /// <list type="bullet">
-        /// <item>
-        /// <term>Issuer</term>
-        /// <description>The value of the <c>Jwt:Issuer</c> configuration setting.</description>
-        /// </item>
-        /// <item>
-        /// <term>Audience</term>
-        /// <description>The value of the <c>Jwt:Audience</c> configuration setting.</description>
-        /// </item>
-        /// <item>
-        /// <term>Claims</term>
-        /// <description>
-        /// A list of claims containing the username and a unique identifier.
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <term>Expiration</term>
-        /// <description>The token will expire in 30 Days.</description>
-        /// </item>
-        /// <item>
-        /// <term>Signature</term>
-        /// <description>
-        /// The token is signed with the key specified in the <c>Jwt:Key</c> configuration setting.
-        /// </description>
-        /// </item>
-        /// </list>
-        /// </remarks>
-        private string GenerateJwtToken(string Id, string email)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"] ?? string.Empty));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(JwtRegisteredClaimNames.Jti,Id )
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _conf["Jwt:Issuer"],
-                audience: _conf["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(30),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
 
 
         /// <summary>
@@ -163,7 +112,7 @@ namespace Server.Controllers
                 {
                     Name = request.Name,
                     Email = request.Email,
-                    Password = Encrypt(request.Password),
+                    Password = _securityManager.Encrypt(request.Password),
                     date = request.date,
                     phone = request.phone
                 };
@@ -210,69 +159,7 @@ namespace Server.Controllers
         [HttpGet("test")]
         [AllowAnonymous]
         public IActionResult Test() => Ok("Test Successful");
-        private string Encrypt(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-        /// <summary>
-        /// Validates the password by comparing it with the hashed password stored in the database.
-        /// </summary>
-        /// <param name="plainText">The plaintext password</param>
-        /// <param name="password">The hashed password</param>
-        /// <returns>True if the password is valid, false otherwise</returns>
-        private bool Validate(string plainText, string password) => BCrypt.Net.BCrypt.Verify(plainText, password);
-        /// <summary>
-        /// Validates the token sent in the X-Auth-Token header by checking that it was signed with the same key as the one used for signing the tokens.
-        /// </summary>
-        /// <returns>A successful status code (200) if the token is valid, or Unauthorized (401) if the token is invalid, or InternalServerError (500) if an error occurred.</returns>
-        /// <remarks>
-        /// This endpoint is used to verify that the token is valid, without logging in the user.
-        /// </remarks>
-        [AllowAnonymous]
-        [HttpGet("validate")]
-        public IActionResult ValidateToken()
-        {
-            if (!Request.Headers.ContainsKey("X-Auth-Token"))
-            {
-                System.Console.WriteLine("in first if");
-                return BadRequest("Token is missing.");
-            }
-
-            var token = Request.Headers["X-Auth-Token"].ToString();
-
-            try
-            {
-
-                // Access the authentication scheme's options
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = _conf["Jwt:Issuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"] ?? string.Empty))
-                };
-
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-
-                // Token is valid, return success with claims if needed
-                var emailClaim = principal.FindFirst(ClaimTypes.Email)?.Value;
-                var idClaim = principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-                return Ok(new { Message = "Token is valid", Email = emailClaim, Id = idClaim });
-            }
-            catch (SecurityTokenException ex)
-            {
-
-                return Unauthorized($"Token validation failed: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
+      
 
     }
 }
@@ -281,19 +168,19 @@ namespace Server.Controllers
 class WaiterController : ControllerBase
 {
     IMongoCollection<Waiter> _waiters;
-    private readonly IConfiguration _conf;
-    public WaiterController(MongoDBWrapper dBWrapper, IConfiguration conf)
+    private readonly SecurityManager _securityManager;
+    public WaiterController(MongoDBWrapper dBWrapper, SecurityManager securityManager)
     {
         _waiters = dBWrapper.Waiters;
-        _conf = conf;
+        _securityManager = securityManager;
     }
 
     [HttpPost("/")]
     public async Task<IActionResult> Login([FromBody] WaiterLogin request)
     {
-        if (string.IsNullOrEmpty(request.Email))
+        if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
         {
-            return BadRequest("Email is required.");
+            return BadRequest("Credentials are missing.");
         }
         var cursor = await _waiters.FindAsync<Waiter>(waiter => waiter.Email == request.Email);
         var waiter = cursor.FirstOrDefault();
@@ -301,77 +188,9 @@ class WaiterController : ControllerBase
         {
             return BadRequest("Waiter not found.");
         }
-        Request.Headers["X-Auth-Token"] = GenerateJwtToken(waiter.Id ?? new Guid().ToString(), request.Email);
+        Request.Headers["X-Auth-Token"] = _securityManager.GenerateJwtToken(waiter.Id ?? new Guid().ToString(), request.Email);
         return Ok(new { Waiter = waiter });
     }
     [HttpGet("test")]
     public IActionResult Test() => Ok("Test Successful");
-    /// <summary>
-    /// Generates a JWT token with the given username.
-    /// </summary>
-    /// <param name="email">The email to include in the JWT token.</param>
-    /// <returns>The JWT token.</returns>
-    /// <remarks>
-    /// The JWT token is generated with the following settings:
-    /// <list type="bullet">
-    /// <item>
-    /// <term>Issuer</term>
-    /// <description>The value of the <c>Jwt:Issuer</c> configuration setting.</description>
-    /// </item>
-    /// <item>
-    /// <term>Audience</term>
-    /// <description>The value of the <c>Jwt:Audience</c> configuration setting.</description>
-    /// </item>
-    /// <item>
-    /// <term>Claims</term>
-    /// <description>
-    /// A list of claims containing the username and a unique identifier.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <term>Expiration</term>
-    /// <description>The token will expire in 30 Days.</description>
-    /// </item>
-    /// <item>
-    /// <term>Signature</term>
-    /// <description>
-    /// The token is signed with the key specified in the <c>Jwt:Key</c> configuration setting.
-    /// </description>
-    /// </item>
-    /// </list>
-    /// </remarks>
-    private string GenerateJwtToken(string Id, string email)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_conf["Jwt:Key"] ?? string.Empty));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-                new Claim(ClaimTypes.Email, email),
-                new Claim(JwtRegisteredClaimNames.Jti,Id )
-            };
-
-        var token = new JwtSecurityToken(
-            issuer: _conf["Jwt:Issuer"],
-            audience: _conf["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(30),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-
-    }
-
-    private string Encrypt(string password)
-    {
-        return BCrypt.Net.BCrypt.HashPassword(password);
-    }
-    /// <summary>
-    /// Validates the password by comparing it with the hashed password stored in the database.
-    /// </summary>
-    /// <param name="plainText">The plaintext password</param>
-    /// <param name="password">The hashed password</param>
-    /// <returns>True if the password is valid, false otherwise</returns>
-    private bool Validate(string plainText, string password) => BCrypt.Net.BCrypt.Verify(plainText, password);
 }

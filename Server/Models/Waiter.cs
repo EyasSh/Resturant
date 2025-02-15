@@ -22,7 +22,7 @@ public class Waiter
 }
 public class Owner : Waiter
 {
-
+    [BsonElement("restaurantNumber")]
     public required string RestaurantNumber { get; set; }
     public Owner(string name, string email, string phone, string restaurantNumber) :
      base(name, email, phone)

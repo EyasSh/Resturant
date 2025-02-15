@@ -11,6 +11,7 @@ public class MongoDBWrapper
     private readonly IMongoDatabase _database;
     public IMongoCollection<User> Users { get; init; }
     public IMongoCollection<Waiter> Waiters { get; init; }
+    public IMongoCollection<Owner> Owners { get; init; }
 
     public MongoDBWrapper(IConfiguration configuration)
     {
@@ -30,6 +31,7 @@ public class MongoDBWrapper
         // Initialize collections
         Users = _database.GetCollection<User>("Users");
         Waiters = _database.GetCollection<Waiter>("Waiters");
+        Owners = _database.GetCollection<Owner>("Owners");
 
     }
 

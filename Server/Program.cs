@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Server.Controllers;
 using MongoDB.Driver;
+using Server.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<MongoDBWrapper>();
 builder.Services.AddScoped<UserController>();
 //Email Service Injection
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<SecurityManager>();
 //Authentication Service
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

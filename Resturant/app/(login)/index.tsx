@@ -65,10 +65,10 @@ export default function Login() {
         if(res&& res.status===200){
            alert("status 200");
             await AsyncStorage.setItem('token', res.headers['x-auth-token']);
-            await AsyncStorage.setItem('user', JSON.stringify(res.data));
+            await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
             const user =await AsyncStorage.getItem('user')
             
-            alert(user);
+            
         }
         // Navigate to the tabs layout
         router.replace('../(tabs)/Home');

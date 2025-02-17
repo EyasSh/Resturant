@@ -2,6 +2,7 @@ import React from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { StyleSheet, Image, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 
 
 
@@ -9,11 +10,11 @@ function Main() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.header}>Terminals</ThemedText>
-            <TouchableOpacity onPress={() => alert("Staff Login")} style={styles.staffBox}>
+            <TouchableOpacity onPress={() =>router.push('./WaiterLogin')} style={styles.staffBox}>
                 <Image source={require("@/assets/images/chef.png")} style={styles.image} />
                 <ThemedText>Chef/Waiter</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert("Admin Login")} style={styles.staffBox}>
+            <TouchableOpacity onPress={() => router.push('./OwnerLogin')} style={styles.staffBox}>
                 <Image style={styles.image} source={require("@/assets/images/owner.png")} />
                 <ThemedText>Owner/Admin</ThemedText>
             </TouchableOpacity>

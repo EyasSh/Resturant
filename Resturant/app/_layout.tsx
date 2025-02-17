@@ -38,7 +38,15 @@ export default function RootLayout() {
           headerShown: false
         }}
       />
+      {/*Staff Screens */}
       <Stack.Screen name="(staff)/Main" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/Waiter" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/Owner" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/WaiterLogin" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/OwnerLogin" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/WaiterSignup" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/OwnerSignup" options={{ headerShown: false }} />
+
       <Stack.Screen name="(Menu)/Menu"  options={{ headerShown: false }} />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={

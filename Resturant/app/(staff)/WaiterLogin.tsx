@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
-function WaiterLogin() {
+export default  function WaiterLogin() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText >Waiter Login</ThemedText>
@@ -11,7 +11,7 @@ function WaiterLogin() {
     );
 }
 
-export default WaiterLogin;
+
 const styles = StyleSheet.create({
     container:{
         display: 'flex',

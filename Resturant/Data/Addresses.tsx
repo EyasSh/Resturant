@@ -1,5 +1,5 @@
 const ip={
-    eyas:"10.0.0.159",
+    eyas:"10.0.0.165",
     julian:"10.0.0.12", //Continue last digit here
     nitc:"10.0.0" //Continue last digit here too
 }

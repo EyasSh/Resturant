@@ -16,7 +16,7 @@ function Main() {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('./OwnerLogin')} style={styles.staffBox}>
                 <Image style={styles.image} source={require("@/assets/images/owner.png")} />
-                <ThemedText>Owner/Admin</ThemedText>
+                <ThemedText>Owner</ThemedText>
             </TouchableOpacity>
         </ThemedView>
     );

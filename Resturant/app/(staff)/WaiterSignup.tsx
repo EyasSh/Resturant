@@ -4,12 +4,34 @@ import { ThemedView } from '@/components/ThemedView';
 import CurvedButton from '@/components/ui/CurvedButton';
 import { useState} from 'react';
 import { StyleSheet } from 'react-native';
+import axios from 'axios';
+import ip from "@/Data/Addresses";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function WaiterSignup() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
     const [name,setName] = useState<string>('');
     const [phone,setPhone] = useState<string>('');
+    const handleSignup = async() => {
+        try{
+            const res = axios.post(`http://${ip.eyas}:5256/api/owner/add/waiter`,{
+                name:name,
+                email: email,
+                password: password,
+                phone: phone,
+                headers:{
+                    "Content-Type":"application/json",
+                    "X-Auth-Token":await AsyncStorage.getItem("token")
+                }
+
+            })
+        }
+        catch(e){
+            alert(e);
+        }
+       
+    }
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Add Worker</ThemedText>

@@ -207,7 +207,7 @@ class OwnerController : ControllerBase
         _waiters = dBWrapper.Waiters;
         _securityManager = securityManager;
     }
-    [HttpPost("/")]
+    [HttpPost]
     public async Task<IActionResult> Login([FromBody] Server.Services.LoginRequest request)
     {
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
@@ -226,12 +226,14 @@ class OwnerController : ControllerBase
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] OwnerSignupRequest request)
     {
+        System.Console.WriteLine(request.Name);
         if (string.IsNullOrEmpty(request.Name) ||
             string.IsNullOrEmpty(request.Email) ||
             string.IsNullOrEmpty(request.Password) ||
             string.IsNullOrEmpty(request.Phone) ||
             string.IsNullOrEmpty(request.RestaurantNumber))
         {
+            System.Console.WriteLine("in if");
             return BadRequest("All fields are required.");
         }
         var cursor = await _owners.FindAsync<Owner>(owner => owner.Email == request.Email);

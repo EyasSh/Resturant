@@ -63,7 +63,6 @@ export default function Login() {
             password: password
         })
         if(res&& res.status===200){
-           alert("status 200");
             await AsyncStorage.setItem('token', res.headers['x-auth-token']);
             await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
             const user =await AsyncStorage.getItem('user')

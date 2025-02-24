@@ -1,12 +1,47 @@
+import ThemedInput from '@/components/ThemedInput';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import React from 'react';
+import CurvedButton from '@/components/ui/CurvedButton';
+import { useState} from 'react';
 import { StyleSheet } from 'react-native';
+import axios from 'axios';
+import ip from '@/Data/Addresses';
 
 export default function OwnerSignup() {
+    const [name,setName] = useState<string>('');
+    const [email,setEmail] = useState<string>('');
+    const [password,setPassword] = useState<string>('');
+    const [phone,setPhone] = useState<string>('');
+    const [restaurantNumber,setRestaurantNumber] = useState<string>('');
+    const handleSignup = async() => {
+        try{
+            alert("in try");
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/signup`,{
+                Name:name,
+                Email:email,
+                Password:password,
+                Phone: phone,
+                RestaurantNumber:restaurantNumber
+            })
+            
+            
+            if(res && res.status===200){
+                alert(res.data);
+            }
+        }
+        catch(e){
+            
+        }
+}
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Owner Signup</ThemedText>
+            <ThemedInput type="text" placeholder="Name" action={(text) => setName(text)} value={name} />
+            <ThemedInput type="email-address" placeholder="Email" action={(text) => setEmail(text)} value={email} />
+            <ThemedInput type="password" placeholder="Password" action={(text) => setPassword(text)} value={password} />
+            <ThemedInput type="phone-pad" placeholder="Phone" action={(text) => setPhone(text)} value={phone} />
+            <ThemedInput type="phone-pad" placeholder="Restaurant Number" action={(text) => setRestaurantNumber(text)} value={restaurantNumber}/>
+            <CurvedButton title="Signup" action={async() => await handleSignup()} style={{backgroundColor:"rgb(72, 0, 255)"}} />   
         </ThemedView>
     );
 }

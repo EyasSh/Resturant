@@ -32,6 +32,9 @@ export default function OwnerLogin() {
                 action={()=>router.push("./Owner")}
                 style={{backgroundColor:"rgb(153, 0, 255)"}}
                  />
+                <CurvedButton title="Sign Up" 
+                action={()=>router.push("./OwnerSignup")} 
+                style={{backgroundColor:"rgb(1, 119, 80)"}} />
         </ThemedView>
     );
 }

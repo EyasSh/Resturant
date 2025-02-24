@@ -2,13 +2,16 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
+import { router } from 'expo-router';
 function Owner() {
     return (
-        <ScrollView contentContainerStyle={styles.container} >
+        
+        <ThemedView style={styles.view}>
+            <ScrollView contentContainerStyle={styles.container}>
             <ThemedText style={styles.header}>Owner Terminal</ThemedText>
-            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+            <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./WaiterSignup")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>
-                <ThemedText style={styles.boldSmallText}>Add Waiter</ThemedText>
+                <ThemedText style={styles.boldSmallText}>Add Worker</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>
@@ -18,11 +21,17 @@ function Owner() {
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
             </TouchableOpacity>
-                
-        </ScrollView>
+            
+            </ScrollView>
+            </ThemedView>
+        
     );
 }
 const styles = StyleSheet.create({
+    view: {
+        height: '100%',
+        width: '100%',
+    },
     container:{
         display: 'flex',
         flexDirection: 'column',
@@ -30,9 +39,6 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         paddingTop: 70,
         gap: 20,
-        height: '100%',
-        width: '100%',
-        
     },
     header:{
         fontSize: 25,

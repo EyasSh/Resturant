@@ -159,7 +159,7 @@ namespace Server.Controllers
         [HttpGet("test")]
         [AllowAnonymous]
         public IActionResult Test() => Ok("Test Successful");
-      
+
 
     }
 }
@@ -193,4 +193,97 @@ class WaiterController : ControllerBase
     }
     [HttpGet("test")]
     public IActionResult Test() => Ok("Test Successful");
+}
+[ApiController]
+[Route("api/owner")]
+class OwnerController : ControllerBase
+{
+    IMongoCollection<Owner> _owners;
+    IMongoCollection<Waiter> _waiters;
+    private readonly SecurityManager _securityManager;
+    public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager)
+    {
+        _owners = dBWrapper.Owners;
+        _waiters = dBWrapper.Waiters;
+        _securityManager = securityManager;
+    }
+    [HttpPost("/")]
+    public async Task<IActionResult> Login([FromBody] Server.Services.LoginRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
+        {
+            return BadRequest("Credentials are missing.");
+        }
+        var cursor = await _owners.FindAsync<Owner>(owner => owner.Email == request.Email);
+        var owner = cursor.FirstOrDefault();
+        if (owner is null)
+        {
+            return BadRequest("Owner not found.");
+        }
+        Request.Headers["X-Auth-Token"] = _securityManager.GenerateJwtToken(owner.Id ?? new Guid().ToString(), request.Email);
+        return Ok(new { Owner = owner });
+    }
+    [HttpPost("signup")]
+    public async Task<IActionResult> SignUp([FromBody] OwnerSignupRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Name) ||
+            string.IsNullOrEmpty(request.Email) ||
+            string.IsNullOrEmpty(request.Password) ||
+            string.IsNullOrEmpty(request.Phone) ||
+            string.IsNullOrEmpty(request.RestaurantNumber))
+        {
+            return BadRequest("All fields are required.");
+        }
+        var cursor = await _owners.FindAsync<Owner>(owner => owner.Email == request.Email);
+        var owner = cursor.FirstOrDefault();
+        if (owner is not null)
+        {
+            return BadRequest("Owner already exists.");
+        }
+        var newOwner = new Owner
+        {
+            Name = request.Name,
+            Email = request.Email,
+            Password = _securityManager.Encrypt(request.Password),
+            Phone = request.Phone,
+            RestaurantNumber = request.RestaurantNumber
+        };
+        await _owners.InsertOneAsync(newOwner);
+        return Ok("Sign-up successful.");
+    }
+    /// <summary>
+    /// Adds a waiter to the restaurant staff.
+    /// </summary>
+    /// <param name="request">The waiter's details.</param>
+    /// <returns>A successful status code (200) if the waiter was added successfully.</returns>
+    /// <remarks>
+    /// This action is restricted to authorized users (i.e. the restaurant owners).
+    /// </remarks>
+    [Authorize]
+    [HttpPost("add/waiter")]
+    public async Task<IActionResult> AddWaiter([FromBody] WaiterSignupRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Name) ||
+        string.IsNullOrEmpty(request.Email) ||
+        string.IsNullOrEmpty(request.Password)
+        || string.IsNullOrEmpty(request.Phone))
+        {
+            return BadRequest("All fields are required.");
+        }
+        var cursor = await _waiters.FindAsync<Waiter>(waiter => waiter.Email == request.Email);
+        var waiter = cursor.FirstOrDefault();
+        if (waiter is not null)
+        {
+            return BadRequest("Waiter already exists.");
+        }
+        var newStaff = new Waiter
+        {
+            Name = request.Name,
+            Email = request.Email,
+            Password = _securityManager.Encrypt(request.Password),
+            Phone = request.Phone,
+        };
+        _waiters.InsertOne(newStaff);
+        return Ok("Waiter added successfully.");
+    }
 }

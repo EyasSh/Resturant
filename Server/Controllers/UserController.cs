@@ -219,7 +219,9 @@ public class OwnerController : ControllerBase
         {
             return BadRequest("Owner not found.");
         }
-        Request.Headers["X-Auth-Token"] = _securityManager.GenerateJwtToken(owner.Id ?? new Guid().ToString(), request.Email);
+        var token = _securityManager.GenerateJwtToken(owner.Id ?? new Guid().ToString(), request.Email);
+        Response.Headers["X-Auth-Token"] = token; // ✅ Correctly set in response headers
+
         return Ok(new { Owner = owner });
     }
     [AllowAnonymous]
@@ -233,7 +235,6 @@ public class OwnerController : ControllerBase
             string.IsNullOrEmpty(request.Phone) ||
             string.IsNullOrEmpty(request.RestaurantNumber))
         {
-            System.Console.WriteLine("in if");
             return BadRequest("All fields are required.");
         }
         var cursor = await _owners.FindAsync<Owner>(owner => owner.Email == request.Email);

@@ -1,14 +1,33 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import React from 'react';
+import { useState,useEffect } from 'react';
 import { StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+type OwnerDTO={
+    name: string,
+    email: string,
+    phone: string,
+    password: string,
+    restaurantNumber: string
+}
 function Owner() {
+    const [owner, setOwner] =useState<OwnerDTO>({ name: "" , email: "", phone: "", password: "", restaurantNumber: "" });
+
+    useEffect(() => {
+        const fetchOwner = async () => {
+            const ownerData = await AsyncStorage.getItem("owner");
+            if (ownerData) {
+                setOwner(JSON.parse(ownerData));
+            }
+        };
+        fetchOwner();
+    }, []);
     return (
         
         <ThemedView style={styles.view}>
             <ScrollView contentContainerStyle={styles.container}>
-            <ThemedText style={styles.header}>Owner Terminal</ThemedText>
+            <ThemedText style={styles.header}>Welcome {owner.name}</ThemedText>
             <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./WaiterSignup")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Worker</ThemedText>
@@ -21,7 +40,6 @@ function Owner() {
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
             </TouchableOpacity>
-            
             </ScrollView>
             </ThemedView>
         

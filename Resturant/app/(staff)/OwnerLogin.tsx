@@ -6,11 +6,29 @@ import React,{ useState} from 'react';
 import { StyleSheet } from 'react-native';
 import {router} from 'expo-router';
 import Logo from '@/components/ui/Logo';
-
+import axios from 'axios';
+import ip from '@/Data/Addresses';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function OwnerLogin() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
-
+    const handleLogin = async() => {
+        try{
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/`,{
+                email: email,
+                password: password
+            })
+            if(res && res.status===200){
+                
+                await AsyncStorage.setItem('token', res.headers['x-auth-token']);
+                await AsyncStorage.setItem("owner",JSON.stringify(res.data.owner))
+                router.push("./Owner");
+            }
+        }
+        catch(e){
+            alert(e);
+        }
+    }
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Owner Login</ThemedText>
@@ -29,7 +47,7 @@ export default function OwnerLogin() {
                 />
                 <CurvedButton
                 title="Login"
-                action={()=>router.push("./Owner")}
+                action={async() => await handleLogin()}
                 style={{backgroundColor:"rgb(153, 0, 255)"}}
                  />
                 <CurvedButton title="Sign Up" 

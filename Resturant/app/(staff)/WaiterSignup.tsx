@@ -15,17 +15,24 @@ export default function WaiterSignup() {
     const [phone,setPhone] = useState<string>('');
     const handleSignup = async() => {
         try{
-            const res = axios.post(`http://${ip.eyas}:5256/api/owner/add/waiter`,{
+            const token = await AsyncStorage.getItem("token");
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/add/waiter`,{
                 name:name,
                 email: email,
                 password: password,
                 phone: phone,
-                headers:{
-                    "Content-Type":"application/json",
-                    "X-Auth-Token":await AsyncStorage.getItem("token")
-                }
+                
 
-            })
+            },
+        {
+            headers:{
+                "Content-Type":"application/json",
+                "X-Auth-Token":token
+            }
+        })
+            if(res && res.status===200){
+                alert(res.data);
+            }
         }
         catch(e){
             alert(e);
@@ -40,7 +47,7 @@ export default function WaiterSignup() {
             <ThemedInput type="password" value={password} action={(text) => setPassword(text)} placeholder="Password" />
             <ThemedInput type="phone-pad" value={phone} action={(text) => setPhone(text)} placeholder="Phone" />
             
-            <CurvedButton title="Add Worker" action={()=>alert("Name: " + name + "\nEmail: " + email + "\nPassword: " + password + "\nPhone: " + phone + "\n\nAdded Successfully")} style={{backgroundColor:"rgb(72, 0, 255)"}} />
+            <CurvedButton title="Add Worker" action={async()=>await handleSignup()} style={{backgroundColor:"rgb(72, 0, 255)"}} />
         </ThemedView>
     );
 }

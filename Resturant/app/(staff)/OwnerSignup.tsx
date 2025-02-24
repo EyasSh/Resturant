@@ -23,14 +23,14 @@ export default function OwnerSignup() {
                 Phone: phone,
                 RestaurantNumber:restaurantNumber
             })
-            
+            alert(res.data);
             
             if(res && res.status===200){
                 alert(res.data);
             }
         }
         catch(e){
-            
+            alert(e);
         }
 }
     return (
@@ -41,7 +41,9 @@ export default function OwnerSignup() {
             <ThemedInput type="password" placeholder="Password" action={(text) => setPassword(text)} value={password} />
             <ThemedInput type="phone-pad" placeholder="Phone" action={(text) => setPhone(text)} value={phone} />
             <ThemedInput type="phone-pad" placeholder="Restaurant Number" action={(text) => setRestaurantNumber(text)} value={restaurantNumber}/>
-            <CurvedButton title="Signup" action={async() => await handleSignup()} style={{backgroundColor:"rgb(72, 0, 255)"}} />   
+            <CurvedButton title="Signup" 
+            action={async() => await handleSignup()} 
+            style={{backgroundColor:"rgb(72, 0, 255)"}} />   
         </ThemedView>
     );
 }

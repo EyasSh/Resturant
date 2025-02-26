@@ -203,11 +203,13 @@ public class OwnerController : ControllerBase
 {
     IMongoCollection<Owner> _owners;
     IMongoCollection<Waiter> _waiters;
+    IMongoCollection<Meal> _meals;
     private readonly SecurityManager _securityManager;
     public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager)
     {
         _owners = dBWrapper.Owners;
         _waiters = dBWrapper.Waiters;
+        _meals = dBWrapper.Meals;
         _securityManager = securityManager;
     }
     [AllowAnonymous]
@@ -223,6 +225,10 @@ public class OwnerController : ControllerBase
         if (owner is null)
         {
             return BadRequest("Owner not found.");
+        }
+        if (!_securityManager.Validate(request.Password, owner.Password))
+        {
+            return BadRequest("Invalid login credentials.");
         }
         var token = _securityManager.GenerateJwtToken(owner.Id ?? new Guid().ToString(), request.Email);
         Response.Headers["X-Auth-Token"] = token; // ✅ Correctly set in response headers
@@ -293,5 +299,25 @@ public class OwnerController : ControllerBase
         };
         _waiters.InsertOne(newStaff);
         return Ok("Waiter added successfully.");
+    }
+    [Authorize]
+    [HttpPost("add/meal")]
+    public async Task<IActionResult> AddMeal([FromBody] Meal meal)
+    {
+
+        if (string.IsNullOrEmpty(meal.MealName) || meal.Price <= 0)
+        {
+            System.Console.WriteLine("Meal name and price are required.");
+            return BadRequest("All fields are required.");
+        }
+        var cursor = await _meals.FindAsync(m => m.MealName == meal.MealName);
+        var existingMeal = cursor.FirstOrDefault();
+        if (existingMeal is not null)
+        {
+            System.Console.WriteLine("Meal already exists.");
+            return BadRequest("Meal already exists.");
+        }
+        await _meals.InsertOneAsync(meal);
+        return Ok("Meal added successfully.");
     }
 }

@@ -46,7 +46,7 @@ export default function RootLayout() {
       <Stack.Screen name="(staff)/OwnerLogin" options={{ headerShown: false }} />
       <Stack.Screen name="(staff)/WaiterSignup" options={{ headerShown: false }} />
       <Stack.Screen name="(staff)/OwnerSignup" options={{ headerShown: false }} />
-
+      <Stack.Screen name="(staff)/AddMealForm" options={{ headerShown: false }} />
       <Stack.Screen name="(Menu)/Menu"  options={{ headerShown: false }} />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={

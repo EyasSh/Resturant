@@ -7,7 +7,7 @@ const inputTypes:string[]=["text","password","email-address","phone-pad","date"]
 type InputProps={
     type:string,
     placeholder:string,
-    action?:(text:string)=>void,
+    action?:(text:any)=>void,
     value?:string,
 }
 function ThemedInput(props:InputProps) {

@@ -95,7 +95,6 @@ builder.Services.AddCors(options =>
 
         foreach (var ip in localAddresses)
         {
-            System.Console.WriteLine(ip);
             allowedOrigins.Add($"http://{ip}:8081"); // Add port 19000
             allowedOrigins.Add($"http://{ip}:8081"); // Add port 19006
             allowedOrigins.Add($"http://{ip}:5173");

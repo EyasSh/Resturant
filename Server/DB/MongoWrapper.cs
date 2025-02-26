@@ -12,6 +12,7 @@ public class MongoDBWrapper
     public IMongoCollection<User> Users { get; init; }
     public IMongoCollection<Waiter> Waiters { get; init; }
     public IMongoCollection<Owner> Owners { get; init; }
+    public IMongoCollection<Meal> Meals { get; init; }
 
     public MongoDBWrapper(IConfiguration configuration)
     {
@@ -32,6 +33,7 @@ public class MongoDBWrapper
         Users = _database.GetCollection<User>("Users");
         Waiters = _database.GetCollection<Waiter>("Waiters");
         Owners = _database.GetCollection<Owner>("Owners");
+        Meals = _database.GetCollection<Meal>("Meals");
 
     }
 

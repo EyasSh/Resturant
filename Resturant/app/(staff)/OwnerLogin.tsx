@@ -14,7 +14,11 @@ export default function OwnerLogin() {
     const [password,setPassword] = useState<string>('');
     const handleLogin = async() => {
         try{
-            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/`,{
+            if(email==='' || password===''){
+                alert("Please fill all the fields");
+                return;
+            }
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner`,{
                 email: email,
                 password: password
             })

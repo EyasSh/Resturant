@@ -174,7 +174,7 @@ public class WaiterController : ControllerBase
         _securityManager = securityManager;
     }
 
-    [HttpPost("/")]
+    [HttpPost]
     public async Task<IActionResult> Login([FromBody] WaiterLogin request)
     {
         if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.Password))
@@ -187,7 +187,11 @@ public class WaiterController : ControllerBase
         {
             return BadRequest("Waiter not found.");
         }
-        Request.Headers["X-Auth-Token"] = _securityManager.GenerateJwtToken(waiter.Id ?? new Guid().ToString(), request.Email);
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+        {
+            return BadRequest("Invalid login credentials.");
+        }
+        Response.Headers["X-Auth-Token"] = _securityManager.GenerateJwtToken(waiter.Id ?? new Guid().ToString(), request.Email);
         return Ok(new { Waiter = waiter });
     }
     [HttpGet("test")]
@@ -206,6 +210,7 @@ public class OwnerController : ControllerBase
         _waiters = dBWrapper.Waiters;
         _securityManager = securityManager;
     }
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] Server.Services.LoginRequest request)
     {

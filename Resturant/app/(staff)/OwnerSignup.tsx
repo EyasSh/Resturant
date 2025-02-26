@@ -15,7 +15,10 @@ export default function OwnerSignup() {
     const [restaurantNumber,setRestaurantNumber] = useState<string>('');
     const handleSignup = async() => {
         try{
-            alert("in try");
+            if(name==='' || email==='' || password==='' || phone==='' || restaurantNumber===''){
+                alert("Please fill all the fields");
+                return;
+            }
             const res = await axios.post(`http://${ip.eyas}:5256/api/owner/signup`,{
                 Name:name,
                 Email:email,

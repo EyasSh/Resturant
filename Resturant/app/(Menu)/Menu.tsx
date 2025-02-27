@@ -7,9 +7,9 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Meal = {
-  MealId: string;
-  MealName: string;
-  Price: number;
+  mealId: string;
+  mealName: string;
+  price: number;
 };
 
 export default function Menu() {
@@ -49,7 +49,7 @@ export default function Menu() {
         console.log("Fetched meals:", data);
         if (Array.isArray(response.data.meals) && response.data.meals.length > 0) {
           console.log("Setting menu items:", response.data.meals);
-          setMenuItems([...response.data.meals]); // Spread to force state update
+          setMenuItems([...data]); // Spread to force state update
           console.log(menuItems)
         } else {
           setMenuItems([]); // Ensure it does not remain undefined
@@ -67,7 +67,7 @@ export default function Menu() {
 
   function addItemToList(item: Meal) {
     setList((prevList) => {
-      const existingIndex = prevList.findIndex((i) => i.MealId === item.MealId);
+      const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
       if (existingIndex >= 0) {
         const updatedList = [...prevList];
         updatedList[existingIndex].quantity += 1;
@@ -80,7 +80,7 @@ export default function Menu() {
 
   function calculateTotal() {
     return list
-      .reduce((total, item) => total + item.Price * item.quantity, 0)
+      .reduce((total, item) => total + item.price * item.quantity, 0)
       .toFixed(2);
   }
 
@@ -105,13 +105,13 @@ export default function Menu() {
     <ThemedView style={styles.container}>
       {menuItems.length > 0 ? (
         menuItems.map((item) => {  // ✅ FIX: Make sure it returns JSX correctly
-          const selectedItem = list.find((i) => i.MealId === item.MealId);
+          const selectedItem = list.find((i) => i.mealId === item.mealId);
           const currentQuantity = selectedItem ? selectedItem.quantity : 0;
   
           return (
-            <ThemedView key={item.MealId} style={styles.menuItem}>
-              <ThemedText style={styles.name}>{item.MealName}</ThemedText>
-              <ThemedText style={styles.price}>{(Number(item.Price) || 0).toFixed(2)} ₪</ThemedText>
+            <ThemedView key={item.mealId} style={styles.menuItem}>
+              <ThemedText style={styles.name}>{item.mealName}</ThemedText>
+              <ThemedText style={styles.price}>{(Number(item.price) || 0).toFixed(2)} ₪</ThemedText>
               <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
               <Button title="Add" onPress={() => addItemToList(item)} />
             </ThemedView>
@@ -125,13 +125,13 @@ export default function Menu() {
       {list.length > 0 ? (
         <FlatList
           data={list}
-          keyExtractor={(item) => item.MealId}  // ✅ FIX: Remove `.toString()` since MealId is already a string
+          keyExtractor={(item) => item.mealId}  // ✅ FIX: Remove `.toString()` since MealId is already a string
           renderItem={({ item }) => (
             <View style={styles.selectedItem}>
               <ThemedText>
-                {item.MealName} x {item.quantity}
+                {item.mealName} x {item.quantity}
               </ThemedText>
-              <ThemedText>{(item.Price * item.quantity).toFixed(2)} ₪</ThemedText>
+              <ThemedText>{(item.price * item.quantity).toFixed(2)} ₪</ThemedText>
             </View>
           )}
         />

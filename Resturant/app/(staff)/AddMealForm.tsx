@@ -51,7 +51,7 @@ export default function AddMealForm() {
                 placeholder="Price"
                 type="phone-pad"
                 action={(price:number)=>setPrice(price)}
-                value={price.toString()}
+                value={price==0? '' : price.toString()}
             />
             <CurvedButton
                 title="Add meal"

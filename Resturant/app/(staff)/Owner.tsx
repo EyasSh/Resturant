@@ -40,6 +40,18 @@ function Owner() {
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+                <ThemedText style={styles.largeText}>-</ThemedText>
+                <ThemedText style={styles.boldSmallText}>Remove Worker</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+                <ThemedText style={styles.largeText}>-</ThemedText>
+                <ThemedText style={styles.boldSmallText}>Remove Table</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+                <ThemedText style={styles.largeText}>-</ThemedText>
+                <ThemedText style={styles.boldSmallText}>Remove Meals</ThemedText>
+            </TouchableOpacity>
             </ScrollView>
             </ThemedView>
         
@@ -57,6 +69,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         paddingTop: 70,
         gap: 20,
+        paddingBottom: 20,
     },
     header:{
         fontSize: 25,

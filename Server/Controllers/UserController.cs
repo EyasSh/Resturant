@@ -166,7 +166,6 @@ public class UserController : ControllerBase
     {
         var dbfetch = await _meals.Find(_ => true).ToListAsync();
         var meals = dbfetch.ToArray();
-        Console.WriteLine(meals[0].MealName);
         return Ok(new { meals });
     }
 

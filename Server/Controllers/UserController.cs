@@ -20,6 +20,7 @@ public class UserController : ControllerBase
 {
     private readonly IHubContext<SocketService> _hubContext;
     IMongoCollection<User> _users;
+    IMongoCollection<Meal> _meals;
     private readonly EmailService _emailService;
 
     private readonly SecurityManager _securityManager;
@@ -35,6 +36,7 @@ public class UserController : ControllerBase
     )
     {
         _users = dBWrapper.Users;
+        _meals = dBWrapper.Meals;
         _hubContext = hubContext;
         _emailService = emailService;
         _securityManager = securityManager;
@@ -158,7 +160,15 @@ public class UserController : ControllerBase
     [HttpGet("test")]
     [AllowAnonymous]
     public IActionResult Test() => Ok("Test Successful");
-
+    [Authorize]
+    [HttpGet("meals")]
+    public async Task<IActionResult> GetMeals()
+    {
+        var dbfetch = await _meals.Find(_ => true).ToListAsync();
+        var meals = dbfetch.ToArray();
+        Console.WriteLine(meals[0].MealName);
+        return Ok(new { meals });
+    }
 
 }
 

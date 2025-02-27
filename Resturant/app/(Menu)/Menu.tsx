@@ -1,101 +1,168 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import React, { useState } from "react";
-import { StyleSheet, View, Text, Button, FlatList } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Text, Button, FlatList, ActivityIndicator } from "react-native";
+import ip from "@/Data/Addresses";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const menuItems = [
-  { id: 1, name: "Burger", price: 12.99, quantity: 0 },
-  { id: 2, name: "Pasta", price: 15.49, quantity: 0 },
-  { id: 3, name: "Coffee", price: 3.99, quantity: 0 },
-  { id: 4, name: "Ice Cream", price: 5.49, quantity: 0 },
-];
+type Meal = {
+  MealId: string;
+  MealName: string;
+  Price: number;
+};
 
 export default function Menu() {
-  const [list, setList] = useState<
-    { id: number; name: string; price: number; quantity: number }[]
-  >([]);
+  const [menuItems, setMenuItems] = useState<Meal[]>([]);
+  const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Adds (or increments) an item in the 'list'.
-   */
-  function addItemToList(item: { id: number; name: string; price: number; quantity: number }) {
+  // Fetch meals from API
+  useEffect(() => {
+    if (menuItems.length > 0) {
+      
+      return; // No need to fetch again if we already have items
+    }
+    async function fetchMeals() {
+      try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          throw new Error("User is not authenticated.");
+        }
+
+        const response = await axios.get(`http://${ip.eyas}:5256/api/user/meals`, {
+          headers: {
+            "X-Auth-Token": token,
+          },
+        });
+
+        if (response.status !== 200) {
+          throw new Error("Failed to fetch meals.");
+        }
+        console.log("Response:", response.data.meals);
+
+        const data: Meal[] = response.data.meals;
+        
+
+        console.log("Fetched meals:", data);
+        if (Array.isArray(response.data.meals) && response.data.meals.length > 0) {
+          console.log("Setting menu items:", response.data.meals);
+          setMenuItems([...response.data.meals]); // Spread to force state update
+          console.log(menuItems)
+        } else {
+          setMenuItems([]); // Ensure it does not remain undefined
+        }
+        
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMeals();
+  }, [menuItems]);
+
+  function addItemToList(item: Meal) {
     setList((prevList) => {
-      // Check if the item is already in the list
-      const existingIndex = prevList.findIndex((i) => i.id === item.id);
-
+      const existingIndex = prevList.findIndex((i) => i.MealId === item.MealId);
       if (existingIndex >= 0) {
-        // If it's already there, increment the quantity
         const updatedList = [...prevList];
         updatedList[existingIndex].quantity += 1;
         return updatedList;
       } else {
-        // If not, add it with quantity= item.quantity + 1 (since default is 0)
-        return [...prevList, { ...item, quantity: item.quantity + 1 }];
+        return [...prevList, { ...item, quantity: 1 }];
       }
     });
   }
 
-  /**
-   * Calculate total price by summing price * quantity of each item.
-   */
   function calculateTotal() {
     return list
-      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .reduce((total, item) => total + item.Price * item.quantity, 0)
       .toFixed(2);
+  }
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <ThemedText>Loading menu...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (error) {
+    return (
+      <ThemedView style={styles.errorContainer}>
+        <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
+      </ThemedView>
+    );
   }
 
   return (
     <ThemedView style={styles.container}>
-
-      {menuItems.map((item) => {
-        // Find the current quantity in 'list' for this item
-        const selectedItem = list.find((i) => i.id === item.id);
-        // If not found, quantity remains what is defined in menuItems (initially 0)
-        const currentQuantity = selectedItem ? selectedItem.quantity : item.quantity;
-
-        return (
-          <ThemedView key={item.id} style={styles.menuItem}>
-            <ThemedText style={styles.name}>{item.name}</ThemedText>
-            {/* Show total price for that item = price * current quantity */}
-            <ThemedText style={styles.price}>
-              { item.price.toFixed(2) +" ₪"  }
-            </ThemedText>
-            <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
-            <Button title="Add" onPress={() => addItemToList(item)} />
-          </ThemedView>
-        );
-      })}
-
+      {menuItems.length > 0 ? (
+        menuItems.map((item) => {  // ✅ FIX: Make sure it returns JSX correctly
+          const selectedItem = list.find((i) => i.MealId === item.MealId);
+          const currentQuantity = selectedItem ? selectedItem.quantity : 0;
+  
+          return (
+            <ThemedView key={item.MealId} style={styles.menuItem}>
+              <ThemedText style={styles.name}>{item.MealName}</ThemedText>
+              <ThemedText style={styles.price}>{(Number(item.Price) || 0).toFixed(2)} ₪</ThemedText>
+              <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
+              <Button title="Add" onPress={() => addItemToList(item)} />
+            </ThemedView>
+          );
+        })
+      ) : (
+        <ThemedText style={styles.emptyText}>No menu items available.</ThemedText>
+      )}
+  
       <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
       {list.length > 0 ? (
         <FlatList
           data={list}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.MealId}  // ✅ FIX: Remove `.toString()` since MealId is already a string
           renderItem={({ item }) => (
             <View style={styles.selectedItem}>
               <ThemedText>
-                {item.name} x {item.quantity}
+                {item.MealName} x {item.quantity}
               </ThemedText>
-              <ThemedText>{(item.price * item.quantity).toFixed(2)} ₪</ThemedText>
+              <ThemedText>{(item.Price * item.quantity).toFixed(2)} ₪</ThemedText>
             </View>
           )}
         />
       ) : (
         <Text style={styles.emptyText}>No items selected.</Text>
       )}
-
-      <ThemedText style={styles.total}>
-        Total: {calculateTotal()} ₪
-      </ThemedText>
+  
+      <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
     </ThemedView>
   );
+  
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 30,
     height: "100%",
-   
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
   },
   title: {
     fontSize: 24,

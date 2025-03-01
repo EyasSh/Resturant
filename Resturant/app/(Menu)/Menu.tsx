@@ -32,7 +32,7 @@ export default function Menu() {
           throw new Error("User is not authenticated.");
         }
 
-        const response = await axios.get(`http://${ip.eyas}:5256/api/user/meals`, {
+        const response = await axios.get(`http://${ip.julian}:5256/api/user/meals`, {
           headers: {
             "X-Auth-Token": token,
           },

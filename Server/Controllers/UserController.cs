@@ -160,6 +160,10 @@ public class UserController : ControllerBase
     [HttpGet("test")]
     [AllowAnonymous]
     public IActionResult Test() => Ok("Test Successful");
+        /// <summary>
+        /// Retrieves the list of meals in the database. This action is restricted to authorized users.
+        /// </summary>
+        /// <returns>A successful status code (200) if the request was successful, along with the list of meals as a JSON payload.</returns>
     [Authorize]
     [HttpGet("meals")]
     public async Task<IActionResult> GetMeals()
@@ -183,6 +187,20 @@ public class WaiterController : ControllerBase
         _securityManager = securityManager;
     }
 
+    /// <summary>
+    /// Authenticates a waiter and provides access to the system. This action is accessible to anonymous users.
+    /// </summary>
+    /// <param name="request">The waiter's login credentials.</param>
+    /// <returns>A successful status code (200) if the login request was successful.</returns>
+    /// <remarks>
+    /// The request body should contain a JSON object with the following structure:
+    /// <code>
+    /// {
+    ///     "Email": string,
+    ///     "Password": string
+    /// }
+    /// </code>
+    /// </remarks>
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] WaiterLogin request)
     {
@@ -246,6 +264,15 @@ public class OwnerController : ControllerBase
 
         return Ok(new { Owner = owner });
     }
+    /// <summary>
+    /// Registers a new owner in the system.
+    /// </summary>
+    /// <param name="request">The owner's signup details including name, email, password, phone, and restaurant number.</param>
+    /// <returns>A successful status code (200) if the signup is successful, otherwise a bad request error if required fields are missing or the owner already exists.</returns>
+    /// <remarks>
+    /// This endpoint is accessible to anonymous users.
+    /// </remarks>
+
     [AllowAnonymous]
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] OwnerSignupRequest request)
@@ -311,6 +338,12 @@ public class OwnerController : ControllerBase
         _waiters.InsertOne(newStaff);
         return Ok("Waiter added successfully.");
     }
+    /// <summary>
+    /// Adds a new meal to the restaurant's database. This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="meal">The meal object containing the name and price of the meal to be added.</param>
+    /// <returns>A successful status code (200) if the meal was added successfully, or a bad request status code (400) if the meal already exists or required fields are missing.</returns>
+
     [Authorize]
     [HttpPost("add/meal")]
     public async Task<IActionResult> AddMeal([FromBody] Meal meal)
@@ -331,6 +364,12 @@ public class OwnerController : ControllerBase
         await _meals.InsertOneAsync(meal);
         return Ok("Meal added successfully.");
     }
+    /// <summary>
+    /// Adds a new table to the restaurant's database. This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="request">The table data including capacity and window side preference.</param>
+    /// <returns>A successful status code (200) if the table was added successfully, or a bad request status code (400) if the table capacity is invalid.</returns>
+
     [Authorize]
     [HttpPost("add/table")]
     public async Task<IActionResult> AddTable([FromBody] Table request)

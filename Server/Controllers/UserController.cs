@@ -21,6 +21,7 @@ public class UserController : ControllerBase
     private readonly IHubContext<SocketService> _hubContext;
     IMongoCollection<User> _users;
     IMongoCollection<Meal> _meals;
+    IMongoCollection<Table> _tables;
     private readonly EmailService _emailService;
 
     private readonly SecurityManager _securityManager;
@@ -37,6 +38,7 @@ public class UserController : ControllerBase
     {
         _users = dBWrapper.Users;
         _meals = dBWrapper.Meals;
+        _tables = dBWrapper.Tables;
         _hubContext = hubContext;
         _emailService = emailService;
         _securityManager = securityManager;
@@ -171,6 +173,14 @@ public class UserController : ControllerBase
         var dbfetch = await _meals.Find(_ => true).ToListAsync();
         var meals = dbfetch.ToArray();
         return Ok(new { meals });
+    }
+    [Authorize]
+    [HttpGet("tables")]
+    public async Task<IActionResult> GetTables()
+    {
+        var dbfetch = await _tables.Find(_ => true).ToListAsync();
+        var tables = dbfetch.ToArray();
+        return Ok(new { tables });
     }
 
 }

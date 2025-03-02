@@ -13,8 +13,11 @@ public class Table
     public string? WaiterId { get; set; } = string.Empty;
     [BsonElement("userId")]
     public string? UserId { get; set; } = string.Empty;
+    [BsonElement("isWindowSide")]
     public bool isWindowSide { get; set; } = false;
+    [BsonElement("isOccupied")]
     public bool isOccupied { get; set; } = false;
+    [BsonElement("capacity")]
     public int Capacity { get; set; } = 2;
     public Table()
     {

@@ -5,12 +5,24 @@ import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
 import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
-type CardProps = {
+type TableProps = {
+  tableNumber: number;
+  isWindowSide: boolean;
+  isOccupied: boolean;
+  waiterId: string;
+  userId: string;
+  capacity : number;
   width: number;
-  number:number
+
 }
-export default function TableCard(props:CardProps) {
-  const [isOccupied, setIsOccupied] = useState(false);
+
+export default function TableCard(props:TableProps) {
+  const [isOccupied, setIsOccupied] = useState(props.isOccupied);
+  const [isWindowSide, setIsWindowSide] = useState(props.isWindowSide);
+  const [userId, setUserId] = useState<string>(props.userId);
+  const [waiterId, setWaiterId] = useState<string>(props.waiterId);
+  const [capacity, setCapacity] = useState<number>(props.capacity);
+  const [number, setNumber] = useState<number>(props.tableNumber);
   const router = useRouter();
   const handlePress = () => {
     if(isOccupied){
@@ -30,12 +42,13 @@ export default function TableCard(props:CardProps) {
         <ThemedView style={styles.imageContainer}>
           <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>
-        <ThemedText style={styles.text}>Table {props.number}</ThemedText>
+        <ThemedText style={styles.text}>{"Table:"+props.tableNumber}</ThemedText>
         <ThemedView style={styles.bottomInfoContainer}>
             <ThemedText style={styles.bottomInfoText}>
               {isOccupied ? "Occupied" : "Not Occupied"}
             </ThemedText>
-          <ThemedText style={styles.bottomInfoText}>Window Side Table</ThemedText>
+          <ThemedText style={styles.bottomInfoText}>{isWindowSide ? "Window Side" : "Not Window Side"}</ThemedText>
+          <ThemedText style={styles.bottomInfoText}>{"Capacity: "+capacity}</ThemedText>
           <ThemedView style={styles.bottomTableFunctions}>
           <TouchableOpacity onPress={()=>alert("image pressed")}>
             <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
@@ -68,8 +81,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -20,
     right: -16.5,
-    width:'29%',
-    height: '20%',
+    width:'28%',
+    height: '18%',
     backgroundColor: 'rgb(0, 177, 0)',
     borderRadius: 50,
     alignItems: 'center',

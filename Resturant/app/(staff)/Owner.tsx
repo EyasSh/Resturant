@@ -32,7 +32,7 @@ function Owner() {
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Worker</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+            <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./AddTableForm")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Table</ThemedText>
             </TouchableOpacity>

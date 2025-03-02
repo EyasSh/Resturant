@@ -19,7 +19,7 @@ export default function OwnerSignup() {
                 alert("Please fill all the fields");
                 return;
             }
-            const res = await axios.post(`http://${ip.julian}:5256/api/owner/signup`,{
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/signup`,{
                 Name:name,
                 Email:email,
                 Password:password,

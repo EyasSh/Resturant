@@ -10,11 +10,12 @@ public class Table
     [BsonElement("tableNumber")]
     public int TableNumber { get; set; } = 0;
     [BsonElement("waiterId")]
-    public string? WaiterId { get; set; }
+    public string? WaiterId { get; set; } = string.Empty;
     [BsonElement("userId")]
-    public string? UserId { get; set; }
+    public string? UserId { get; set; } = string.Empty;
     public bool isWindowSide { get; set; } = false;
     public bool isOccupied { get; set; } = false;
+    public int Capacity { get; set; } = 2;
     public Table()
     {
     }

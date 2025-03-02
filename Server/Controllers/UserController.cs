@@ -213,12 +213,14 @@ public class OwnerController : ControllerBase
     IMongoCollection<Owner> _owners;
     IMongoCollection<Waiter> _waiters;
     IMongoCollection<Meal> _meals;
+    IMongoCollection<Table> _tables;
     private readonly SecurityManager _securityManager;
     public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager)
     {
         _owners = dBWrapper.Owners;
         _waiters = dBWrapper.Waiters;
         _meals = dBWrapper.Meals;
+        _tables = dBWrapper.Tables;
         _securityManager = securityManager;
     }
     [AllowAnonymous]
@@ -328,5 +330,19 @@ public class OwnerController : ControllerBase
         }
         await _meals.InsertOneAsync(meal);
         return Ok("Meal added successfully.");
+    }
+    [Authorize]
+    [HttpPost("add/table")]
+    public async Task<IActionResult> AddTable([FromBody] Table request)
+    {
+
+        if (request.Capacity <= 0)
+        {
+            return BadRequest("All fields are required.");
+        }
+        long tableCount = await _tables.CountDocumentsAsync(FilterDefinition<Table>.Empty);
+        request.TableNumber = (int)tableCount + 1;
+        await _tables.InsertOneAsync(request);
+        return Ok("Table added successfully.");
     }
 }

@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
+import LogoutButton from '@/components/LogoutButton';
 
 export default function Profile() {
   const [name, setName] = useState(null);
@@ -34,6 +35,7 @@ export default function Profile() {
     <ThemedView style={styles.titleContainer}>
       <ThemedText style={styles.text}>Welcome to the Profile page</ThemedText>
       <ThemedText style={styles.text}>{name ? name : 'Guest'}</ThemedText>
+      <LogoutButton/>
     </ThemedView>
   );
 }
@@ -56,8 +58,10 @@ const styles = StyleSheet.create({
   text:{
     fontSize: 25,
     fontWeight: 'bold',
-    height: 'auto',
+    height: '10%',
     width: 'auto',
+    paddingTop: 40,
+    flexShrink: 1,
   
   },
 });

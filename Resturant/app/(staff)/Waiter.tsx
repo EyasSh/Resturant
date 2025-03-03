@@ -2,10 +2,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { StyleSheet } from 'react-native';
+import LogoutButton from '@/components/LogoutButton';
 
 export default function Waiter() {
     return (
         <ThemedView style={styles.container}>
+            <LogoutButton/>
         <ThemedText style={styles.text}>
             Waiter
         </ThemedText>

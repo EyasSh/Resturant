@@ -162,10 +162,10 @@ public class UserController : ControllerBase
     [HttpGet("test")]
     [AllowAnonymous]
     public IActionResult Test() => Ok("Test Successful");
-        /// <summary>
-        /// Retrieves the list of meals in the database. This action is restricted to authorized users.
-        /// </summary>
-        /// <returns>A successful status code (200) if the request was successful, along with the list of meals as a JSON payload.</returns>
+    /// <summary>
+    /// Retrieves the list of meals in the database. This action is restricted to authorized users.
+    /// </summary>
+    /// <returns>A successful status code (200) if the request was successful, along with the list of meals as a JSON payload.</returns>
     [Authorize]
     [HttpGet("meals")]
     public async Task<IActionResult> GetMeals()
@@ -393,5 +393,24 @@ public class OwnerController : ControllerBase
         request.TableNumber = (int)tableCount + 1;
         await _tables.InsertOneAsync(request);
         return Ok("Table added successfully.");
+    }
+    [Authorize]
+    [HttpDelete("delete/meal/{mealId}")]
+    public async Task<IActionResult> DeleteMeal([FromQuery] string mealId)
+    {
+        var meal = await _meals.FindOneAndDeleteAsync(m => m.MealId == mealId);
+        if (meal is null)
+        {
+            return BadRequest("Meal not found.");
+        }
+        return Ok($"{meal.MealName} deleted successfully.");
+    }
+    [Authorize]
+    [HttpGet("meals")]
+    public async Task<IActionResult> GetMeals()
+    {
+        var dbfetch = await _meals.Find(_ => true).ToListAsync();
+        var meals = dbfetch.ToArray();
+        return Ok(meals);
     }
 }

@@ -8,6 +8,7 @@ import axios from 'axios';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2; // Use 3 columns on larger screens, otherwise 2
 const cardWidth = Math.max((screenWidth / numColumns) - 30, 150); // Ensure cards don't get too small
@@ -44,6 +45,7 @@ export default function MainPage() {
   }, []);
   return (
     <ThemedView style={styles.wrapper}>
+      
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {Array.from({ length: tables.length }).map((_, index) => (

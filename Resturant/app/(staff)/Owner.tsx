@@ -4,6 +4,7 @@ import { useState,useEffect } from 'react';
 import { StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LogoutButton from '@/components/LogoutButton';
 type OwnerDTO={
     name: string,
     email: string,
@@ -27,6 +28,7 @@ function Owner() {
         
         <ThemedView style={styles.view}>
             <ScrollView contentContainerStyle={styles.container}>
+            <LogoutButton/>
             <ThemedText style={styles.header}>Welcome {owner.name}</ThemedText>
             <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./WaiterSignup")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>

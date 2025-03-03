@@ -5,6 +5,8 @@ import { StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '@/components/LogoutButton';
+import axios from 'axios';
+import ip from '@/Data/Addresses';
 type OwnerDTO={
     name: string,
     email: string,
@@ -22,14 +24,35 @@ function Owner() {
                 setOwner(JSON.parse(ownerData));
             }
         };
+        const fetchMeals = async () => {
+            const token = await AsyncStorage.getItem('token');
+            try{
+                const res = await axios.get(`http://${ip.eyas}:5256/api/owner/meals`,
+                 {
+                    headers:{
+                        'x-auth-token':token
+                    }
+
+                 })
+                    if(res && res.status===200){
+                        
+                        await AsyncStorage.setItem('meals',JSON.stringify(res.data));
+                        
+                        
+                    }
+                }catch(e){
+                    alert(e);
+                }
+        };
         fetchOwner();
+        fetchMeals();
     }, []);
     return (
         
         <ThemedView style={styles.view}>
             <ScrollView contentContainerStyle={styles.container}>
-            <LogoutButton/>
             <ThemedText style={styles.header}>Welcome {owner.name}</ThemedText>
+            <LogoutButton/>
             <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./WaiterSignup")}>
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Worker</ThemedText>
@@ -42,15 +65,15 @@ function Owner() {
                 <ThemedText style={styles.largeText}>+</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+            <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./FireStaff")}>
                 <ThemedText style={styles.largeText}>-</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Remove Worker</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+            <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./RemoveTable")}>
                 <ThemedText style={styles.largeText}>-</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Remove Table</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.functionBox} onPress={() => alert("pressed")}>
+            <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./RemoveMeal")}>
                 <ThemedText style={styles.largeText}>-</ThemedText>
                 <ThemedText style={styles.boldSmallText}>Remove Meals</ThemedText>
             </TouchableOpacity>

@@ -12,7 +12,7 @@ export default function LogoutButton() {
     }
 
     return (
-        <ThemedView style={{position:"relative",marginVertical:40,marginHorizontal:100}}>
+        <ThemedView style={{position:"relative",alignSelf:"center", width:"auto",height:"auto"}}>
             <CurvedButton 
                 title="Logout" 
                 action={async()=>await logout()} 

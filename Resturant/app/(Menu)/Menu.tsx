@@ -6,7 +6,7 @@ import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-type Meal = {
+export  type Meal = {
   mealId: string;
   mealName: string;
   price: number;
@@ -41,16 +41,15 @@ export default function Menu() {
         if (response.status !== 200) {
           throw new Error("Failed to fetch meals.");
         }
-        console.log("Response:", response.data.meals);
+
 
         const data: Meal[] = response.data.meals;
         
 
-        console.log("Fetched meals:", data);
         if (Array.isArray(response.data.meals) && response.data.meals.length > 0) {
-          console.log("Setting menu items:", response.data.meals);
+
           setMenuItems([...data]); // Spread to force state update
-          console.log(menuItems)
+
         } else {
           setMenuItems([]); // Ensure it does not remain undefined
         }

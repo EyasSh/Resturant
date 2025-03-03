@@ -251,6 +251,20 @@ public class OwnerController : ControllerBase
         _tables = dBWrapper.Tables;
         _securityManager = securityManager;
     }
+        /// <summary>
+        /// Authenticates an owner and provides access to the system. This action is accessible to anonymous users.
+        /// </summary>
+        /// <param name="request">The owner's login credentials.</param>
+        /// <returns>A successful status code (200) if the login request was successful.</returns>
+        /// <remarks>
+        /// The request body should contain a JSON object with the following structure:
+        /// <code>
+        /// {
+        ///     "Email": string,
+        ///     "Password": string
+        /// }
+        /// </code>
+        /// </remarks>
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] Server.Services.LoginRequest request)
@@ -282,7 +296,6 @@ public class OwnerController : ControllerBase
     /// <remarks>
     /// This endpoint is accessible to anonymous users.
     /// </remarks>
-
     [AllowAnonymous]
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp([FromBody] OwnerSignupRequest request)
@@ -353,7 +366,6 @@ public class OwnerController : ControllerBase
     /// </summary>
     /// <param name="meal">The meal object containing the name and price of the meal to be added.</param>
     /// <returns>A successful status code (200) if the meal was added successfully, or a bad request status code (400) if the meal already exists or required fields are missing.</returns>
-
     [Authorize]
     [HttpPost("add/meal")]
     public async Task<IActionResult> AddMeal([FromBody] Meal meal)
@@ -379,7 +391,6 @@ public class OwnerController : ControllerBase
     /// </summary>
     /// <param name="request">The table data including capacity and window side preference.</param>
     /// <returns>A successful status code (200) if the table was added successfully, or a bad request status code (400) if the table capacity is invalid.</returns>
-
     [Authorize]
     [HttpPost("add/table")]
     public async Task<IActionResult> AddTable([FromBody] Table request)
@@ -394,8 +405,13 @@ public class OwnerController : ControllerBase
         await _tables.InsertOneAsync(request);
         return Ok("Table added successfully.");
     }
+        /// <summary>
+        /// Deletes a meal from the restaurant's database. This action is restricted to authorized users.
+        /// </summary>
+        /// <param name="mealId">The ID of the meal to be deleted.</param>
+        /// <returns>A successful status code (200) if the meal was deleted successfully, or a bad request status code (400) if the meal was not found.</returns>
     [Authorize]
-    [HttpDelete("delete/meal/{mealId}")]
+    [HttpDelete("delete/meal")]
     public async Task<IActionResult> DeleteMeal([FromQuery] string mealId)
     {
         var meal = await _meals.FindOneAndDeleteAsync(m => m.MealId == mealId);
@@ -405,6 +421,10 @@ public class OwnerController : ControllerBase
         }
         return Ok($"{meal.MealName} deleted successfully.");
     }
+/// <summary>
+/// Retrieves all meals from the restaurant's database. This action is restricted to authorized users.
+/// </summary>
+/// <returns>A successful status code (200) along with the list of meals as a JSON payload.</returns>
     [Authorize]
     [HttpGet("meals")]
     public async Task<IActionResult> GetMeals()

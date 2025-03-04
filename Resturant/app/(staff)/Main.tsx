@@ -10,11 +10,11 @@ function Main() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.header}>Terminals</ThemedText>
-            <TouchableOpacity onPress={() =>router.push('./WaiterLogin')} style={styles.staffBox}>
+            <TouchableOpacity onPress={() =>router.push('./(waiter)/WaiterLogin')} style={styles.staffBox}>
                 <Image source={require("@/assets/images/chef.png")} style={styles.image} />
                 <ThemedText>Chef/Waiter</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('./OwnerLogin')} style={styles.staffBox}>
+            <TouchableOpacity onPress={() => router.push('./(owner)/OwnerLogin')} style={styles.staffBox}>
                 <Image style={styles.image} source={require("@/assets/images/owner.png")} />
                 <ThemedText>Owner</ThemedText>
             </TouchableOpacity>

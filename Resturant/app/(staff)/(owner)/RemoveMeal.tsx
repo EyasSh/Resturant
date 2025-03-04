@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import router from "expo-router";
 import { ScrollView } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Meal } from "../(Menu)/Menu";
+import { Meal } from "../../(Menu)/Menu";
 import CurvedButton from "@/components/ui/CurvedButton";
 
 /**

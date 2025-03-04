@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ip from "../../Data/Addresses";
+import ip from "../../../Data/Addresses";
 import {router} from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";

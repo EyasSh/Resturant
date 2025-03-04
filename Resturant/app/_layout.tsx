@@ -40,17 +40,17 @@ export default function RootLayout() {
       />
       {/*Staff Screens */}
       <Stack.Screen name="(staff)/Main" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/Waiter" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/Owner" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/WaiterLogin" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/OwnerLogin" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/WaiterSignup" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/OwnerSignup" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/AddMealForm" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/AddTableForm" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/RemoveTable" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/RemoveMeal" options={{ headerShown: false }} />
-      <Stack.Screen name="(staff)/FireStaff" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(waiter)/Waiter" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/Owner" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(waiter)/WaiterLogin" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/OwnerLogin" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/WaiterSignup" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/OwnerSignup" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/AddMealForm" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/AddTableForm" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/RemoveTable" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/RemoveMeal" options={{ headerShown: false }} />
+      <Stack.Screen name="(staff)/(owner)/FireStaff" options={{ headerShown: false }} />
       <Stack.Screen name="(Menu)/Menu"  options={{ headerShown: false }} />
         {/* Signup screen */}
         <Stack.Screen name="(signup)/signup" options={

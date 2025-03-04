@@ -16,7 +16,7 @@ export default function WaiterSignup() {
     const handleSignup = async() => {
         try{
             const token = await AsyncStorage.getItem("token");
-            const res = await axios.post(`http://${ip.julian}:5256/api/owner/add/waiter`,{
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/add/waiter`,{
                 name:name,
                 email: email,
                 password: password,

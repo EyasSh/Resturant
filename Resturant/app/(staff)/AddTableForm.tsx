@@ -18,7 +18,7 @@ export default function AddTableForm() {
             return;
         }
         try{
-            const res = await axios.post(`http://${ip.julian}:5256/api/owner/add/table`,{
+            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/add/table`,{
                 capacity:capacity,
                 isWindowSide:isWindowSide
             },

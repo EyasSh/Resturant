@@ -32,7 +32,7 @@ export default function Signup() {
 
     const handleSignup = async() => {
         try{
-            const res = await axios.post(`http://${ip.julian}:5256/api/user/signup`,{
+            const res = await axios.post(`http://${ip.eyas}:5256/api/user/signup`,{
                 name:name,
                 email: email,
                 password: password,

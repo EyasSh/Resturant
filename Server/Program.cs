@@ -28,9 +28,11 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     return new MongoClient(connectionString);
 });
 builder.Services.AddScoped<MongoDBWrapper>();
-
+builder.Services.AddScoped<SocketService>();
 // User Controller Injection
 builder.Services.AddScoped<UserController>();
+builder.Services.AddScoped<OwnerController>();
+builder.Services.AddScoped<WaiterController>();
 //Email Service Injection
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<SecurityManager>();

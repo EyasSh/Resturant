@@ -437,7 +437,16 @@ public class OwnerController : ControllerBase
         return Ok(meals);
     }
     [Authorize]
-    [HttpDelete("remove/waiter")]
+    [HttpGet("waiters")]
+    public async Task<IActionResult> GetWaiters()
+    {
+        var dbfetch = await _waiters.Find(_ => true).ToListAsync();
+        var waiters = dbfetch.ToArray();
+
+        return Ok(waiters);
+    }
+    [Authorize]
+    [HttpDelete("delete/waiter")]
     public IActionResult RemoveWaiter([FromQuery] string id)
     {
         // Check if the waiter ID exists in the values of _waiterConnections dictionary

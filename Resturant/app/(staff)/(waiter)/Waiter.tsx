@@ -15,6 +15,7 @@ type Waiter=
 }
 export default function Waiter() {
     const [waiter, setWaiter] = useState<Waiter | null>(null);
+    const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
   useEffect(() => {
     const fetchWaiter = async () => {
       try {
@@ -30,6 +31,7 @@ export default function Waiter() {
         try {
             await connection.start();
             alert('SignalR connected');
+            setSignalRConnection(connection);
     }catch (error) {
         console.error('SignalR connection error:'+ error);
     }

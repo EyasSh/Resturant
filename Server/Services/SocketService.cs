@@ -29,6 +29,7 @@ public class SocketService : Hub<IHubService>
             if (httpContext != null && privilageLevel?.ToString() == "waiter")
             {
                 _waiterConnections[sid] = httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty;
+                System.Console.WriteLine($"Waiter connected sid: {sid}\n waiterid: {httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty}");
             }
             else if (httpContext != null && privilageLevel?.ToString() == "owner")
             {
@@ -43,7 +44,7 @@ public class SocketService : Hub<IHubService>
 
             }
         }
-        
+
         try
         {
             await Clients.Caller.ConnectNotification(Context?.ConnectionId ?? Guid.NewGuid().ToString(), "ok");

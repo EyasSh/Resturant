@@ -49,7 +49,7 @@ export default function Login() {
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
-      width: '100%',
+      width: '90%',
       backgroundColor:"transparent"
     }
   });

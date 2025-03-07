@@ -52,7 +52,7 @@ function Owner() {
         <ThemedView style={styles.view}>
         <ScrollView contentContainerStyle={styles.container}>
             <ThemedText style={styles.header}>Welcome {owner.name}</ThemedText>
-            <LogoutButton/>
+            <LogoutButton action={()=>{}} />
     
             <ThemedView style={styles.gridContainer}>
                 {/* Left side - Add buttons */}

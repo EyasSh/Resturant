@@ -19,11 +19,18 @@ export default function Waiter() {
   useEffect(() => {
     const fetchWaiter = async () => {
       try {
-        setWaiter(JSON.parse((await AsyncStorage.getItem('waiter')) as string));
+      await  setWaiter(JSON.parse((await AsyncStorage.getItem('waiter')) as string));
       }catch (error) {
           alert(error);
       }
     }
+    fetchWaiter();
+    
+    
+    
+
+  },[])
+  useEffect(() => {
     const connect= async () => {
         const connection = new signalR.HubConnectionBuilder()
         .withUrl(`http://${ip.eyas}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
@@ -36,13 +43,11 @@ export default function Waiter() {
         console.error('SignalR connection error:'+ error);
     }
 }
-    fetchWaiter();
-    connect();
-
-  },[])
+connect();
+  },[waiter])
     return (
         <ThemedView style={styles.container}>
-            <LogoutButton/>
+            <LogoutButton action={async()=> await signalRConnection?.stop()}/>
             <ThemedText style={styles.text}>
                 Hello {waiter?.name}
             </ThemedText>

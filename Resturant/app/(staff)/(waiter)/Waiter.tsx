@@ -33,7 +33,7 @@ export default function Waiter() {
   useEffect(() => {
     const connect= async () => {
         const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://${ip.eyas}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
+        .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
         .build();
         try {
             await connection.start();

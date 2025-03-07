@@ -20,7 +20,7 @@ export default function AddMealForm() {
         }
         try{
             const token = await AsyncStorage.getItem('token');
-            const res = await axios.post(`http://${ip.eyas}:5256/api/owner/add/meal`,{
+            const res = await axios.post(`http://${ip.julian}:5256/api/owner/add/meal`,{
                 mealName:name,
                 price:price
             },

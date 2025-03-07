@@ -42,7 +42,7 @@ export default function FireStaff() {
         try {
             const token = await AsyncStorage.getItem('token');
 
-            const res = await axios.delete(`http://${ip.eyas}:5256/api/owner/delete/waiter?id=${id}`, {
+            const res = await axios.delete(`http://${ip.julian}:5256/api/owner/delete/waiter?id=${id}`, {
                 headers: {
                     "X-Auth-Token": token,
                 },

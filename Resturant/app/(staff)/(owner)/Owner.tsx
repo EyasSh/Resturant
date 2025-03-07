@@ -27,7 +27,7 @@ function Owner() {
         const fetchMeals = async () => {
             const token = await AsyncStorage.getItem('token');
             try{
-                const res = await axios.get(`http://${ip.eyas}:5256/api/owner/meals`,
+                const res = await axios.get(`http://${ip.julian}:5256/api/owner/meals`,
                  {
                     headers:{
                         'x-auth-token':token
@@ -40,8 +40,8 @@ function Owner() {
                         
                         
                     }
-                }catch(e){
-                    alert(e);
+                }catch{
+                    alert("An error occurred or waiter already online");
                 }
         };
         fetchOwner();

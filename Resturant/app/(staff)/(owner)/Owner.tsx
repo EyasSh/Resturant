@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState,useEffect } from 'react';
-import { StyleSheet, TouchableOpacity,ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '@/components/LogoutButton';
@@ -69,6 +69,10 @@ function Owner() {
                         <ThemedText style={styles.largeText}>+</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
                     </TouchableOpacity>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => alert("View tables")}>
+                        <Image source={require("@/assets/images/view.png")} style={{ width: 100, height: 100 }} />
+                        <ThemedText style={styles.boldSmallText}>View tables</ThemedText>
+                    </TouchableOpacity>
                 </ThemedView>
     
                 {/* Right side - Remove buttons */}
@@ -85,6 +89,11 @@ function Owner() {
                         <ThemedText style={styles.largeText}>-</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Remove Meals</ThemedText>
                     </TouchableOpacity>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => alert("View on call workers")}>
+                        <Image source={require("@/assets/images/view.png")} style={{ width: 100, height: 100 }} />
+                        <ThemedText style={styles.boldSmallText}>View active workers</ThemedText>
+                    </TouchableOpacity>
+
                 </ThemedView>
             </ThemedView>
         </ScrollView>

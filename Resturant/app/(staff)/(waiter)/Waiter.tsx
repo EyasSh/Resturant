@@ -37,7 +37,7 @@ export default function Waiter() {
         .build();
         try {
             await connection.start();
-            alert('SignalR connected');
+            alert('Session established');
             setSignalRConnection(connection);
     }catch (error) {
         console.error('SignalR connection error:'+ error);

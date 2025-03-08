@@ -35,7 +35,7 @@ export default function Profile() {
     <ThemedView style={styles.titleContainer}>
       <ThemedText style={styles.text}>Welcome to the Profile page</ThemedText>
       <ThemedText style={styles.text}>{name ? name : 'Guest'}</ThemedText>
-      <LogoutButton/>
+      <LogoutButton action={()=>{}}/>
     </ThemedView>
   );
 }

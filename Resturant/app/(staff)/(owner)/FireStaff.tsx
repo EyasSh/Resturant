@@ -47,7 +47,10 @@ export default function FireStaff() {
                     "X-Auth-Token": token,
                 },
             });
-
+            if(res && res.status===400){
+                alert(res.data)
+                return;
+            }
             if (res && res.status === 200) {
                 alert(res.data);
 

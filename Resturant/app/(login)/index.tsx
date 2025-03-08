@@ -58,7 +58,7 @@ export default function Login() {
     if (email && password) {
       // Send login request to the server
       try{
-        const res = await axios.post(`http://${ip.julian}:5256/api/user/login`,{
+        const res = await axios.post(`http://${ip.eyas}:5256/api/user/login`,{
             email: email,
             password: password
         })

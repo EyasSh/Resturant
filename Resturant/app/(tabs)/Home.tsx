@@ -27,7 +27,7 @@ export default function MainPage() {
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem('token');
       try{
-        const res = await axios.get(`http://${ip.julian}:5256/api/user/tables`,{
+        const res = await axios.get(`http://${ip.eyas}:5256/api/user/tables`,{
           headers:{
             'x-auth-token':token
           }

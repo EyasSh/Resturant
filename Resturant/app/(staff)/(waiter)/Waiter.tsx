@@ -33,7 +33,7 @@ export default function Waiter() {
   useEffect(() => {
     const connect= async () => {
         const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
+        .withUrl(`http://${ip.eyas}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
         .build();
         try {
             await connection.start();
@@ -55,7 +55,7 @@ connect();
                 Your email is {waiter?.email}
             </ThemedText>
             <ThemedText>
-                Your phone id is {waiter?.id}
+                Your id is {waiter?.id}
             </ThemedText>
         </ThemedView>
     );

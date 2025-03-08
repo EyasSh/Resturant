@@ -457,8 +457,8 @@ public class OwnerController : ControllerBase
         return Ok("Waiter removed successfully.");
     }
     [Authorize]
-    [HttpDelete("tables")]
-    public async Task<IActionResult> DeleteTable([FromQuery] int number)
+    [HttpDelete("delete/tables")]
+    public async Task<IActionResult> DeleteTable([FromBody] int number)
     {
         var table = SocketService._tables.First(t => t.TableNumber == number);
         if (table is null)

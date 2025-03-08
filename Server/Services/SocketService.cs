@@ -6,7 +6,7 @@ using Server.Models;
 
 public interface IHubService
 {
-    Task ConnectNotification(string sid, string warningLevel);
+    Task ConnectNotification(string sid, bool isOkay);
 }
 public class SocketService : Hub<IHubService>
 {
@@ -22,39 +22,46 @@ public class SocketService : Hub<IHubService>
     public override async Task OnConnectedAsync()
     {
         var sid = Context.ConnectionId;
-        if (Context.GetHttpContext()?.Request.Query.ContainsKey("privilagelevel") == true)
+        try
         {
-            var httpContext = Context.GetHttpContext();
-            var privilageLevel = httpContext?.Request.Query["privilagelevel"];
-            if (httpContext != null && privilageLevel?.ToString() == "waiter")
+            if (Context.GetHttpContext()?.Request.Query.ContainsKey("privilagelevel") == true)
             {
-                _waiterConnections[sid] = httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty;
-                System.Console.WriteLine($"Waiter connected sid: {sid}\n waiterid: {httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty}");
-            }
-            else if (httpContext != null && privilageLevel?.ToString() == "owner")
-            {
-                _ownerConnections[sid] = httpContext?.Request.Query["ownerid"].ToString() ?? string.Empty;
-            }
-            else
-            {
-                if (httpContext != null)
+                var httpContext = Context.GetHttpContext();
+                var privilageLevel = httpContext?.Request.Query["privilagelevel"];
+                if (httpContext != null && privilageLevel?.ToString() == "waiter")
                 {
-                    _userConnections[sid] = httpContext.Request.Query["userid"].ToString() ?? string.Empty;
+                    _waiterConnections[sid] = httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty;
+                    System.Console.WriteLine($"Waiter connected sid: {sid}\n waiterid: {httpContext?.Request.Query["waiterid"].ToString() ?? string.Empty}");
+                    await Clients.Caller.ConnectNotification(sid, true);
+                }
+                else if (httpContext != null && privilageLevel?.ToString() == "owner")
+                {
+                    _ownerConnections[sid] = httpContext?.Request.Query["ownerid"].ToString() ?? string.Empty;
+                    await Clients.Caller.ConnectNotification(sid, true);
+                }
+                else
+                {
+                    if (httpContext != null
+                    && httpContext.Request.Query.ContainsKey("userid")
+                    && httpContext.Request.Query["privilagelevel"].ToString() == "user")
+                    {
+                        _userConnections[sid] = httpContext.Request.Query["userid"].ToString() ?? string.Empty;
+                        await Clients.Caller.ConnectNotification(sid, true);
+                    }
+
                 }
 
             }
         }
-
-        try
-        {
-            await Clients.Caller.ConnectNotification(Context?.ConnectionId ?? Guid.NewGuid().ToString(), "ok");
-        }
         catch (Exception ex)
         {
-            await Clients.Caller.ConnectNotification(ex?.Message ?? "An error occurred in sockets", "err");
+            await Clients.Caller.ConnectNotification(sid, false);
+            Console.WriteLine(ex.Message);
         }
-
-
+        finally
+        {
+            await base.OnConnectedAsync();
+        }
     }
     /// <summary>
     /// This is the OnDisconnectedAsync method that will be called when the client disconnects from the server.

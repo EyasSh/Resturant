@@ -37,6 +37,7 @@ public class SocketService : Hub<IHubService>
                 else if (httpContext != null && privilageLevel?.ToString() == "owner")
                 {
                     _ownerConnections[sid] = httpContext?.Request.Query["ownerid"].ToString() ?? string.Empty;
+                    System.Console.WriteLine($"Owner connected sid: {sid}\n ownerid: {httpContext?.Request.Query["ownerid"].ToString() ?? string.Empty}");
                     await Clients.Caller.ConnectNotification(sid, true);
                 }
                 else
@@ -46,6 +47,7 @@ public class SocketService : Hub<IHubService>
                     && httpContext.Request.Query["privilagelevel"].ToString() == "user")
                     {
                         _userConnections[sid] = httpContext.Request.Query["userid"].ToString() ?? string.Empty;
+                        System.Console.WriteLine($"User connected sid: {sid}\n userid: {httpContext.Request.Query["userid"].ToString() ?? string.Empty}");
                         await Clients.Caller.ConnectNotification(sid, true);
                     }
 

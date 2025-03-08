@@ -2,6 +2,7 @@ namespace Server.Services;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Server.Models;
 
 public interface IHubService
 {
@@ -12,6 +13,7 @@ public class SocketService : Hub<IHubService>
     public static readonly ConcurrentDictionary<string, string> _userConnections = new();
     public static readonly ConcurrentDictionary<string, string> _waiterConnections = new();
     public static readonly ConcurrentDictionary<string, string> _ownerConnections = new();
+    public static readonly List<Table> _tables = new(); // List of tables
     /// <summary>
     /// This is the OnConnectedAsync method that will be called when the client establishes a connection to the server.
     /// It will add the connection to the list of connections and send a message to the client with the connection ID.

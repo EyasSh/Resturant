@@ -456,4 +456,55 @@ public class OwnerController : ControllerBase
         }
         return Ok("Waiter removed successfully.");
     }
+    [Authorize]
+    [HttpDelete("tables")]
+    public async Task<IActionResult> DeleteTable([FromQuery] int number)
+    {
+        var table = SocketService._tables.First(t => t.TableNumber == number);
+        if (table is null)
+            return BadRequest("Table not found.");
+        if (table != null && !string.IsNullOrEmpty(table.UserId))
+        {
+            return BadRequest("Table is currently in use and cannot be removed.");
+        }
+        else if (SocketService._tables.Where(t => t.TableNumber > number).All(t => t.isOccupied))
+        {
+            return BadRequest("Tables are occupied and their indexes cannot be shifted down");
+        }
+        else
+        {
+            var result = await _tables.DeleteOneAsync(t => t.TableNumber == number);
+            if (result.DeletedCount == 0)
+            {
+                return BadRequest("Table not found.");
+            }
+            var tablesToShift = SocketService._tables.Where(t => t.TableNumber > number)
+            .OrderBy(t => t.TableNumber)
+            .ToList();
+            if (tablesToShift.Count > 0)
+            {
+                foreach (var t in tablesToShift)
+                {
+                    t.TableNumber--;
+                }
+                foreach (var t in tablesToShift)
+                {
+                    var filter = Builders<Table>.Filter.Eq(x => x.TableNumber, t.TableNumber + 1);
+                    var update = Builders<Table>.Update.Set(x => x.TableNumber, t.TableNumber);
+                    await _tables.UpdateOneAsync(filter, update);
+                }
+            }
+            else
+            {
+                var filter = Builders<Table>.Filter.Eq(x => x.TableNumber, number + 1);
+                var update = Builders<Table>.Update.Set(x => x.TableNumber, number);
+                await _tables.UpdateOneAsync(filter, update);
+            }
+
+
+            return Ok("Table removed successfully.");
+
+        }
+
+    }
 }

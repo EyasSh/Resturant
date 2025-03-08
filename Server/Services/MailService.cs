@@ -1,8 +1,6 @@
 using Mailjet.Client;
 using Mailjet.Client.Resources;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 namespace Server.Services
 {
     public class EmailService
@@ -24,18 +22,18 @@ namespace Server.Services
             _apiSecret = configuration["Mailjet:ApiSecret"];
         }
 
-/// <summary>
-/// Sends an email asynchronously using the Mailjet client.
-/// </summary>
-/// <param name="to">The recipient's email address.</param>
-/// <param name="subject">The subject of the email.</param>
-/// <param name="body">The HTML content of the email body.</param>
-/// <exception cref="Exception">Thrown when the email fails to send.</exception>
-/// <remarks>
-/// This method constructs a MailjetRequest with the provided email details
-/// and sends it using the MailjetClient. If the response indicates failure,
-/// an exception is thrown with the error message from Mailjet.
-/// </remarks>
+        /// <summary>
+        /// Sends an email asynchronously using the Mailjet client.
+        /// </summary>
+        /// <param name="to">The recipient's email address.</param>
+        /// <param name="subject">The subject of the email.</param>
+        /// <param name="body">The HTML content of the email body.</param>
+        /// <exception cref="Exception">Thrown when the email fails to send.</exception>
+        /// <remarks>
+        /// This method constructs a MailjetRequest with the provided email details
+        /// and sends it using the MailjetClient. If the response indicates failure,
+        /// an exception is thrown with the error message from Mailjet.
+        /// </remarks>
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {

@@ -1,19 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using MongoDB.Driver.Encryption;
 using Server.DB;
 using Server.Models;
 using Server.Services;
-using BCrypt;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.SignalR;
 using Server.Security;
-using System.Net.Sockets;
+
 namespace Server.Controllers;
 [ApiController]
 [Route("api/user")] // Base route for all actions in this controller

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "@react-native-community/datetimepicker": "^8.2.0"
   }
 }

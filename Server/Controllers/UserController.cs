@@ -458,53 +458,87 @@ public class OwnerController : ControllerBase
     }
     [Authorize]
     [HttpDelete("delete/tables")]
-    public async Task<IActionResult> DeleteTable([FromBody] int number)
+    public async Task<IActionResult> DeleteTable([FromQuery] int number)
     {
-        var table = SocketService._tables.First(t => t.TableNumber == number);
-        if (table is null)
-            return BadRequest("Table not found.");
-        if (table != null && !string.IsNullOrEmpty(table.UserId))
-        {
-            return BadRequest("Table is currently in use and cannot be removed.");
-        }
-        else if (SocketService._tables.Where(t => t.TableNumber > number).All(t => t.isOccupied))
-        {
-            return BadRequest("Tables are occupied and their indexes cannot be shifted down");
-        }
-        else
+        System.Console.WriteLine("Attempting to delete table number: " + number);
+
+        // Find the table in the SocketService list
+        var table = SocketService._tables.FirstOrDefault(t => t.TableNumber == number);
+
+        // If the table is not found in the list, assume it’s not occupied and delete it from MongoDB
+        if (table == null)
         {
             var result = await _tables.DeleteOneAsync(t => t.TableNumber == number);
             if (result.DeletedCount == 0)
             {
                 return BadRequest("Table not found.");
             }
-            var tablesToShift = SocketService._tables.Where(t => t.TableNumber > number)
-            .OrderBy(t => t.TableNumber)
-            .ToList();
-            if (tablesToShift.Count > 0)
-            {
-                foreach (var t in tablesToShift)
-                {
-                    t.TableNumber--;
-                }
-                foreach (var t in tablesToShift)
-                {
-                    var filter = Builders<Table>.Filter.Eq(x => x.TableNumber, t.TableNumber + 1);
-                    var update = Builders<Table>.Update.Set(x => x.TableNumber, t.TableNumber);
-                    await _tables.UpdateOneAsync(filter, update);
-                }
-            }
-            else
-            {
-                var filter = Builders<Table>.Filter.Eq(x => x.TableNumber, number + 1);
-                var update = Builders<Table>.Update.Set(x => x.TableNumber, number);
-                await _tables.UpdateOneAsync(filter, update);
-            }
 
-
-            return Ok("Table removed successfully.");
-
+            await ShiftTableNumbers(number);
+            return Ok("Table deleted successfully.");
         }
 
+        // If the table exists but is occupied, prevent deletion
+        if (!string.IsNullOrEmpty(table.UserId))
+        {
+            return BadRequest("Table is currently in use and cannot be removed.");
+        }
+
+        // If other tables are occupied and shifting is not possible, prevent deletion
+        if (SocketService._tables.Any(t => t.TableNumber > number && t.isOccupied))
+        {
+            return BadRequest("Tables are occupied and their indexes cannot be shifted down.");
+        }
+
+        // Delete the table from MongoDB
+        var deleteResult = await _tables.DeleteOneAsync(t => t.TableNumber == number);
+        if (deleteResult.DeletedCount == 0)
+        {
+            return BadRequest("Table not found.");
+        }
+
+        // Remove the table from the SocketService list
+        SocketService._tables.RemoveAll(t => t.TableNumber == number);
+
+        // Shift table numbers in MongoDB and SocketService._tables
+        await ShiftTableNumbers(number);
+        var tables = await _tables.Find(_ => true).ToListAsync();
+        return Ok(tables);
+    }
+
+    private async Task ShiftTableNumbers(int deletedTableNumber)
+    {
+        var tablesToShift = await _tables
+            .Find(t => t.TableNumber > deletedTableNumber)
+            .SortBy(t => t.TableNumber)
+            .ToListAsync();
+
+        if (tablesToShift.Any())
+        {
+            // Bulk update MongoDB tables
+            var bulkOps = new List<WriteModel<Table>>();
+            foreach (var table in tablesToShift)
+            {
+                var filter = Builders<Table>.Filter.Eq(x => x.TableNumber, table.TableNumber);
+                var update = Builders<Table>.Update.Set(x => x.TableNumber, table.TableNumber - 1);
+                bulkOps.Add(new UpdateOneModel<Table>(filter, update));
+            }
+            await _tables.BulkWriteAsync(bulkOps);
+
+            // Update the in-memory list
+            foreach (var table in tablesToShift)
+            {
+                table.TableNumber--;
+            }
+        }
+    }
+
+    [Authorize]
+    [HttpGet("tables")]
+    public async Task<IActionResult> GetTables()
+    {
+        var dbfetch = await _tables.Find(_ => true).ToListAsync();
+        var tables = dbfetch.ToArray();
+        return Ok(tables);
     }
 }

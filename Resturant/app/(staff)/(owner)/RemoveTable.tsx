@@ -5,75 +5,119 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import axios from "axios";
 import ip from "@/Data/Addresses";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import router from "expo-router";
 import { ScrollView } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
+import CurvedButton from "@/components/ui/CurvedButton";
+export type Table = {
+    id: string;
+    capacity: number;
+    tableNumber: number;
+    isWindowSide: boolean;
+    isOccupied: boolean;
+    waiterId: string;
+    userId: string;
+}
 export default function RemoveTable() {
-    const [tables, setTables] = useState<{ id: number; capacity: number; isWindowSide: boolean }[]>([]);
+    const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        const fetchTables = async () => {
+            try {
+                const token = await AsyncStorage.getItem("token");
+                const res = await axios.get(`http://${ip.julian}:5256/api/owner/tables`, {
+                    headers: {
+                        "x-auth-token": token,
+                    },
+                });
+                if (res && res.status === 200) {
+                    
+                    setTables(res.data);
+                    await AsyncStorage.setItem("tables", JSON.stringify(res.data));
+                    
+                }
+            } catch (e) {
+                alert(e);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchTables();
     }, []);
 
-    const fetchTables = async () => {
+    const handleDelete = async (number: number) => {
         try {
+            // Retrieve stored tables
+            const storedTables = await AsyncStorage.getItem("tables");
+            let tablesArray = storedTables ? JSON.parse(storedTables) : [];
+    
+            
+    
+            // Remove the table with the given number
+            const updatedTables = tablesArray.filter((table: { tableNumber: number }) => table.tableNumber !== number);
+    
+            
+    
+            // Update AsyncStorage with the filtered list
+            await AsyncStorage.setItem("tables", JSON.stringify(updatedTables));
+    
             const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                alert("User is not authenticated.");
-                return;
+            const res = await axios.delete(
+                `http://${ip.julian}:5256/api/owner/delete/tables?number=${number}`,
+                {
+                    headers: {
+                        "x-auth-token": token,
+                    },
+                }
+            );
+    
+            if (res && res.status === 200) {
+                console.log("API Response:", res.data);
+    
+                // Ensure tables exist in response before setting state
+                if (Array.isArray(res.data.tables)) {
+                    setTables(res.data.tables);
+                    await AsyncStorage.setItem("tables", JSON.stringify(res.data.tables));
+                } else {
+                    setTables(updatedTables); // Fallback to filtered list if API response is missing tables
+                }
             }
-            const res = await axios.get(`http://${ip.julian}:5256/api/owner/tables`, {
-                headers: { "X-Auth-Token": token },
-            });
-            if (res.status === 200) {
-                setTables(res.data);
-            }
-        } catch (error) {
-            alert("Error fetching tables.");
-        } finally {
-            setLoading(false);
+        } catch (e) {
+            alert(e);
         }
     };
-
-    const handleDelete = async (tableId: number) => {
-        try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                alert("User is not authenticated.");
-                return;
-            }
-
-            const res = await axios.delete(`http://${ip.julian}:5256/api/owner/delete/table/${tableId}`, {
-                headers: { "X-Auth-Token": token },
-            });
-
-            if (res.status === 200) {
-                alert("Table deleted successfully!");
-                setTables(tables.filter(table => table.id !== tableId));
-            }
-        } catch (error) {
-            alert("Failed to delete table.");
-        }
-    };
+    
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ThemedView style={styles.container}>
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    showsVerticalScrollIndicator={false} // Hide scrollbar
+                >
                     <ThemedText style={styles.text}>Remove Table</ThemedText>
                     {loading ? (
-                        <ThemedText>Loading...</ThemedText>
-                    ) : (
-                        tables.map((table) => (
-                            <TouchableOpacity key={table.id} style={styles.tableItem} onPress={() => handleDelete(table.id)}>
-                                <ThemedText style={styles.tableText}>
-                                    Table {table.id} - Capacity: {table.capacity} - {table.isWindowSide ? "Window Side" : "Regular"}
-                                </ThemedText>
-                            </TouchableOpacity>
-                        ))
-                    )}
+    <ThemedText>Loading...</ThemedText>
+) : (
+    Array.isArray(tables) && tables.length > 0 ? (
+        tables.map((table) => (
+            <ThemedView key={table.id} style={styles.tableItem}>
+                <ThemedText style={styles.tableText}>
+                    Table {table.tableNumber} {"\n"} Capacity: {table.capacity} {"\n"}{" "}
+                    {table.isWindowSide ? "Window Side" : "Regular"}
+                </ThemedText>
+                <CurvedButton
+                    action={() => handleDelete(table.tableNumber)}
+                    title={"Remove"}
+                    style={{ backgroundColor: "red" }}
+                />
+            </ThemedView>
+        ))
+    ) : (
+        <ThemedText>No tables available.</ThemedText> // Fallback if tables is empty or undefined
+    )
+)}
+
                 </ScrollView>
             </ThemedView>
         </GestureHandlerRootView>
@@ -86,10 +130,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         padding: 20,
+        width: "100%",
     },
     scrollContainer: {
         alignItems: "center",
         paddingVertical: 20,
+        width: "100%", // Ensures ScrollView is as wide as ThemedView
     },
     text: {
         fontSize: 25,
@@ -97,15 +143,24 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     tableItem: {
-        backgroundColor: "red",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
         padding: 15,
         marginVertical: 10,
         borderRadius: 10,
-        width: "90%",
+        borderColor: "#351fff",
+        borderWidth: 1,
+        width: "100%",
         alignItems: "center",
+        shadowColor: "#351fff",
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 15, // Required for Android shadow
     },
     tableText: {
         fontSize: 18,
-        color: "white",
+        textAlign: "center",
     },
 });

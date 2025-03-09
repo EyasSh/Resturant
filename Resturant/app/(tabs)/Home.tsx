@@ -7,6 +7,8 @@ import TableCard from '@/components/TableCard';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as signalR from '@microsoft/signalr';
+import LogoutButton from '@/components/LogoutButton';
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -23,6 +25,8 @@ type TableProps = {
 }
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
+  const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem('token');
@@ -41,11 +45,36 @@ export default function MainPage() {
       }
       
     }
+    const fetchUser = async () => {
+      let user = await AsyncStorage.getItem('user');
+      if(user){
+        let u = JSON.parse(user);
+        setUserId(u.id);
+      }
+      else{
+        alert("No user found");
+      }
+    }
+    const connect = async () => {
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl(`http://${ip.julian}:5256/hub?userid=${userId?.toString()}&privilagelevel=user`)
+        .build();
+      try {
+        await connection.start();
+        alert('Session established');
+        setSignalRConnection(connection);
+      } catch (error) {
+        console.error('SignalR connection error:', error);
+      } 
+    }
    fetchTables();
+   fetchUser();
+   connect();
   }, []);
   return (
     <ThemedView style={styles.wrapper}>
       
+      <LogoutButton action={async()=>{await signalRConnection?.stop()}}/>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {Array.from({ length: tables.length }).map((_, index) => (
@@ -65,9 +94,10 @@ export default function MainPage() {
 const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
+        paddingTop: 50,
       },
       container: {
-        paddingTop: 80,
+        paddingTop: 20,
         paddingHorizontal: 20, // Add padding to prevent edge cramping
         paddingBottom: 20,
 

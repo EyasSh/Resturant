@@ -7,7 +7,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '@/components/LogoutButton';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
+import * as signalR from '@microsoft/signalr';
 type OwnerDTO={
+    id : string,
     name: string,
     email: string,
     phone: string,
@@ -15,8 +17,8 @@ type OwnerDTO={
     restaurantNumber: string
 }
 function Owner() {
-    const [owner, setOwner] =useState<OwnerDTO>({ name: "" , email: "", phone: "", password: "", restaurantNumber: "" });
-
+    const [owner, setOwner] =useState<OwnerDTO>({id: "", name: "" , email: "", phone: "", password: "", restaurantNumber: "" });
+    const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
     useEffect(() => {
         const fetchOwner = async () => {
             const ownerData = await AsyncStorage.getItem("owner");
@@ -44,15 +46,29 @@ function Owner() {
                     alert("An error occurred or waiter already online");
                 }
         };
+        const connect = async () => {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`http://${ip.julian}:5256/hub?ownerid=${owner?.id.toString()}&privilagelevel=owner`)
+                .build();
+            try {
+                await connection.start();
+                alert('Session established');
+                setSignalRConnection(connection);
+            } catch (error) {
+                console.error('SignalR connection error:', error);
+            }
+        }
+        
         fetchOwner();
         fetchMeals();
+        connect();
     }, []);
     return (
         
         <ThemedView style={styles.view}>
         <ScrollView contentContainerStyle={styles.container}>
             <ThemedText style={styles.header}>Welcome {owner.name}</ThemedText>
-            <LogoutButton action={()=>{}} />
+            <LogoutButton action={async()=>await signalRConnection?.stop()} />
     
             <ThemedView style={styles.gridContainer}>
                 {/* Left side - Add buttons */}

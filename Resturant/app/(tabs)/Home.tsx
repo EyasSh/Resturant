@@ -26,51 +26,55 @@ type TableProps = {
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<any | null>(null);
   useEffect(() => {
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem('token');
-      try{
-        const res = await axios.get(`http://${ip.julian}:5256/api/user/tables`,{
-          headers:{
-            'x-auth-token':token
-          }
+      try {
+        const res = await axios.get(`http://${ip.julian}:5256/api/user/tables`, {
+          headers: { 'x-auth-token': token }
         });
-        if(res && res.status===200){
-          
+        if (res && res.status === 200) {
           setTables(res.data.tables);
         }
-      }catch(e){
+      } catch (e) {
         alert(e);
       }
-      
-    }
+    };
+  
     const fetchUser = async () => {
       let user = await AsyncStorage.getItem('user');
-      if(user){
+      if (user) {
         let u = JSON.parse(user);
         setUserId(u.id);
-      }
-      else{
+  
+        // Move connect() here so it uses the correct userId
+        connect(u.id);
+      } else {
         alert("No user found");
       }
-    }
-    const connect = async () => {
+    };
+  
+    const connect = async (id: string) => {
+      if (!id) return; // Ensure we only connect if there's a valid userId
+  
       const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://${ip.julian}:5256/hub?userid=${userId?.toString()}&privilagelevel=user`)
+        .withUrl(`http://${ip.julian}:5256/hub?userid=${id}&privilagelevel=user`)
         .build();
+  
       try {
         await connection.start();
         alert('Session established');
         setSignalRConnection(connection);
       } catch (error) {
         console.error('SignalR connection error:', error);
-      } 
-    }
-   fetchTables();
-   fetchUser();
-   connect();
+      }
+    };
+  
+    fetchTables();
+    fetchUser(); // `connect()` now runs inside `fetchUser()`
   }, []);
+  
   return (
     <ThemedView style={styles.wrapper}>
       

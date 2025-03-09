@@ -160,7 +160,9 @@ const styles = StyleSheet.create({
         elevation: 15, // Required for Android shadow
     },
     tableText: {
-        fontSize: 18,
+        fontSize: 30,
         textAlign: "center",
+        fontWeight: "bold",
+        paddingBottom: 20,
     },
 });

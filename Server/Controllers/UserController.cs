@@ -366,8 +366,8 @@ public class OwnerController : ControllerBase
     [HttpPost("add/meal")]
     public async Task<IActionResult> AddMeal([FromBody] Meal meal)
     {
-
-        if (string.IsNullOrEmpty(meal.MealName) || meal.Price <= 0)
+        System.Console.WriteLine(meal.Category ?? "category is null");
+        if (string.IsNullOrEmpty(meal.MealName) || meal.Price <= 0 || string.IsNullOrEmpty(meal.Category))
         {
             System.Console.WriteLine("Meal name and price are required.");
             return BadRequest("All fields are required.");

@@ -10,6 +10,7 @@ export  type Meal = {
   mealId: string;
   mealName: string;
   price: number;
+  category: string;
 };
 
 export default function Menu() {
@@ -110,6 +111,7 @@ export default function Menu() {
           return (
             <ThemedView key={item.mealId} style={styles.menuItem}>
               <ThemedText style={styles.name}>{item.mealName}</ThemedText>
+              <ThemedText >{item.category}</ThemedText>
               <ThemedText style={styles.price}>{(Number(item.price) || 0).toFixed(2)} ₪</ThemedText>
               <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
               <Button title="Add" onPress={() => addItemToList(item)} />

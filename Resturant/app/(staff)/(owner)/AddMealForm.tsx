@@ -9,10 +9,22 @@ import { StyleSheet } from "react-native";
 import Logo from "@/components/ui/Logo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DropDownPicker from "react-native-dropdown-picker";
+import { useTheme } from "@react-navigation/native";
 
 export default function AddMealForm() {
+    const { colors } = useTheme();
     const [name, setName] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
+    const [open, setOpen] = useState(false);
+    const [category, setCategory] = useState<string | null>(null);
+    const [items, setItems] = useState([
+        { label: 'Desserts', value: 'Desserts' },
+        { label: 'Main Dish', value: 'Main Dish' },
+        { label: 'Side Dish', value: 'Side Dish' },
+        { label: 'Alcohol', value: 'Alcohol' },
+    ]);
+    
     const handleAddMeal = async () => {
         if(name==='' || price===0){
             alert("Can't add a no named OR free meal");
@@ -22,7 +34,8 @@ export default function AddMealForm() {
             const token = await AsyncStorage.getItem('token');
             const res = await axios.post(`http://${ip.julian}:5256/api/owner/add/meal`,{
                 mealName:name,
-                price:price
+                price:price,
+                category:category
             },
             {
                 headers:{
@@ -53,6 +66,23 @@ export default function AddMealForm() {
                 action={(price:number)=>setPrice(price)}
                 value={price==0? '' : price.toString()}
             />
+            <ThemedText style={styles.text}>Category</ThemedText>
+            <ThemedView>
+            <DropDownPicker
+                    open={open}
+                    value={category}
+                    items={items}
+                    setOpen={setOpen}
+                    setValue={setCategory}
+                    setItems={setItems}
+                    placeholder="Select a category"
+                    style={[styles.picker, { backgroundColor: colors.card }]}  // Background color from theme
+                    dropDownContainerStyle={[styles.dropdown, { backgroundColor: colors.card }]}  // List background color from theme
+                    textStyle={{ color: colors.text }}  // Text color from theme
+                    labelStyle={{ fontWeight: 'bold' }}  // Bolding the labels
+                />
+            </ThemedView>
+            
             <CurvedButton
                 title="Add meal"
                 action={async()=>await handleAddMeal()}
@@ -78,5 +108,17 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         height: 'auto',
         width: 'auto',
+    },
+    picker: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        height: 50,
+        width: '90%',
+    },
+    dropdown: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        width: '90%',
     },
 })

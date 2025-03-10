@@ -13,16 +13,19 @@ public class Meal
     public string MealName { get; set; } = "";
     [BsonElement("price")]
     public double Price { get; set; } = 0;
+    [BsonElement("category")]
+    public string Category { get; set; } = "";
     public Meal() { }
     /// <summary>
     /// Initializes a new instance of the <see cref="Meal"/> class.
     /// </summary>
     /// <param name="mealName">Name of the meal.</param>
     /// <param name="price">The price.</param>
-    public Meal(string mealName, double price)
+    public Meal(string mealName, double price, string category)
     {
         MealName = mealName;
         Price = price;
+        Category = category;
     }
 }
 /// <summary>

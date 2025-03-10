@@ -26,30 +26,34 @@ function Owner() {
                 setOwner(JSON.parse(ownerData));
             }
         };
+    
         const fetchMeals = async () => {
             const token = await AsyncStorage.getItem('token');
-            try{
-                const res = await axios.get(`http://${ip.julian}:5256/api/owner/meals`,
-                 {
-                    headers:{
-                        'x-auth-token':token
-                    }
-
-                 })
-                    if(res && res.status===200){
-                        
-                        await AsyncStorage.setItem('meals',JSON.stringify(res.data));
-                        
-                        
-                    }
-                }catch{
-                    alert("An error occurred or waiter already online");
+            try {
+                const res = await axios.get(`http://${ip.julian}:5256/api/owner/meals`, {
+                    headers: { 'x-auth-token': token }
+                });
+    
+                if (res && res.status === 200) {
+                    await AsyncStorage.setItem('meals', JSON.stringify(res.data));
                 }
+            } catch {
+                alert("An error occurred or waiter already online");
+            }
         };
+    
+        fetchOwner();
+        fetchMeals();
+    }, []); // Runs only once on mount
+    
+    useEffect(() => {
+        if (!owner.id) return; // Prevent connecting with an empty owner ID
+    
         const connect = async () => {
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl(`http://${ip.julian}:5256/hub?ownerid=${owner?.id.toString()}&privilagelevel=owner`)
+                .withUrl(`http://${ip.julian}:5256/hub?ownerid=${owner.id}&privilagelevel=owner`)
                 .build();
+            
             try {
                 await connection.start();
                 alert('Session established');
@@ -57,12 +61,11 @@ function Owner() {
             } catch (error) {
                 console.error('SignalR connection error:', error);
             }
-        }
-        
-        fetchOwner();
-        fetchMeals();
+        };
+    
         connect();
-    }, []);
+    }, [owner.id]); // Runs when owner.id changes
+    
     return (
         
         <ThemedView style={styles.view}>

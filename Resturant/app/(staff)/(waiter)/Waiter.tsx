@@ -16,35 +16,38 @@ type Waiter=
 export default function Waiter() {
     const [waiter, setWaiter] = useState<Waiter | null>(null);
     const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
-  useEffect(() => {
-    const fetchWaiter = async () => {
-      try {
-      await  setWaiter(JSON.parse((await AsyncStorage.getItem('waiter')) as string));
-      }catch (error) {
-          alert(error);
-      }
-    }
-    fetchWaiter();
-    
-    
-    
+    useEffect(() => {
+        const fetchWaiter = async () => {
+            try {
+                const waiterData = await AsyncStorage.getItem('waiter');
+                if (waiterData) {
+                    setWaiter(JSON.parse(waiterData));
+                }
+            } catch (error) {
+                alert(error);
+            }
+        };
+        fetchWaiter();
+    }, []);
 
-  },[])
-  useEffect(() => {
-    const connect= async () => {
-        const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter?.id.toString()}&privilagelevel=waiter`)
-        .build();
-        try {
-            await connection.start();
-            alert('Session established');
-            setSignalRConnection(connection);
-    }catch (error) {
-        console.error('SignalR connection error:'+ error);
-    }
-}
-connect();
-  },[waiter])
+    useEffect(() => {
+        if (!waiter?.id) return; // Prevents calling connect() when waiter.id is not available
+
+        const connect = async () => {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter.id}&privilagelevel=waiter`)
+                .build();
+            try {
+                await connection.start();
+                alert('Session established');
+                setSignalRConnection(connection);
+            } catch (error) {
+                console.error('SignalR connection error:', error);
+            }
+        };
+
+        connect();
+    }, [waiter?.id]); // Only runs when waiter.id is defined
     return (
         <ThemedView style={styles.container}>
             <LogoutButton action={async()=> await signalRConnection?.stop()}/>

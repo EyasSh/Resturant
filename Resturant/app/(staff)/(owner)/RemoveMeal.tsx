@@ -83,6 +83,7 @@ export default function RemoveMeal() {
                         mealId: meal.mealId || "",
                         mealName: meal.mealName || "",
                         price: typeof meal.price === "number" ? meal.price : 0, // Ensure price is a number
+                        category: meal.category || "",
                     }));
     
                     setMeals(parsedMeals);
@@ -102,8 +103,12 @@ export default function RemoveMeal() {
             {meals.length > 0 ? (
         meals.map((meal) => (
             <ThemedView key={meal.mealId} style={styles.mealItem}>
+                <ThemedView>
                 <ThemedText style={styles.mealName}>{meal.mealName}</ThemedText>
+                <ThemedText style={styles.mealName}>{meal.category}</ThemedText>
+                </ThemedView>
                 <ThemedText style={styles.mealPrice}>${meal.price.toFixed(2)}</ThemedText>
+                
                 <CurvedButton
                     style={styles.removeButton}
                     action={() => RemoveMealFromDbAndStorage(meal.mealId)}

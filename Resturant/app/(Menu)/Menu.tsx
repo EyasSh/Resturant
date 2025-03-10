@@ -5,6 +5,7 @@ import { StyleSheet, View, Text, Button, FlatList, ActivityIndicator } from "rea
 import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CurvedButton from "@/components/ui/CurvedButton";
 
 export  type Meal = {
   mealId: string;
@@ -77,7 +78,22 @@ export default function Menu() {
       }
     });
   }
-
+  function removeItemFromList(item: Meal) {
+    setList((prevList) => {
+      const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
+      if (existingIndex >= 0) {
+        const updatedList = [...prevList];
+        if (updatedList[existingIndex].quantity > 1) {
+          updatedList[existingIndex].quantity -= 1;
+          return updatedList;
+        } else {
+          return prevList.filter((i) => i.mealId !== item.mealId);
+        }
+      }
+      return prevList;
+    });
+  }
+  
   function calculateTotal() {
     return list
       .reduce((total, item) => total + item.price * item.quantity, 0)
@@ -110,11 +126,16 @@ export default function Menu() {
   
           return (
             <ThemedView key={item.mealId} style={styles.menuItem}>
+              <ThemedView>
               <ThemedText style={styles.name}>{item.mealName}</ThemedText>
-              <ThemedText >{item.category}</ThemedText>
+              <ThemedText style={styles.name}>{item.category}</ThemedText>
+              </ThemedView>
               <ThemedText style={styles.price}>{(Number(item.price) || 0).toFixed(2)} ₪</ThemedText>
               <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
-              <Button title="Add" onPress={() => addItemToList(item)} />
+              <ThemedView>
+              <CurvedButton title="Add" action={() => addItemToList(item)} style={{backgroundColor:"#00B0CC",marginBottom:10}}/>
+                <CurvedButton title="Remove" action={() => removeItemFromList(item)} style={{backgroundColor:"red"}}/>
+                </ThemedView>
             </ThemedView>
           );
         })

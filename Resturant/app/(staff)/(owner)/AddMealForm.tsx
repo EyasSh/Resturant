@@ -22,7 +22,7 @@ export default function AddMealForm() {
         { label: 'Desserts', value: 'Desserts' },
         { label: 'Main Dish', value: 'Main Dish' },
         { label: 'Side Dish', value: 'Side Dish' },
-        { label: 'Alcohol', value: 'Alcohol' },
+        { label: 'Beverages', value: 'Beverages' },
     ]);
     
     const handleAddMeal = async () => {

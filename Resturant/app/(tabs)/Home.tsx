@@ -64,8 +64,15 @@ export default function MainPage() {
   
       try {
         await connection.start();
-        alert('Session established');
+        
         setSignalRConnection(connection);
+        connection.off("ConnectNotification");
+         await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
+          if(isOkay){
+            alert('Session established');
+            await AsyncStorage.setItem('sid', sid);
+          }
+        })
       } catch (error) {
         console.error('SignalR connection error:', error);
       }

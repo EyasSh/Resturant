@@ -38,9 +38,15 @@ export default function Waiter() {
                 .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter.id}&privilagelevel=waiter`)
                 .build();
             try {
-                await connection.start();
-                alert('Session established');
+                await connection.start();  
                 setSignalRConnection(connection);
+                connection.off("ConnectNotification");
+                await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
+                    if(isOkay){
+                        alert('Session established');
+                        await AsyncStorage.setItem('sid', sid);
+                    }
+                })
             } catch (error) {
                 console.error('SignalR connection error:', error);
             }

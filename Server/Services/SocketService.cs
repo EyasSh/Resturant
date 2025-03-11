@@ -213,6 +213,11 @@ public class SocketService : Hub<IHubService>
         {
             _ownerConnections.TryRemove(sid, out _);
         }
+        else
+        {
+            System.Console.WriteLine("Connection not found");
+            return;
+        }
 
         Console.WriteLine($"Disconnected: {sid}");
         await base.OnDisconnectedAsync(exception);

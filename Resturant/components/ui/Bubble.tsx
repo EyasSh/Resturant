@@ -3,17 +3,22 @@ import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StyleSheet, View, Text } from "react-native";
 
-export default function Bubble(props: Message) {
+export default function Bubble(props:Message) {
     const [sender, setSender] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(props.message);
 
     useEffect(() => {
         const getUid = async () => {
-            const u = await AsyncStorage.getItem("user");
-            if (u) {
-                const user = JSON.parse(u);
-                setSender(user?.id);
+            if(props.fromStorageObj)
+            {
+                const u = await AsyncStorage.getItem(props.fromStorageObj);
+                if (u) {
+                    const user = JSON.parse(u);
+                    setSender(user?.id);
+                }
             }
+            
+           
         };
 
         getUid();

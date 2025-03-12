@@ -5,6 +5,7 @@ import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
 import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
+import {router} from 'expo-router'
 type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
@@ -36,7 +37,7 @@ export default function TableCard(props:TableProps) {
   return (
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={[styles.container,{width:props.width}]}>
-        <TouchableOpacity style={styles.message }  onPress={() =>alert("message pressed")}>
+        <TouchableOpacity style={styles.message }  onPress={() =>router.push("/(chat)/Chat")}>
           <ChatLogo />
         </TouchableOpacity>
         <ThemedView style={styles.imageContainer}>

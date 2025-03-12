@@ -87,8 +87,7 @@ export default function MainPage() {
     <ThemedView style={styles.wrapper}>
       
       <LogoutButton action={async()=>{await signalRConnection?.stop()}}/>
-        <Bubble senderId={userId} message={`Hi this message was sent by me`} recipientId='123' />
-        <Bubble  senderId='123' recipientId={userId} message={`Hey and this was sent to you`}/>
+        
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {Array.from({ length: tables.length }).map((_, index) => (

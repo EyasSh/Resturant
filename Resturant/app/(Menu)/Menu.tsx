@@ -6,6 +6,9 @@ import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
+import { GestureHandlerRootView, ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { Image } from "react-native";
+import {router} from 'expo-router';
 
 export  type Meal = {
   mealId: string;
@@ -118,7 +121,12 @@ export default function Menu() {
   }
 
   return (
+
+      
+    
     <ThemedView style={styles.container}>
+      <GestureHandlerRootView style={{padding:0}}>
+      <ScrollView style={{padding:0}}>
       {menuItems.length > 0 ? (
         menuItems.map((item) => {  // ✅ FIX: Make sure it returns JSX correctly
           const selectedItem = list.find((i) => i.mealId === item.mealId);
@@ -162,14 +170,28 @@ export default function Menu() {
       )}
   
       <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
+  
+      <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+      <GestureHandlerRootView style={styles.paymentmethods}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push("/(chat)/Chat")}>
+        <Image source={require("@/assets/images/money.png")} style={styles.image}/>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push("/(chat)/Chat")}>
+        <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
+      </TouchableOpacity>
+      </GestureHandlerRootView>
+      </ScrollView>
+    </GestureHandlerRootView>
     </ThemedView>
+    
   );
   
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 30,
+    paddingHorizontal: 30,
+    paddingTop: 30,
     height: "100%",
   },
   loadingContainer: {
@@ -229,5 +251,36 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 20,
     textAlign: "right",
+  },
+  ptext:{
+    textAlign:'center',
+    marginTop:10,
+    fontSize:18,
+    fontWeight:'bold'
+  },
+  paymentmethods:{
+    display:'flex',
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'center',
+  },
+  paymeth:{
+    display:'flex',
+    flexDirection:'column',
+    alignItems:'center',
+    justifyContent:'center',
+    width:150,
+    height:150,
+    margin:10,
+    borderColor:"grey",
+    borderWidth:1,
+    borderRadius:5,
+    padding:10
+},
+image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    resizeMode: 'cover',
   },
 });

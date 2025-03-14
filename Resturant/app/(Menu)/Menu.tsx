@@ -176,7 +176,7 @@ export default function Menu() {
       <TouchableOpacity style={styles.paymeth} onPress={()=>router.push("/(chat)/Chat")}>
         <Image source={require("@/assets/images/money.png")} style={styles.image}/>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push("/(chat)/Chat")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push({pathname:"/(chat)/Chat"})}>
         <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
       </TouchableOpacity>
       </GestureHandlerRootView>

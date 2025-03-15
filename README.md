@@ -1,28 +1,32 @@
-# Plan Nurser
+# Restaurant Manager
 
-An innovative app designed to help plant enthusiasts track and care for their
-plants with ease and efficiency.
+A comprehensive app designed to streamline restaurant operations, enhance customer experience, and optimize table management.
 
 ## Features
 
-- **AI-Powered Plant Recognition**:
-  - Utilize AI to identify plants through uploaded pictures, providing detailed
-    information about each plant.
-- **Care Calendar**:
-  - Set up personalized reminders for watering, fertilizing, and general nursing
-    for each plant.
-  - Sync with your calendar to ensure timely notifications.
-- **Health Tracking**:
-  - Monitor plant health through user inputs and AI suggestions.
+- **Table Management**:
+  - Allow customers to check table availability and occupy a table digitally.
+  - Assign waiters to tables for seamless service.
+- **Online Menu**:
+  - Provide a digital menu accessible via QR code or in-app.
+  - Enable customers to place orders directly from their devices.
+- **Order Management**:
+  - Track and manage orders efficiently, from preparation to delivery.
+  - Notify waitstaff when an order is ready.
+- **Customer Messaging**:
+  - Allow customers to communicate with their assigned waiter in real-time.
+  - Improve service speed and satisfaction.
+- **Billing & Payments**:
+  - Generate digital bills and provide multiple payment options.
+  - Allow split payments for group dining.
 
 ## Goals
 
-Plan Nurser aims to simplify plant care for everyone, from beginners to seasoned
-plant lovers. The app's goal is to ensure plants stay healthy by providing tools
-for timely care and valuable insights through AI-driven features.
+Restaurant Manager aims to enhance the dining experience by making restaurant operations more efficient and customer-friendly. With features like digital table occupancy, real-time messaging, and online menu ordering, the app seeks to modernize restaurant workflows and improve service quality.
 
 ---
 
 ### Created by
 
 **Julian Totry**
+

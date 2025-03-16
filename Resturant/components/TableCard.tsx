@@ -30,7 +30,12 @@ export default function TableCard(props:TableProps) {
       return
     }
     setIsOccupied(!isOccupied);
-    navigation.navigate('Menu');
+    navigation.navigate('Menu', {
+      isOccupied,
+      setter: setIsOccupied,
+      waiterid: waiterId,
+      userid: userId
+    });
   };
 
   return (

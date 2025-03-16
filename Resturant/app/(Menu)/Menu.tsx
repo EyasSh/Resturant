@@ -8,9 +8,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
 import { GestureHandlerRootView, ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { Image } from "react-native";
-import { NavigationProp } from '@/Routes/NavigationTypes';
-import { useNavigation } from '@react-navigation/native';
-
+import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
+import { RouteProp, useNavigation } from '@react-navigation/native';
+type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
+type Props={
+  route:ScreenProps
+}
 export  type Meal = {
   mealId: string;
   mealName: string;
@@ -18,12 +21,13 @@ export  type Meal = {
   category: string;
 };
 
-export default function Menu() {
+export default function Menu(props: Props) {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
+  const { isOccupied, setter, waiterid, userid } = props.route.params || {};
 
   // Fetch meals from API
   useEffect(() => {
@@ -72,6 +76,13 @@ export default function Menu() {
   }, [menuItems]);
 
   function addItemToList(item: Meal) {
+    
+    if(setter){
+      setter(true)
+      alert(isOccupied)
+      
+    }
+    
     setList((prevList) => {
       const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
       if (existingIndex >= 0) {

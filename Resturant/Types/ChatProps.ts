@@ -3,5 +3,5 @@ export type ChatProps = {
     wid: string
     hubConnection: signalR.HubConnection
     isOccupied: boolean
-    setter:(value: React.SetStateAction<boolean>)=>void
+    setter:(value: boolean)=>void
 }

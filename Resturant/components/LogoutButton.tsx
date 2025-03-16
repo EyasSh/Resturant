@@ -1,17 +1,19 @@
 import CurvedButton from "./ui/CurvedButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
 import { ThemedView } from "./ThemedView";
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
 type LogoutProps = {
     action:()=>void| Promise<void> | null
 }
 export default function LogoutButton(props:LogoutProps) {
+    const navigation = useNavigation<NavigationProp>();
     const logout = async () => {
         await AsyncStorage.clear();
         if(props.action) {
             props.action();
         }
-        router.dismissTo("/(login)");
+        navigation.navigate("Login");
         
 
     }

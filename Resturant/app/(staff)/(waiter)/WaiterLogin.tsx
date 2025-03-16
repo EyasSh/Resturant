@@ -7,11 +7,14 @@ import CurvedButton from '@/components/ui/CurvedButton';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {router} from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import Logo from '@/components/ui/Logo';
 
 export default  function WaiterLogin() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
+    const navigation = useNavigation<NavigationProp>();
     const handleLogin = async() => {
         try{
             if(email==='' || password===''){
@@ -25,7 +28,7 @@ export default  function WaiterLogin() {
             if(res && res.status===200){
                 await AsyncStorage.setItem('token', res.headers['x-auth-token']);
                 await AsyncStorage.setItem("waiter",JSON.stringify(res.data.waiter))
-                router.push("./Waiter");
+                navigation.navigate("Waiter")
             }
         }
         catch(e){
@@ -35,6 +38,7 @@ export default  function WaiterLogin() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Waiter Login</ThemedText>
+            <Logo />
             <ThemedInput 
             type="email-address" 
             placeholder="Email" 

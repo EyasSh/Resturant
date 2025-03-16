@@ -2,19 +2,17 @@ import React, { useState } from "react";
 import { StyleSheet, Image, TouchableOpacity} from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
-import { useRouter } from 'expo-router';
-import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@/Routes/NavigationTypes";
-type TableProps = {
+ export type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
   isOccupied: boolean;
   waiterId: string;
   userId: string;
   capacity : number;
-  width: number;
+  width: number |null | undefined;
 
 }
 

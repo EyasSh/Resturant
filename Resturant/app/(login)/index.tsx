@@ -1,11 +1,8 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
-import { TextInput, StyleSheet, Button, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import Logo from "@/components/ui/Logo";
 import CurvedButton from '@/components/ui/CurvedButton';
 import axios from 'axios';
@@ -18,7 +15,6 @@ import { NavigationProp } from '@/Routes/NavigationTypes';
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const { colors,dark:isDark  } = useTheme(); // Access theme colors
   const navigation = useNavigation<NavigationProp>();
 
   const styles = StyleSheet.create({
@@ -52,7 +48,13 @@ export default function Login() {
       alignItems: 'center',
       width: '90%',
       backgroundColor:"transparent"
-    }
+    },
+    text:{
+      fontSize: 25,
+      fontWeight: 'bold',
+      height: 'auto',
+      width: 'auto',
+    },
   });
   const handleLogin = async() => {
     // Perform login validation (optional)
@@ -85,6 +87,7 @@ export default function Login() {
   return (
     
     <ThemedView style={styles.container}>
+      <ThemedText style={styles.text}>Customer Login</ThemedText>
       <Logo />
       <ThemedInput
         type="email-address"

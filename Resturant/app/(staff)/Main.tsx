@@ -2,19 +2,21 @@ import React from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { StyleSheet, Image, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import { NavigationProp } from "@/Routes/NavigationTypes";
+import { useNavigation } from "@react-navigation/native";
 
 
 
 function Main() {
+    const navigation = useNavigation<NavigationProp>();
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.header}>Terminals</ThemedText>
-            <TouchableOpacity onPress={() =>router.push('./(waiter)/WaiterLogin')} style={styles.staffBox}>
+            <TouchableOpacity onPress={() =>navigation.navigate("WaiterLogin")} style={styles.staffBox}>
                 <Image source={require("@/assets/images/chef.png")} style={styles.image} />
                 <ThemedText>Chef/Waiter</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('./(owner)/OwnerLogin')} style={styles.staffBox}>
+            <TouchableOpacity onPress={() => navigation.navigate("OwnerLogin")} style={styles.staffBox}>
                 <Image style={styles.image} source={require("@/assets/images/owner.png")} />
                 <ThemedText>Owner</ThemedText>
             </TouchableOpacity>

@@ -6,6 +6,8 @@ import LogoutButton from '@/components/LogoutButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as signalR from '@microsoft/signalr';
 import ip from '@/Data/Addresses';
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
 type Waiter=
 {
     id: string
@@ -16,6 +18,7 @@ type Waiter=
 export default function Waiter() {
     const [waiter, setWaiter] = useState<Waiter | null>(null);
     const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
+    const navigation = useNavigation<NavigationProp>();
     useEffect(() => {
         const fetchWaiter = async () => {
             try {

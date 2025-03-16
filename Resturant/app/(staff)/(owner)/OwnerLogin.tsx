@@ -4,14 +4,16 @@ import { ThemedView } from '@/components/ThemedView';
 import CurvedButton from '@/components/ui/CurvedButton';
 import React,{ useState} from 'react';
 import { StyleSheet } from 'react-native';
-import {router} from 'expo-router';
 import Logo from '@/components/ui/Logo';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
 export default function OwnerLogin() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
+    const navigation = useNavigation<NavigationProp>();
     const handleLogin = async() => {
         try{
             if(email==='' || password===''){
@@ -26,7 +28,7 @@ export default function OwnerLogin() {
                 
                 await AsyncStorage.setItem('token', res.headers['x-auth-token']);
                 await AsyncStorage.setItem("owner",JSON.stringify(res.data.owner))
-                router.push("./Owner");
+                navigation.navigate("Owner");
             }
         }
         catch(e){
@@ -55,7 +57,7 @@ export default function OwnerLogin() {
                 style={{backgroundColor:"rgb(153, 0, 255)"}}
                  />
                 <CurvedButton title="Sign Up" 
-                action={()=>router.push("./OwnerSignup")} 
+                action={()=>navigation.navigate("OwnerSignup")} 
                 style={{backgroundColor:"rgb(1, 119, 80)"}} />
         </ThemedView>
     );

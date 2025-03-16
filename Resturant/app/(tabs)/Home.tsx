@@ -2,28 +2,20 @@ import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState, useEffect } from 'react';
-import { TextInput, StyleSheet, Button, TouchableOpacity, Dimensions , ScrollView } from 'react-native';
+import { StyleSheet,  Dimensions , ScrollView } from 'react-native';
 import TableCard from '@/components/TableCard';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as signalR from '@microsoft/signalr';
 import LogoutButton from '@/components/LogoutButton';
-import Bubble from '@/components/ui/Bubble';
+import { TableProps } from '@/components/TableCard';
 
 
 const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2; // Use 3 columns on larger screens, otherwise 2
 const cardWidth = Math.max((screenWidth / numColumns) - 30, 150); // Ensure cards don't get too small
-type TableProps = {
-  tableNumber: number;
-  isWindowSide: boolean;
-  isOccupied: boolean;
-  waiterId: string;
-  userId: string;
-  capacity : number;
 
-}
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);

@@ -2,12 +2,13 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState,useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '@/components/LogoutButton';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 import * as signalR from '@microsoft/signalr';
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
 type OwnerDTO={
     id : string,
     name: string,
@@ -19,6 +20,7 @@ type OwnerDTO={
 function Owner() {
     const [owner, setOwner] =useState<OwnerDTO>({id: "", name: "" , email: "", phone: "", password: "", restaurantNumber: "" });
     const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
+    const navigation = useNavigation<NavigationProp>();
     useEffect(() => {
         const fetchOwner = async () => {
             const ownerData = await AsyncStorage.getItem("owner");
@@ -81,15 +83,15 @@ function Owner() {
             <ThemedView style={styles.gridContainer}>
                 {/* Left side - Add buttons */}
                 <ThemedView style={styles.leftColumn}>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./WaiterSignup")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("WaiterSignup")}>
                         <ThemedText style={styles.largeText}>+</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Add Worker</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./AddTableForm")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("AddTableForm")}>
                         <ThemedText style={styles.largeText}>+</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Add Table</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./AddMealForm")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("AddMealForm")}>
                         <ThemedText style={styles.largeText}>+</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
                     </TouchableOpacity>
@@ -101,15 +103,15 @@ function Owner() {
     
                 {/* Right side - Remove buttons */}
                 <ThemedView style={styles.rightColumn}>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./FireStaff")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("FireStaff")}>
                         <ThemedText style={styles.largeText}>-</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Remove Worker</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./RemoveTable")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("RemoveTable")}>
                         <ThemedText style={styles.largeText}>-</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Remove Table</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => router.push("./RemoveMeal")}>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("RemoveMeal")}>
                         <ThemedText style={styles.largeText}>-</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Remove Meals</ThemedText>
                     </TouchableOpacity>

@@ -8,7 +8,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
 import { GestureHandlerRootView, ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { Image } from "react-native";
-import {router} from 'expo-router';
+import { NavigationProp } from '@/Routes/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
 
 export  type Meal = {
   mealId: string;
@@ -22,6 +23,7 @@ export default function Menu() {
   const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigation = useNavigation<NavigationProp>();
 
   // Fetch meals from API
   useEffect(() => {
@@ -173,10 +175,10 @@ export default function Menu() {
   
       <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
       <GestureHandlerRootView style={styles.paymentmethods}>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push("/(chat)/Chat")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Chat")}>
         <Image source={require("@/assets/images/money.png")} style={styles.image}/>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>router.push({pathname:"/(chat)/Chat"})}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Chat")}>
         <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
       </TouchableOpacity>
       </GestureHandlerRootView>

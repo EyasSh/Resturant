@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ChatProps } from "@/Types/ChatProps";
 import {router} from 'expo-router';
 
-export default function Chat(props:ChatProps) {
+export default function Chat(props:ChatProps | any) {
     const [msgs, setMsgs] = useState<Message[]>([]);
     const [uid, setUid] = useState<string | null>(props.uid??"");
     const [wid, setWid] = useState<string | null>(props.wid??"");

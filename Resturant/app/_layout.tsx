@@ -47,7 +47,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <NavigationContainer>
+      
       <Stack.Navigator>
         {/* Login is the initial screen */}
         <Stack.Screen 
@@ -61,27 +61,27 @@ export default function RootLayout() {
       <Stack.Screen name="Terminals" component={Main} options={{ headerShown: false }} />
       <Stack.Screen name="Waiter" component={Waiter} options={{ headerShown: false }} />
       <Stack.Screen name="Owner" component={Owner} options={{ headerShown: false }} />
-      <Stack.Screen name="Waiter Login" component={WaiterLogin} options={{ headerShown: false }} />
-      <Stack.Screen name="Owner Login" component={OwnerLogin} options={{ headerShown: false }} />
-      <Stack.Screen name="Waiter Signup" component={WaiterSignup} options={{ headerShown: false }} />
-      <Stack.Screen name="Owner Signup" component={OwnerSignup} options={{ headerShown: false }} />
-      <Stack.Screen name="Add Meal" component={AddMealForm} options={{ headerShown: false }} />
-      <Stack.Screen name="Add Table" component={AddTableForm} options={{ headerShown: false }} />
-      <Stack.Screen name="Remove Table" component={RemoveTable} options={{ headerShown: false }} />
-      <Stack.Screen name="Remove Meal" component={RemoveMeal} options={{ headerShown: false }} />
-      <Stack.Screen name="Fire Staff" component={FireStaff} options={{ headerShown: false }} />
+      <Stack.Screen name="WaiterLogin" component={WaiterLogin} options={{ headerShown: false }} />
+      <Stack.Screen name="OwnerLogin" component={OwnerLogin} options={{ headerShown: false }} />
+      <Stack.Screen name="WaiterSignup" component={WaiterSignup} options={{ headerShown: false }} />
+      <Stack.Screen name="OwnerSignup" component={OwnerSignup} options={{ headerShown: false }} />
+      <Stack.Screen name="AddMeal" component={AddMealForm} options={{ headerShown: false }} />
+      <Stack.Screen name="AddTable" component={AddTableForm} options={{ headerShown: false }} />
+      <Stack.Screen name="RemoveTable" component={RemoveTable} options={{ headerShown: false }} />
+      <Stack.Screen name="RemoveMeal" component={RemoveMeal} options={{ headerShown: false }} />
+      <Stack.Screen name="FireStaff" component={FireStaff} options={{ headerShown: false }} />
       <Stack.Screen name="Menu" component={Menu}  options={{ headerShown: false }} />
       <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
         {/* Signup screen */}
-        <Stack.Screen name="(signup)/signup" component={Signup} options={
+        <Stack.Screen name="Signup" component={Signup} options={
           { headerShown: false  }}/>
         {/* Tabs layout */}
-        <Stack.Screen name="(tabs)" component={TabLayout} options={{ headerShown: false }} />
+        <Stack.Screen name="Tabs" component={TabLayout} options={{ headerShown: false }} />
         {/* 404 or fallback */}
          <Stack.Screen name="+not-found" component={NotFoundScreen} /> 
         
       </Stack.Navigator>
-      </NavigationContainer>
+    
       <StatusBar style="auto" />
     </ThemeProvider>
   );

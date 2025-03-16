@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { StyleSheet, Image, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Image, TouchableOpacity} from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { useRouter } from 'expo-router';
 import CurvedButton from "./ui/CurvedButton";
 import ChatLogo from "./ui/ChatLogo";
-import {router} from 'expo-router'
+import { useNavigation } from "@react-navigation/native";
+import { NavigationProp } from "@/Routes/NavigationTypes";
 type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
@@ -24,20 +25,20 @@ export default function TableCard(props:TableProps) {
   const [waiterId, setWaiterId] = useState<string>(props.waiterId);
   const [capacity, setCapacity] = useState<number>(props.capacity);
   const [number, setNumber] = useState<number>(props.tableNumber);
-  const router = useRouter();
+  const navigation = useNavigation<NavigationProp>();
   const handlePress = () => {
     if(isOccupied){
       alert("Table is already occupied");
       return
     }
     setIsOccupied(!isOccupied);
-    router.push('../(Menu)/Menu');
+    navigation.navigate('Menu');
   };
 
   return (
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={[styles.container,{width:props.width}]}>
-        <TouchableOpacity style={styles.message }  onPress={() =>router.push("/(chat)/Chat")}>
+        <TouchableOpacity style={styles.message }  onPress={() =>navigation.navigate("Chat")}>
           <ChatLogo />
         </TouchableOpacity>
         <ThemedView style={styles.imageContainer}>

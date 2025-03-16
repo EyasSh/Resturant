@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState } from 'react';
 import { TextInput, StyleSheet, Button, View } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -13,12 +13,13 @@ import { Constants } from 'expo-constants';
 import ip from '@/Data/Addresses';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ThemedInput from '@/components/ThemedInput';
+import { NavigationProp } from '@/Routes/NavigationTypes';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const { colors,dark:isDark  } = useTheme(); // Access theme colors
-  const router = useRouter();
+  const navigation = useNavigation<NavigationProp>();
 
   const styles = StyleSheet.create({
     headerImage: {
@@ -70,7 +71,7 @@ export default function Login() {
             
         }
         // Navigate to the tabs layout
-        router.replace('../(tabs)/Home');
+        navigation.navigate('Tabs');
       }
       catch(e:any){
         alert(e.message);
@@ -106,7 +107,7 @@ export default function Login() {
         <ThemedText style={styles.emailText}>Don't have an account?</ThemedText>
         <CurvedButton
           title="Sign Up"
-          action={() => router.push("../(signup)/signup")}
+          action={() => navigation.navigate('Signup')}
           style={{backgroundColor:"rgb(134, 0, 175)"}}
           />
           
@@ -115,7 +116,7 @@ export default function Login() {
           <ThemedText style={styles.emailText}>Are you staff?</ThemedText>
           <CurvedButton
             title="Staff Terminal"
-            action={()=>router.push("../(staff)/Main")}
+            action={()=>navigation.navigate('Terminals')}
             style={{backgroundColor:"rgb(0, 175, 122)"}}
             />
       </View>

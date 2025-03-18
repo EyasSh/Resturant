@@ -16,13 +16,7 @@ export type RootStackParamList = {
     "RemoveTable": undefined;
     "RemoveMeal": undefined;
     "FireStaff": undefined;
-    "Menu": undefined | {
-        isOccupied: boolean
-        setter: React.Dispatch<React.SetStateAction<boolean>>
-        waiterid: string
-        userid: string
-    };
-    "Chat": undefined | ChatProps;
+    "Menu": undefined
     "Signup": undefined;
 }
 // Define type for navigation prop

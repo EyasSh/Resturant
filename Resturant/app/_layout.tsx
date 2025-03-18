@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { createStackNavigator } from '@react-navigation/stack';
-
+import { NavigationProp } from "@/Routes/NavigationTypes";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import Login from './(login)';
 import Main from './(staff)/Main';
@@ -24,8 +24,8 @@ import Signup from './(signup)/signup';
 import RemoveTable from './(staff)/(owner)/RemoveTable';
 import RemoveMeal from './(staff)/(owner)/RemoveMeal';
 import FireStaff from './(staff)/(owner)/FireStaff';
-import Menu from './(Menu)/Menu';
-import Chat from './(chat)/Chat';
+import Menu from '@/app/(Menu)/Menu';
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -71,7 +71,6 @@ export default function RootLayout() {
       <Stack.Screen name="RemoveMeal" component={RemoveMeal} options={{ headerShown: false }} />
       <Stack.Screen name="FireStaff" component={FireStaff} options={{ headerShown: false }} />
       <Stack.Screen name="Menu" component={Menu}  options={{ headerShown: false }} />
-      <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
         {/* Signup screen */}
         <Stack.Screen name="Signup" component={Signup} options={
           { headerShown: false  }}/>

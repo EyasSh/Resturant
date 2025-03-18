@@ -11,9 +11,7 @@ import { Image } from "react-native";
 import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
-type Props={
-  route:ScreenProps
-}
+
 export  type Meal = {
   mealId: string;
   mealName: string;
@@ -21,13 +19,13 @@ export  type Meal = {
   category: string;
 };
 
-export default function Menu(props: Props) {
+export default function Menu() {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
-  const { isOccupied, setter, waiterid, userid } = props.route.params || {};
+
 
   // Fetch meals from API
   useEffect(() => {
@@ -76,12 +74,7 @@ export default function Menu(props: Props) {
   }, [menuItems]);
 
   function addItemToList(item: Meal) {
-    
-    if(setter){
-      setter(true)
-      alert(isOccupied)
-      
-    }
+
     
     setList((prevList) => {
       const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
@@ -186,10 +179,10 @@ export default function Menu(props: Props) {
   
       <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
       <GestureHandlerRootView style={styles.paymentmethods}>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Chat")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Tabs")}>
         <Image source={require("@/assets/images/money.png")} style={styles.image}/>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Chat")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Tabs")}>
         <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
       </TouchableOpacity>
       </GestureHandlerRootView>

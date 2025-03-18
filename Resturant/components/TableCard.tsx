@@ -5,6 +5,7 @@ import { ThemedView } from "./ThemedView";
 import ChatLogo from "./ui/ChatLogo";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@/Routes/NavigationTypes";
+import AsyncStorage from "@react-native-async-storage/async-storage";
  export type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
@@ -24,26 +25,22 @@ export default function TableCard(props:TableProps) {
   const [capacity, setCapacity] = useState<number>(props.capacity);
   const [number, setNumber] = useState<number>(props.tableNumber);
   const navigation = useNavigation<NavigationProp>();
-  const handlePress = () => {
-    if(isOccupied){
+  const handlePress = async() => {
+    const stringfiedUser = await AsyncStorage.getItem('user');
+    const u = JSON.parse(stringfiedUser!);
+    if(isOccupied &&  u &&userId !== u.id){
       alert("Table is already occupied");
       return
     }
+    setUserId(u.id);
     setIsOccupied(!isOccupied);
-    navigation.navigate('Menu', {
-      isOccupied,
-      setter: setIsOccupied,
-      waiterid: waiterId,
-      userid: userId
-    });
+    navigation.navigate('Menu');
   };
 
   return (
     <TouchableOpacity onPress={handlePress}>
       <ThemedView style={[styles.container,{width:props.width}]}>
-        <TouchableOpacity style={styles.message }  onPress={() =>navigation.navigate("Chat")}>
-          <ChatLogo />
-        </TouchableOpacity>
+        
         <ThemedView style={styles.imageContainer}>
           <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>

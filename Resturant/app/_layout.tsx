@@ -25,6 +25,7 @@ import RemoveTable from './(staff)/(owner)/RemoveTable';
 import RemoveMeal from './(staff)/(owner)/RemoveMeal';
 import FireStaff from './(staff)/(owner)/FireStaff';
 import Menu from '@/app/(Menu)/Menu';
+import { OccupationProvider } from '@/Context/OccupationContext';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -47,7 +48,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      
+      <OccupationProvider>
       <Stack.Navigator>
         {/* Login is the initial screen */}
         <Stack.Screen 
@@ -80,7 +81,7 @@ export default function RootLayout() {
          <Stack.Screen name="+not-found" component={NotFoundScreen} /> 
         
       </Stack.Navigator>
-    
+      </OccupationProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

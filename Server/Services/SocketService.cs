@@ -8,6 +8,7 @@ public interface IHubService
 {
     Task ConnectNotification(string sid, bool isOkay);
     Task ReceiveMessage(Message message);
+    Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0);
 }
 public class SocketService : Hub<IHubService>
 {
@@ -20,7 +21,7 @@ public class SocketService : Hub<IHubService>
     public static readonly List<Table> _tables = new(); // List of tables
 
     // Map tables to assigned users and waiters
-    public static readonly ConcurrentDictionary<string, string> _tableToUser = new(); // Table ID => User ID
+    public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
     public static readonly ConcurrentDictionary<string, string> _tableToWaiter = new(); // Table ID => Waiter ID
 
     /// <summary>
@@ -100,23 +101,22 @@ public class SocketService : Hub<IHubService>
     /// <summary>
     /// Assigns a user to a table and adds them to the SignalR group.
     /// </summary>
-    public async Task AssignUserToTable(string userId, string tableId)
+    public async Task AssignUserToTable(string userId, int tableNumber)
     {
         var sid = Context.ConnectionId;
 
-        // Remove user from previous table, if any
-        if (_tableToUser.ContainsKey(userId))
+        // Check if user is already in a table
+        if (_tableToUser.Any(kv => kv.Value == userId))
         {
-            var previousTable = _tableToUser[userId];
-            await Groups.RemoveFromGroupAsync(sid, previousTable);
-            _tableToUser.TryRemove(userId, out _);
-            Console.WriteLine($"User {userId} left Table {previousTable}");
+            await Clients.Caller.ReceiveTableMessage("User Already in a table.");
         }
 
-        // Assign user to the new table
-        _tableToUser[tableId] = userId;
-        await Groups.AddToGroupAsync(sid, tableId);
-        Console.WriteLine($"User {userId} joined Table {tableId}");
+
+
+        // Assign user to a table if he is not already in one
+        _tableToUser[tableNumber] = userId;
+        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
+        await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true);
 
         // Store user ID in dictionary
         _userConnections[sid] = userId;

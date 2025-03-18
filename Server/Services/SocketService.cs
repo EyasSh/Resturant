@@ -2,23 +2,30 @@ namespace Server.Services;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver;
+using Server.DB;
 using Server.Models;
 
 public interface IHubService
 {
-    Task ConnectNotification(string sid, bool isOkay);
+    Task ConnectNotification(string sid, bool isOkay, List<Table> tables);
     Task ReceiveMessage(Message message);
-    Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0);
+    Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0, List<Table>? tables = null);
 }
 public class SocketService : Hub<IHubService>
 {
+    public SocketService(MongoDBWrapper dBWrapper)
+    {
+        _tableCollection = dBWrapper.Tables;
+    }
+    IMongoCollection<Table> _tableCollection;
     public static readonly ConcurrentDictionary<string, string> _userConnections = new(); // sid => MongoDB ID
     public static readonly ConcurrentDictionary<string, string> _waiterConnections = new(); // sid => MongoDB ID
     public static readonly ConcurrentDictionary<string, string> _ownerConnections = new(); // sid => MongoDB ID
     public static readonly ConcurrentDictionary<string, HashSet<string>> _userids2sid = new(); // MongoDB ID => Set of sids
     public static readonly ConcurrentDictionary<string, HashSet<string>> _waiterids2sid = new(); // MongoDB ID => Set of sids
     public static readonly ConcurrentDictionary<string, string> _tableConnections = new(); // Table ID => Waiter ID
-    public static readonly List<Table> _tables = new(); // List of tables
+    public static List<Table> _tables = new(); // List of tables
 
     // Map tables to assigned users and waiters
     public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
@@ -36,6 +43,13 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public override async Task OnConnectedAsync()
     {
+        if (_tables.Count == 0 || _tableCollection.CountDocuments(FilterDefinition<Table>.Empty) == 0)
+        {
+            System.Console.WriteLine("Tables are null or empty.");
+            _tables.Clear();
+            _tables.AddRange(await _tableCollection.Find(_ => true).ToListAsync());
+        }
+
         var sid = Context.ConnectionId;
         try
         {
@@ -58,7 +72,7 @@ public class SocketService : Hub<IHubService>
                         });
 
                     Console.WriteLine($"Waiter connected sid: {sid}\n waiterid: {waiterid}");
-                    await Clients.Caller.ConnectNotification(sid, true);
+                    await Clients.Caller.ConnectNotification(sid, true, _tables);
                 }
                 else if (privilageLevel == "owner")
                 {
@@ -66,7 +80,7 @@ public class SocketService : Hub<IHubService>
                     _ownerConnections[sid] = ownerId;
 
                     Console.WriteLine($"Owner connected sid: {sid}\n ownerid: {ownerId}");
-                    await Clients.Caller.ConnectNotification(sid, true);
+                    await Clients.Caller.ConnectNotification(sid, true, _tables);
                 }
                 else if (privilageLevel == "user" && httpContext.Request.Query.ContainsKey("userid"))
                 {
@@ -83,13 +97,13 @@ public class SocketService : Hub<IHubService>
                         });
 
                     Console.WriteLine($"User connected sid: {sid}\n userid: {userid}");
-                    await Clients.Caller.ConnectNotification(sid, true);
+                    await Clients.Caller.ConnectNotification(sid, true, _tables);
                 }
             }
         }
         catch (Exception ex)
         {
-            await Clients.Caller.ConnectNotification(sid, false);
+            await Clients.Caller.ConnectNotification(sid, false, _tables);
             Console.WriteLine($"Connection Error: {ex.Message}");
         }
         finally
@@ -106,18 +120,21 @@ public class SocketService : Hub<IHubService>
         var sid = Context.ConnectionId;
 
         // Check if user is already in a table
-        if (_tableToUser.Any(kv => kv.Value == userId))
+        if (_tables.Count > 0 && _tables.Any(t => t.UserId == userId) && _tableToUser.Any(kv => kv.Value == userId))
         {
-            await Clients.Caller.ReceiveTableMessage("User Already in a table.");
+            await Clients.Caller.ReceiveTableMessage("User Already in a table.", false, userId, 0, _tables);
         }
 
 
 
         // Assign user to a table if he is not already in one
         _tableToUser[tableNumber] = userId;
+        _tables[tableNumber - 1].UserId = userId;
+        _tables[tableNumber - 1].CheckOccupation();
+        System.Console.WriteLine($"User {userId} assigned to Table {tableNumber}, isOccupied: {_tables[tableNumber - 1].isOccupied}");
         await Groups.AddToGroupAsync(sid, tableNumber.ToString());
-        await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true);
-
+        await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true, userId, tableNumber, _tables);
+        System.Console.WriteLine($"User {userId} joined Table {tableNumber}");
         // Store user ID in dictionary
         _userConnections[sid] = userId;
         _userids2sid.AddOrUpdate(userId,

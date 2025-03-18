@@ -6,6 +6,7 @@ using Server.Models;
 using Server.Services;
 using Microsoft.AspNetCore.SignalR;
 using Server.Security;
+using System.Net.Sockets;
 
 namespace Server.Controllers;
 [ApiController]
@@ -170,10 +171,10 @@ public class UserController : ControllerBase
     }
     [Authorize]
     [HttpGet("tables")]
-    public async Task<IActionResult> GetTables()
+    public IActionResult GetTables()
     {
-        var dbfetch = await _tables.Find(_ => true).ToListAsync();
-        var tables = dbfetch.ToArray();
+
+        var tables = SocketService._tables.ToArray();
         return Ok(new { tables });
     }
 

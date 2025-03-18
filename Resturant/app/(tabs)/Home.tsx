@@ -21,6 +21,7 @@ export default function MainPage() {
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
   const [userId, setUserId] = useState<any | null>(null);
   useEffect(() => {
+    
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem('token');
       try {
@@ -34,7 +35,6 @@ export default function MainPage() {
         alert(e);
       }
     };
-  
     const fetchUser = async () => {
       let user = await AsyncStorage.getItem('user');
       if (user) {
@@ -60,10 +60,11 @@ export default function MainPage() {
         
         setSignalRConnection(connection);
         connection.off("ConnectNotification");
-         await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
+         await connection.on("ConnectNotification", async(sid: string,isOkay: boolean, tables:TableProps[]) => {
           if(isOkay){
             alert('Session established');
             await AsyncStorage.setItem('sid', sid);
+            setTables(tables);
           }
         })
       } catch (error) {
@@ -71,10 +72,21 @@ export default function MainPage() {
       }
     };
   
-    fetchTables();
+    
     fetchUser(); // `connect()` now runs inside `fetchUser()`
+    fetchTables();
   }, []);
-  
+  useEffect(() => {
+    const satOnTable = async () => {
+      signalRConnection?.on("ReceiveTableMessage", async (message: string, isOkay: boolean, userId: string,tableNumber: number, tables:TableProps[]) => {
+        if(isOkay){
+          setTables(tables);
+          alert(message);
+
+        }
+      })
+    }
+  },[tables])
   return (
     <ThemedView style={styles.wrapper}>
       
@@ -88,8 +100,11 @@ export default function MainPage() {
             tableNumber={tables[index].tableNumber}  
             isOccupied={tables[index].isOccupied} 
             isWindowSide={tables[index].isWindowSide} 
-            userId={"No ID"} waiterId={"No ID"} 
-            capacity={tables[index].capacity} />
+            userId={tables[index].userId?? ""} waiterId={tables[index].waiterId?? ""} 
+            capacity={tables[index].capacity}
+            hub={signalRConnection?? null}
+             />
+            
           ))}
         </ThemedView>
       </ScrollView>

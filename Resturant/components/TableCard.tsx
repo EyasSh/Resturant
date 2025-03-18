@@ -6,6 +6,7 @@ import ChatLogo from "./ui/ChatLogo";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@/Routes/NavigationTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as signalR from '@microsoft/signalr';
  export type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
@@ -14,7 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
   userId: string;
   capacity : number;
   width: number |null | undefined;
-
+  hub: signalR.HubConnection |null 
 }
 
 export default function TableCard(props:TableProps) {
@@ -25,6 +26,7 @@ export default function TableCard(props:TableProps) {
   const [capacity, setCapacity] = useState<number>(props.capacity);
   const [number, setNumber] = useState<number>(props.tableNumber);
   const navigation = useNavigation<NavigationProp>();
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(props.hub);
   const handlePress = async() => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
@@ -34,6 +36,10 @@ export default function TableCard(props:TableProps) {
     }
     setUserId(u.id);
     setIsOccupied(!isOccupied);
+    if(isOccupied===false && props.hub){
+      connection?.invoke("AssignUserToTable", number, u.id);
+      
+    }
     navigation.navigate('Menu');
   };
 

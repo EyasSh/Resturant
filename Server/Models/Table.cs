@@ -20,6 +20,7 @@ public class Table
     public int Capacity { get; set; } = 2;
     public Table()
     {
+        isOccupied = CheckOccupation();
     }
     public Table(bool isWindowSide) => this.isWindowSide = isWindowSide;
     public Table(int tableNumber, string? waiterId, string? userId, bool isWindowSide, bool isOccupied)
@@ -27,7 +28,8 @@ public class Table
         TableNumber = tableNumber;
         WaiterId = waiterId;
         UserId = userId;
-        this.isWindowSide = isWindowSide;
-        this.isOccupied = isOccupied;
+        this.isOccupied = !string.IsNullOrEmpty(userId) || isOccupied;
+        this.isOccupied = CheckOccupation();
     }
+    public bool CheckOccupation() => isOccupied = !string.IsNullOrEmpty(UserId);
 }

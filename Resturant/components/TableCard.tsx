@@ -26,7 +26,7 @@ export default function TableCard(props:TableProps) {
   const [capacity, setCapacity] = useState<number>(props.capacity);
   const [number, setNumber] = useState<number>(props.tableNumber);
   const navigation = useNavigation<NavigationProp>();
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(props.hub);
+  const connection: signalR.HubConnection | null | undefined = (props.hub);
   const handlePress = async() => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
@@ -34,13 +34,28 @@ export default function TableCard(props:TableProps) {
       alert("Table is already occupied");
       return
     }
-    setUserId(u.id);
-    setIsOccupied(!isOccupied);
+    
     if(isOccupied===false && props.hub){
-      connection?.invoke("AssignUserToTable", number, u.id);
+      console.log("Assigning user to table");
+      console.log(u.id);
+      console.log("Hub connection state:", connection?.state);
+
+     await connection?.invoke("AssignUserToTable", u.id,number);
+     await connection?.on("ReceiveTableMessage", (message:string,isOk:boolean, tableNumber:number, userId:string)=>{
+        console.log("Message:",message);
+        console.log("IsOk:",isOk);
+        console.log("TableNumber:",tableNumber);
+        if(isOk){
+          console.log(`Table is assigned to ${userId}`);
+          setUserId(userId);
+        setIsOccupied(true);
+          navigation.navigate('Menu');
+        }else{
+          console.log("Table is already assigned to someone else");
+      }})
       
     }
-    navigation.navigate('Menu');
+    
   };
 
   return (

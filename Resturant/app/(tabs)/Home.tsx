@@ -78,7 +78,7 @@ export default function MainPage() {
   }, []);
   useEffect(() => {
     const satOnTable = async () => {
-      signalRConnection?.on("ReceiveTableMessage", async (message: string, isOkay: boolean, userId: string,tableNumber: number, tables:TableProps[]) => {
+      await signalRConnection?.on("ReceiveTableMessage", async (message: string, isOkay: boolean, userId: string,tableNumber: number, tables:TableProps[]) => {
         if(isOkay){
           setTables(tables);
           alert(message);
@@ -93,20 +93,23 @@ export default function MainPage() {
       <LogoutButton action={async()=>{await signalRConnection?.stop()}}/>
         
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
-        <ThemedView style={styles.gridContainer}>
-          {Array.from({ length: tables.length }).map((_, index) => (
-            <TableCard key={index} 
-            width={cardWidth} 
-            tableNumber={tables[index].tableNumber}  
-            isOccupied={tables[index].isOccupied} 
-            isWindowSide={tables[index].isWindowSide} 
-            userId={tables[index].userId?? ""} waiterId={tables[index].waiterId?? ""} 
-            capacity={tables[index].capacity}
-            hub={signalRConnection?? null}
-             />
-            
-          ))}
-        </ThemedView>
+      <ThemedView style={styles.gridContainer}>
+  {signalRConnection && tables.length > 0 &&
+    tables.map((table, index) => (
+      <TableCard
+        key={index}
+        width={cardWidth}
+        tableNumber={table.tableNumber}
+        isOccupied={table.isOccupied}
+        isWindowSide={table.isWindowSide}
+        userId={table.userId ?? ""}
+        waiterId={table.waiterId ?? ""}
+        capacity={table.capacity}
+        hub={signalRConnection}
+      />
+    ))
+  }
+</ThemedView>
       </ScrollView>
     </ThemedView>
   );

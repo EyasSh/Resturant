@@ -117,6 +117,7 @@ public class SocketService : Hub<IHubService>
     /// </summary>
     public async Task AssignUserToTable(string userId, int tableNumber)
     {
+        Console.WriteLine($"Assigning user {userId} to table {tableNumber}");
         var sid = Context.ConnectionId;
 
         // Check if user is already in a table

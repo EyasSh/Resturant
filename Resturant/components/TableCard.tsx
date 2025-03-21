@@ -17,79 +17,82 @@ import CurvedButton from "./ui/CurvedButton";
   capacity : number;
   width: number |null | undefined;
   hub: signalR.HubConnection |null 
+  onAssignUserToTable: (userId:string, tableNumber:number)=>void
+  onLeaveTable: (userId:string, tableNumber:number)=>void
 }
 
-export default function TableCard(props:TableProps) {
-  const [isOccupied, setIsOccupied] = useState(props.isOccupied);
-  const [isWindowSide, setIsWindowSide] = useState(props.isWindowSide);
-  const [userId, setUserId] = useState<string>(props.userId);
-  const [waiterId, setWaiterId] = useState<string>(props.waiterId);
-  const [capacity, setCapacity] = useState<number>(props.capacity);
-  const [number, setNumber] = useState<number>(props.tableNumber);
+export default function TableCard(props: TableProps) {
+  const isOccupied = props.isOccupied;
+  const isWindowSide = props.isWindowSide;
+  const userId = props.userId;
+  const waiterId = props.waiterId;
+  const capacity = props.capacity;
+  const number = props.tableNumber;
   const navigation = useNavigation<NavigationProp>();
-  const connection: signalR.HubConnection | null | undefined = (props.hub);
-  const handlePress = async() => {
+
+  const handlePress = async () => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
-    if(isOccupied &&  u &&userId !== u.id){
-      alert("Table is already occupied");
-      return
-    }
-    
-    if(isOccupied===false && props.hub){
-      console.log("Assigning user to table");
-      console.log(u.id);
-      console.log("Hub connection state:", connection?.state);
 
-     await connection?.invoke("AssignUserToTable", u.id,number);
-     await connection?.on("ReceiveTableMessage", (message:string,isOk:boolean, tableNumber:number, userId:string)=>{
-        console.log("Message:",message);
-        console.log("IsOk:",isOk);
-        console.log("TableNumber:",tableNumber);
-        if(isOk){
-          console.log(`Table is assigned to ${userId}`);
-          setUserId(userId);
-        setIsOccupied(true);
-          navigation.navigate('Menu');
-        }else{
-          console.log("Table is already assigned to someone else");
-      }})
-      
+    if (isOccupied && userId !== u.id) {
+      alert("Table is already occupied");
+      return;
     }
-    
+
+    if (isOccupied && userId === u.id) {
+      alert("You are already assigned to this table");
+      navigation.navigate('Menu');
+      return;
+    }
+
+    if (!isOccupied && props.onAssignUserToTable) {
+      props.onAssignUserToTable(u.id, number);
+    }
+  };
+
+  const handleLeave = async () => {
+    const stringfiedUser = await AsyncStorage.getItem('user');
+    const u = JSON.parse(stringfiedUser!);
+    if (userId === u.id && props.onLeaveTable) {
+      props.onLeaveTable(u.id, number);
+    }
   };
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <ThemedView style={[styles.container,{width:props.width}]}>
-        
+      <ThemedView style={[styles.container, { width: props.width }]}>
         <ThemedView style={styles.imageContainer}>
           <Image source={require("@/assets/images/table.png")} style={styles.image} />
         </ThemedView>
-        <ThemedText style={styles.text}>{"Table:"+props.tableNumber}</ThemedText>
+        <ThemedText style={styles.text}>{"Table:" + props.tableNumber}</ThemedText>
         <ThemedView style={styles.bottomInfoContainer}>
-            <ThemedText style={styles.bottomInfoText}>
-              {isOccupied ? "Occupied" : "Not Occupied"}
-            </ThemedText>
+          <ThemedText style={styles.bottomInfoText}>
+            {isOccupied ? "Occupied" : "Not Occupied"}
+          </ThemedText>
           <ThemedText style={styles.bottomInfoText}>{isWindowSide ? "Window Side" : "Not Window Side"}</ThemedText>
-          <ThemedText style={styles.bottomInfoText}>{"Capacity: "+capacity}</ThemedText>
+          <ThemedText style={styles.bottomInfoText}>{"Capacity: " + capacity}</ThemedText>
           <ThemedView style={styles.bottomTableFunctions}>
-          <TouchableOpacity onPress={()=>alert("image pressed")}>
-            <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
-            
-          </TouchableOpacity>
-          <TouchableOpacity >
-            <Image style={styles.image} source={require("@/assets/images/dining.png")} />
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => alert("image pressed")}>
+              <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image style={styles.image} source={require("@/assets/images/dining.png")} />
+            </TouchableOpacity>
           </ThemedView>
         </ThemedView>
-        <CurvedButton title="Leave" action={()=>alert("Leave table")} style={{backgroundColor:"red"}}/>
 
         
+            <CurvedButton
+              title="Leave"
+              action={handleLeave}
+              style={{ backgroundColor: "red" }}
+            />
+         
       </ThemedView>
     </TouchableOpacity>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

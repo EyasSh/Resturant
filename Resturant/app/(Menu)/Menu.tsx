@@ -179,10 +179,10 @@ export default function Menu() {
   
       <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
       <GestureHandlerRootView style={styles.paymentmethods}>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Tabs")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.pop()}>
         <Image source={require("@/assets/images/money.png")} style={styles.image}/>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.navigate("Tabs")}>
+      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.pop()}>
         <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
       </TouchableOpacity>
       </GestureHandlerRootView>

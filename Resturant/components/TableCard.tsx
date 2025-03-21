@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@/Routes/NavigationTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from '@microsoft/signalr';
+import CurvedButton from "./ui/CurvedButton";
  export type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;
@@ -82,6 +83,9 @@ export default function TableCard(props:TableProps) {
           </TouchableOpacity>
           </ThemedView>
         </ThemedView>
+        <CurvedButton title="Leave" action={()=>alert("Leave table")} style={{backgroundColor:"red"}}/>
+
+        
       </ThemedView>
     </TouchableOpacity>
   );

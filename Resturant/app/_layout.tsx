@@ -66,8 +66,8 @@ export default function RootLayout() {
       <Stack.Screen name="OwnerLogin" component={OwnerLogin} options={{ headerShown: false }} />
       <Stack.Screen name="WaiterSignup" component={WaiterSignup} options={{ headerShown: false }} />
       <Stack.Screen name="OwnerSignup" component={OwnerSignup} options={{ headerShown: false }} />
-      <Stack.Screen name="AddMeal" component={AddMealForm} options={{ headerShown: false }} />
-      <Stack.Screen name="AddTable" component={AddTableForm} options={{ headerShown: false }} />
+      <Stack.Screen name="AddMealForm" component={AddMealForm} options={{ headerShown: false }} />
+      <Stack.Screen name="AddTableForm" component={AddTableForm} options={{ headerShown: false }} />
       <Stack.Screen name="RemoveTable" component={RemoveTable} options={{ headerShown: false }} />
       <Stack.Screen name="RemoveMeal" component={RemoveMeal} options={{ headerShown: false }} />
       <Stack.Screen name="FireStaff" component={FireStaff} options={{ headerShown: false }} />

@@ -4,21 +4,28 @@ import { ThemedView } from './ThemedView'
 import { ThemedText } from './ThemedText'
 import { StyleSheet, Image } from 'react-native'
 import CurvedButton from '@/components/ui/CurvedButton'
+import { WaiterTableProps } from '@/Types/WaiterTableProps'
 
 
-export default function WaiterTableCard() {
+export default function WaiterTableCard(props:WaiterTableProps) {
     return(
         <ThemedView style={styles.container}>
-            <ThemedText style={styles.waiterCardText}>Table Number</ThemedText>
+            <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
+            <CurvedButton 
+                title="Wait Table" 
+                action={()=>{alert("Waiting Table")}} 
+                style={{backgroundColor:"#4800ff"}}
+            />
             <CurvedButton 
                 title="Peak Order" 
                 action={()=>{alert("Peak Order")}} 
                 style={{backgroundColor:"#fc9b1c"}}
             />
+            
             <CurvedButton
                 title='Mark order as ready'
                 action={()=>{alert("Mark as ready")}}
-                style={{backgroundColor:"#3605fc"}} 
+                style={{backgroundColor:"#4800ff"}} 
             />
         </ThemedView>
     )

@@ -69,7 +69,7 @@ export default function Waiter() {
                         Hello {waiter?.name}
                     </ThemedText>
                      {Array.from({ length: 12 }).map((_, index) => (
-                        <WaiterTableCard key={index} />
+                        <WaiterTableCard key={index} tableNumber={index + 1}/>
                     ))}
                 </ScrollView>
             </ThemedView>

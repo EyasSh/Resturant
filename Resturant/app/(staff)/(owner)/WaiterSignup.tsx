@@ -47,7 +47,7 @@ export default function WaiterSignup() {
             <ThemedInput type="password" value={password} action={(text) => setPassword(text)} placeholder="Password" />
             <ThemedInput type="phone-pad" value={phone} action={(text) => setPhone(text)} placeholder="Phone" />
             
-            <CurvedButton title="Add Worker" action={async()=>await handleSignup()} style={{backgroundColor:"rgb(72, 0, 255)"}} />
+            <CurvedButton title="Add Worker" action={async()=>await handleSignup()} style={{backgroundColor:"#4800ff"}} />
         </ThemedView>
     );
 }

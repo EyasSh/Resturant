@@ -10,6 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as signalR from '@microsoft/signalr';
 import LogoutButton from '@/components/LogoutButton';
 import { TableProps } from '@/components/TableCard';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '@/Routes/NavigationTypes';
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -20,6 +22,7 @@ export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
   const [userId, setUserId] = useState<any | null>(null);
+  const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -86,6 +89,7 @@ export default function MainPage() {
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
       await signalRConnection?.invoke("AssignUserToTable", userId, tableNumber);
+      navigation.navigate('Menu');
     } catch (err) {
       console.error("Failed to assign user to table", err);
     }

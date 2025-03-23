@@ -14,11 +14,11 @@ function Main() {
             <ThemedText style={styles.header}>Terminals</ThemedText>
             <TouchableOpacity onPress={() =>navigation.navigate("WaiterLogin")} style={styles.staffBox}>
                 <Image source={require("@/assets/images/chef.png")} style={styles.image} />
-                <ThemedText>Chef/Waiter</ThemedText>
+                <ThemedText style={styles.text}>Chef/Waiter</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate("OwnerLogin")} style={styles.staffBox}>
                 <Image style={styles.image} source={require("@/assets/images/owner.png")} />
-                <ThemedText>Owner</ThemedText>
+                <ThemedText style={styles.text}>Owner</ThemedText>
             </TouchableOpacity>
         </ThemedView>
     );
@@ -51,13 +51,18 @@ const styles = StyleSheet.create({
         borderColor:"grey",
         borderWidth:1,
         borderRadius:5,
-        padding:10
+        padding:10,
+        gap:5,
     },
     image: {
         width: 100,
         height: 100,
         borderRadius: 10,
         resizeMode: 'cover',
+      },
+      text:{
+        fontSize:15,
+        fontWeight:'bold'
       },
 });
 export default Main;

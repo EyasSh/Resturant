@@ -9,7 +9,7 @@ import CurvedButton from '@/components/ui/CurvedButton'
 export default function WaiterTableCard() {
     return(
         <ThemedView style={styles.container}>
-            <ThemedText>WaiterTableCard</ThemedText>
+            <ThemedText style={styles.waiterCardText}>Table Number</ThemedText>
             <CurvedButton 
                 title="Peak Order" 
                 action={()=>{alert("Peak Order")}} 
@@ -34,8 +34,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 10,
         margin: 10,
-        minHeight: 120, // ✅ replace "9%"
-        width: '90%',   // wider and consistent
+        minHeight: 240, // ✅ replace "9%"
+        minWidth: '50%',   // wider and consistent
+      },
+      waiterCardText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+
       },
    
 })

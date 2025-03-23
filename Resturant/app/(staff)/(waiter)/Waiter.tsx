@@ -8,6 +8,8 @@ import * as signalR from '@microsoft/signalr';
 import ip from '@/Data/Addresses';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import { useNavigation } from '@react-navigation/native';
+import WaiterTableCard from '@/components/WaiterTableCard';
+import { ScrollView, SafeAreaView } from 'react-native'
 type Waiter=
 {
     id: string
@@ -58,35 +60,38 @@ export default function Waiter() {
         connect();
     }, [waiter?.id]); // Only runs when waiter.id is defined
     return (
-        <ThemedView style={styles.container}>
-            <LogoutButton action={async()=> await signalRConnection?.stop()}/>
-            <ThemedText style={styles.text}>
-                Hello {waiter?.name}
-            </ThemedText>
-            <ThemedText>
-                Your email is {waiter?.email}
-            </ThemedText>
-            <ThemedText>
-                Your id is {waiter?.id}
-            </ThemedText>
-        </ThemedView>
-    );
-}
-const styles = StyleSheet.create({
-    container:{
-        display: 'flex',
-        flexDirection: 'column',
+       
+        <SafeAreaView style={styles.safeArea}>
+            <ThemedView>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <LogoutButton action={async () => await signalRConnection?.stop()} />
+                    <ThemedText style={styles.text}>
+                        Hello {waiter?.name}
+                    </ThemedText>
+                     {Array.from({ length: 12 }).map((_, index) => (
+                        <WaiterTableCard key={index} />
+                    ))}
+                </ScrollView>
+            </ThemedView>
+        </SafeAreaView>
+        
+      );
+    }
+    
+    const styles = StyleSheet.create({
+        safeArea: {
+            flex: 1,
+           
+          },
+      scrollContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 20,
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        height: '100%',
-        width: '100%',
-        gap:25,
-    },
-    text:{
+      },
+      text: {
         fontSize: 25,
         fontWeight: 'bold',
-        height: 'auto',
-        width: 'auto',
-    },
-});
+        marginTop: 10,
+      },
+    });

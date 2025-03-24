@@ -40,7 +40,7 @@ export default function Waiter() {
 
         const connect = async () => {
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter.id}&privilagelevel=waiter`)
+                .withUrl(`http://${ip.nitc}:5256/hub?waiterid=${waiter.id}&privilagelevel=waiter`)
                 .build();
             try {
                 await connection.start();  

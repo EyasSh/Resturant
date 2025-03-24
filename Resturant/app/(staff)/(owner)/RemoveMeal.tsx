@@ -44,7 +44,7 @@ export default function RemoveMeal() {
             }
             const token = await AsyncStorage.getItem('token');
             
-            const res = await axios.delete(`http://${ip.julian}:5256/api/owner/delete/meal?mealId=${mealId}`,{
+            const res = await axios.delete(`http://${ip.nitc}:5256/api/owner/delete/meal?mealId=${mealId}`,{
                 headers: {
                 "x-auth-token": token,
             }});

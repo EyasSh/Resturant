@@ -211,10 +211,20 @@ public class SocketService : Hub<IHubService>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var sid = Context.ConnectionId;
+        var httpContext = Context.GetHttpContext();
+        var id = httpContext?.Request.Query["userid"].ToString() ?? string.Empty;
 
         if (_userConnections.TryGetValue(sid, out string? mongoId))
         {
             _userConnections.TryRemove(sid, out _);
+            _tables.ForEach(t =>
+            {
+                if (t.UserId == id)
+                {
+                    t.UserId = string.Empty;
+                    t.CheckOccupation();
+                }
+            });
 
             if (_userids2sid.TryGetValue(mongoId, out var sids))
             {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Image, TouchableOpacity} from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
@@ -56,7 +56,7 @@ export default function TableCard(props: TableProps) {
   const capacity = props.capacity;
   const number = props.tableNumber;
   const navigation = useNavigation<NavigationProp>();
-
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 /**
  * Handles the press event on the table card.
  * 
@@ -70,6 +70,14 @@ export default function TableCard(props: TableProps) {
  *   navigation to the menu occurs.
  * - If the table is not occupied, the current user is assigned to the table using the provided callback.
  */
+useEffect(() => {
+  const getUserId = async () => {
+    const stringfiedUser = await AsyncStorage.getItem('user');
+    const u = JSON.parse(stringfiedUser!);
+    setCurrentUserId(u.id);
+  }
+  getUserId();
+})
   const handlePress = async () => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
@@ -122,11 +130,11 @@ export default function TableCard(props: TableProps) {
         </ThemedView>
 
         
-            <CurvedButton
+            {isOccupied && userId === currentUserId ?<CurvedButton
               title="Leave"
               action={handleLeave}
               style={{ backgroundColor: "red" }}
-            />
+            />:null} 
          
       </ThemedView>
     </TouchableOpacity>

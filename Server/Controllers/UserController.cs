@@ -592,8 +592,18 @@ public class OwnerController : ControllerBase
     [HttpGet("tables")]
     public async Task<IActionResult> GetTables()
     {
-        var dbfetch = await _tables.Find(_ => true).ToListAsync();
-        var tables = dbfetch.ToArray();
-        return Ok(tables);
+        if (SocketService._tables.Count == 0)
+        {
+            var dbfetch = await _tables.Find(_ => true).ToListAsync();
+            var tables = dbfetch.ToArray();
+            return Ok(tables);
+        }
+        else
+        {
+            var servicefetch = SocketService._tables;
+            var tables = servicefetch.ToArray();
+            return Ok(tables);
+        }
+
     }
 }

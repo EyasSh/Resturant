@@ -27,7 +27,7 @@ export default function RemoveTable() {
         const fetchTables = async () => {
             try {
                 const token = await AsyncStorage.getItem("token");
-                const res = await axios.get(`http://${ip.nitc}:5256/api/owner/tables`, {
+                const res = await axios.get(`http://${ip.julian}:5256/api/owner/tables`, {
                     headers: { "x-auth-token": token },
                 });
                 if (res && res.status === 200) {
@@ -57,7 +57,7 @@ export default function RemoveTable() {
 
             const token = await AsyncStorage.getItem("token");
             const res = await axios.delete(
-                `http://${ip.nitc}:5256/api/owner/delete/tables?number=${number}`,
+                `http://${ip.julian}:5256/api/owner/delete/tables?number=${number}`,
                 { headers: { "x-auth-token": token } }
             );
 

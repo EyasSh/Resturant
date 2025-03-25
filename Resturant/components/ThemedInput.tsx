@@ -10,6 +10,23 @@ type InputProps={
     action?:(text:any)=>void,
     value?:string,
 }
+/**
+ * ThemedInput is a customizable input component that adapts to the theme
+ * and type specified in its props. It supports multiple input types such 
+ * as text, password, email-address, and phone-pad, displaying a themed 
+ * TextInput component based on the input type. If the input type is not 
+ * supported, it displays an error message using ThemedText.
+ *
+ * @param {InputProps} props - The properties for configuring the input. 
+ *  - type: Specifies the input type (text, password, email-address, phone-pad, or date).
+ *  - placeholder: The placeholder text for the input field.
+ *  - action: A function to handle changes in the input text.
+ *  - value: The current value of the input field.
+ *
+ * @returns A themed TextInput wrapped in a GestureHandlerRootView, tailored 
+ * to the input type with appropriate styling and behavior.
+ */
+
 function ThemedInput(props:InputProps) {
    const {colors,dark:isDark  } = useTheme(); // Access theme colors
    const isTypeIncluded=inputTypes.includes(props.type);

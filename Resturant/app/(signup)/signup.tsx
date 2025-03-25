@@ -9,6 +9,11 @@ import axios from 'axios';
 import ip from '@/Data/Addresses'
 import CurvedButton from '@/components/ui/CurvedButton';
 import ThemedInput from '@/components/ThemedInput';
+/**
+ * Signup component
+ * 
+ * @return {JSX.Element} - Signup component
+ */
 export default function Signup() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -18,6 +23,16 @@ export default function Signup() {
     const [phone, setPhone] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const { colors, dark: isDark } = useTheme();
+
+/**
+ * Handles the change of the date selection from the date picker.
+ * Updates both the display date and the formatted date of birth.
+ * 
+ * @param {any} event - The event triggered by the date picker.
+ * @param {Date} [selectedDate] - The date selected by the user.
+ *                                If a date is selected, the function updates the 
+ *                                state with the formatted date in 'YYYY-MM-DD' format.
+ */
 
     const handleDateChange = (event:any, selectedDate?:Date) => {
         if (selectedDate) {
@@ -30,6 +45,16 @@ export default function Signup() {
         setShowDatePicker(false); // Hide picker after selecting
     };
 
+    /**
+     * Handles the sign up request by sending a post request to the backend
+     * with the user's details. If the request is successful, it shows an alert
+     * with the response message. If there is an error, it shows an alert with
+     * the error message.
+     * 
+     * @function
+     * @async
+     * @returns {undefined}
+     */
     const handleSignup = async() => {
         try{
             const res = await axios.post(`http://${ip.julian}:5256/api/user/signup`,{

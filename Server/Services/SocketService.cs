@@ -5,13 +5,18 @@ using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 using Server.DB;
 using Server.Models;
-
+/// <summary>
+/// Interface for the SignalR hub service.
+/// </summary>
 public interface IHubService
 {
     Task ConnectNotification(string sid, bool isOkay, List<Table> tables);
     Task ReceiveMessage(Message message);
     Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0, List<Table>? tables = null);
 }
+/// <summary>
+/// SignalR service for handling real-time communication between clients.
+/// </summary>
 public class SocketService : Hub<IHubService>
 {
     public SocketService(MongoDBWrapper dBWrapper)

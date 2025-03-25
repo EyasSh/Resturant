@@ -19,6 +19,12 @@ export  type Meal = {
   category: string;
 };
 
+/**
+ * Displays the menu items and allows users to select items to add to their order.
+ * If there is an error fetching the menu items, an error message is displayed.
+ * If the user is not authenticated, they are redirected to the login screen.
+ * @returns {JSX.Element} The Menu component
+ */
 export default function Menu() {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
@@ -33,6 +39,16 @@ export default function Menu() {
       
       return; // No need to fetch again if we already have items
     }
+    /**
+     * Fetches meals from the API and updates the component state.
+     * If there is an error fetching the meals, an error message is displayed.
+     * If the user is not authenticated, an error is thrown.
+     * If the response is not successful, an error is thrown.
+     * If the response data is not an array of meals, an error is thrown.
+     * If the response data is an empty array, the state is set to an empty array.
+     * If the response data is a non-empty array of meals, the state is updated with the new data.
+     * Finally, the loading state is set to false.
+     */
     async function fetchMeals() {
       try {
         setLoading(true);
@@ -73,6 +89,11 @@ export default function Menu() {
     fetchMeals();
   }, [menuItems]);
 
+  /**
+   * Adds a meal item to the order list. If the item is already in the list, increments the quantity by one.
+   * Otherwise, adds the item to the list with a quantity of one.
+   * @param {Meal} item - The meal to add to the list.
+   */
   function addItemToList(item: Meal) {
 
     
@@ -87,6 +108,13 @@ export default function Menu() {
       }
     });
   }
+/**
+ * Removes a meal item from the order list. If the item's quantity is greater than one,
+ * decrements the quantity by one. Otherwise, removes the item from the list entirely.
+ * If the item is not found, the list remains unchanged.
+ * @param {Meal} item - The meal to remove from the list.
+ */
+
   function removeItemFromList(item: Meal) {
     setList((prevList) => {
       const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
@@ -103,6 +131,11 @@ export default function Menu() {
     });
   }
   
+  /**
+   * Calculates the total cost of the order by summing the prices of all items on the list
+   * and multiplying each price by its corresponding quantity.
+   * @returns {string} The total cost of the order as a string with two decimal places.
+   */
   function calculateTotal() {
     return list
       .reduce((total, item) => total + item.price * item.quantity, 0)

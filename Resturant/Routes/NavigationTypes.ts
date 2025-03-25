@@ -1,6 +1,11 @@
 import { ChatProps } from '@/Types/ChatProps';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
+/**
+ * This is the type definition for the navigation prop used in the app.
+ * It defines the screens that can be navigated to.
+ * It also defines the parameters (props) that can be passed to each screen.
+ */
 export type RootStackParamList = {
     "Login": undefined;
     "Tabs": undefined;
@@ -19,5 +24,8 @@ export type RootStackParamList = {
     "Menu": undefined
     "Signup": undefined;
 }
-// Define type for navigation prop
+/**
+ * This is the type definition for the navigation prop used in the app.
+ * It defines the screens that can be navigated to using the `useNavigation` hook in `react-navigation/native`.
+ */
 export type NavigationProp = StackNavigationProp<RootStackParamList>;

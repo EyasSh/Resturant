@@ -9,6 +9,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { FireWaiterParams } from "@/Types/FireWaiterParams";
 import CurvedButton from "@/components/ui/CurvedButton";
 
+/**
+ * FireStaff Component
+ * 
+ * This component displays a list of waiters, along with a button to remove each waiter.
+ * Upon removing a waiter, the component updates the list of waiters and re-fetches from the API.
+ * 
+ * @returns JSX.Element
+ */
 export default function FireStaff() {
     const [waiters, setWaiters] = useState<FireWaiterParams[]>([]);
 

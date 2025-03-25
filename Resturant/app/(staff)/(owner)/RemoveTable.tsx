@@ -19,11 +19,25 @@ export type Table = {
     userId: string;
 };
 
+/**
+ * A page for the owner to remove tables from the database.
+ * The page will fetch the current list of tables and display them
+ * in a scrollable list, with each item containing the table number,
+ * capacity, window side status, and occupied status. The owner can
+ * delete a table by tapping the "Remove" button next to it.
+ * The page will also display a message if no tables are available.
+ */
 export default function RemoveTable() {
     const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        /**
+         * Fetches the list of tables from the server and updates the AsyncStorage.
+         * If the response is successful (200), the tables are stored in AsyncStorage
+         * If there is an error, an alert is displayed to the user
+         * Finally, the loading state is set to false
+         */
         const fetchTables = async () => {
             try {
                 const token = await AsyncStorage.getItem("token");
@@ -43,6 +57,11 @@ export default function RemoveTable() {
         fetchTables();
     }, []);
 
+    /**
+     * Deletes a table from the database and updates the AsyncStorage.
+     * @param number the table number to delete
+     * @returns a promise that resolves when the deletion is complete
+     */
     const handleDelete = async (number: number) => {
         try {
             // Retrieve stored tables

@@ -1,4 +1,7 @@
 namespace Server.Services;
+/// <summary>
+/// Request object for owner signup.
+/// </summary>
 public class OwnerSignupRequest
 {
     public string Name { get; set; }

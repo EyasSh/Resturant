@@ -2,7 +2,10 @@ using MongoDB.Driver;
 using Server.Models;
 namespace Server.DB;
 
-
+/// <summary>
+/// Wrapper class for MongoDB client and database.
+/// This class is responsible for initializing the MongoDB client and database, and providing access to collections.
+/// </summary>
 public class MongoDBWrapper
 {
     private readonly IMongoClient _client;

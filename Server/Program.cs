@@ -10,9 +10,13 @@ using Server.Security;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+//Enabling Controllers and adding NewtonsoftJson for json formatting
 builder.Services.AddControllers().AddNewtonsoftJson();
+//Enable the app to see the controllers
 builder.Services.AddEndpointsApiExplorer();
+//Adding UI to test controllers when running the server
 builder.Services.AddSwaggerGen();
+//Adding SignalR for real-time communication
 builder.Services.AddSignalR();
 
 // MongoDB Dependency Injection
@@ -22,14 +26,17 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     var connectionString = configuration.GetValue<string>("DB:ConnectionString");
     return new MongoClient(connectionString);
 });
+//Adding the MongoDBWrapper to the services
 builder.Services.AddScoped<MongoDBWrapper>();
+//Adding the sockets to the services
 builder.Services.AddScoped<SocketService>();
-// User Controller Injection
+// Controller Injection
 builder.Services.AddScoped<UserController>();
 builder.Services.AddScoped<OwnerController>();
 builder.Services.AddScoped<WaiterController>();
 //Email Service Injection
 builder.Services.AddScoped<EmailService>();
+//Security Manager Injection
 builder.Services.AddScoped<SecurityManager>();
 //Authentication Service
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -141,24 +148,32 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
+//using a url available on the entire network IE if you're on a router called "router" 
+// you can access the server from any device on the network
 builder.WebHost.UseUrls("http://0.0.0.0:5256");
 
-
+//Building the app with the services
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
+    //Using swagger functionality
     app.UseSwagger();
+    //Using swagger UI
     app.UseSwaggerUI();
 }
+//Enabling access to the hub through a "/hub" endpoint
 app.MapHub<SocketService>("hub");
 app.UseHttpsRedirection();
+//Enabling CORS
 app.UseCors("AllowAllHosts");
+//Enabling routing
 app.UseRouting();
+//Enabling authentication and authorization
 app.UseAuthentication();
 app.UseAuthorization();
+//Enabling the controllers
 app.MapControllers();         // CORS Middleware
 // API Endpoints
 app.MapGet("/weatherforecast", () =>

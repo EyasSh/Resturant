@@ -8,9 +8,27 @@ import CurvedButton from '@/components/ui/CurvedButton';
 import { StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * A form for the owner to add a table to the database. The form
+ * includes two inputs: capacity and isWindowSide. The capacity is
+ * the number of customers that can sit at the table, and isWindowSide
+ * is a boolean that indicates whether the table is window side or not.
+ * The form also includes two buttons: "Add Table" and "Cancel". The
+ * "Add Table" button will add the table to the database and alert the
+ * user that the table was added successfully. The "Cancel" button will
+ * navigate the user back to the previous screen.
+ */
 export default function AddTableForm() {
     const [capacity,setCapacity] = useState<number>(0);
     const [isWindowSide,setIsWindowSide] = useState<boolean>(false);
+/**
+ * Submits the form data to add a new table to the restaurant's database.
+ * This function first checks for user authentication via token retrieval.
+ * If the user is authenticated, it sends a POST request with the table's
+ * capacity and window side preference. On successful addition, it alerts
+ * the user. If an error occurs, it alerts the user with the error message.
+ */
+
     const handleSubmit=async()=>{
         const token = await AsyncStorage.getItem("token");
         if(!token){

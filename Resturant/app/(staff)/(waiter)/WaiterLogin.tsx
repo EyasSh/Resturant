@@ -11,10 +11,31 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import Logo from '@/components/ui/Logo';
 
+/**
+ * Component for the waiter login screen
+ * 
+ * @remarks
+ * This component is navigated to when the user clicks on the "Waiter Login" button on the login screen.
+ * The component renders a logo, two input fields for the email and password, a login button, and a sign up button.
+ * When the user clicks on the login button, the email and password are sent to the server to be validated.
+ * If the validation is successful, the user is navigated to the Waiter screen.
+ * If the validation fails, the user is shown an alert with the error message.
+ * When the user clicks on the sign up button, the user is navigated to the Waiter Signup screen.
+ * 
+ * @returns the Waiter Login component
+ */
 export default  function WaiterLogin() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
     const navigation = useNavigation<NavigationProp>();
+    /**
+     * Handles the login process for the waiter.
+     * Performs validation and sends a request to the server to
+     * authenticate the user.
+     * If the user is authenticated, sets the token and user data in
+     * AsyncStorage and navigates to the Waiter screen.
+     * If the user is not authenticated, displays an error message.
+     */
     const handleLogin = async() => {
         try{
             if(email==='' || password===''){

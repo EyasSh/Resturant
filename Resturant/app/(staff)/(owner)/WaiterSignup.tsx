@@ -8,11 +8,31 @@ import axios from 'axios';
 import ip from "@/Data/Addresses";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * The waiter signup screen, which displays a form for the owner to sign up a waiter
+ * 
+ * The form takes in the following fields: name, email, password, and phone
+ * 
+ * When the form is submitted, the `handleSignup` function is called, which sends a POST request to the server with the data.
+ * If the response is successful (200), the waiter is signed up and a success alert is displayed
+ * If there is an error, an alert is displayed to the user
+ * 
+ * The user can navigate back to the login screen using the back button
+ */
 export default function WaiterSignup() {
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
     const [name,setName] = useState<string>('');
     const [phone,setPhone] = useState<string>('');
+/**
+ * Handles the signup request for a waiter by sending a POST request to the server
+ * with the waiter's details. If the request is successful, it shows an alert
+ * with the response message. If there is an error, it shows an alert with the
+ * error message.
+ *
+ * @async
+ * @returns {undefined}
+ */
     const handleSignup = async() => {
         try{
             const token = await AsyncStorage.getItem("token");

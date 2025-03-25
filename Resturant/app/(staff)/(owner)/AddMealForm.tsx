@@ -12,6 +12,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useTheme } from "@react-navigation/native";
 
+/**
+ * Component for adding a meal to the database and AsyncStorage.
+ * Provides a form with three fields: name, price, and category.
+ * The category is a dropdown menu with the options from the database.
+ * The user can add a meal by pressing the "Add meal" button.
+ * If the meal is added successfully, the user is alerted with a success message.
+ * If there is an error, the user is alerted with the error message.
+ */
 export default function AddMealForm() {
     const { colors } = useTheme();
     const [name, setName] = useState<string>('');
@@ -27,6 +35,14 @@ export default function AddMealForm() {
     
     ]);
     
+    /**
+     * Handles the addition of a meal to the database and AsyncStorage.
+     * 
+     * Before making the API call, the function checks if the meal name and price are valid.
+     * If the meal name is empty or the price is 0, the user is alerted with an error message.
+     * If the meal is added successfully, the user is alerted with a success message.
+     * If there is an error, the user is alerted with the error message.
+     */
     const handleAddMeal = async () => {
         if(name==='' || price===0){
             alert("Can't add a no named OR free meal");

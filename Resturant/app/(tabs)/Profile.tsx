@@ -9,10 +9,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import LogoutButton from '@/components/LogoutButton';
 
+/**
+ * Profile component displays the user's profile information.
+ * 
+ * This component fetches the user's name from AsyncStorage and displays it.
+ * If the user's name is not found, it defaults to 'Guest'.
+ * 
+ * @returns A ThemedView containing a welcome message and the user's name.
+ */
+
 export default function Profile() {
   const [name, setName] = useState(null);
 
   useEffect(() => {
+  /**
+   * Fetches the user's name from AsyncStorage and sets it to the component's
+   * state. If the user's name is not found, it defaults to 'Guest'.
+   * 
+   * @returns {Promise<void>}
+   */
     const fetchUser = async () => {
       try {
         const user = await AsyncStorage.getItem('user');

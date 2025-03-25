@@ -1,5 +1,8 @@
 namespace Server.Services
 {
+    /// <summary>
+    /// Request object for waiter signup.
+    /// </summary>
     public class WaiterSignupRequest
     {
         public string Name { get; set; } = string.Empty;

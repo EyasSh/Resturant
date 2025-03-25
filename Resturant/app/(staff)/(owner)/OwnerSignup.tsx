@@ -7,12 +7,33 @@ import { StyleSheet } from 'react-native';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 
+/**
+ * The owner signup screen, which displays a form for the owner to sign up
+ * 
+ * The form takes in the following fields: name, email, password, phone, and restaurant number
+ * 
+ * When the form is submitted, the `handleSignup` function is called, which sends a POST request to the server with the data.
+ * If the response is successful (200), the owner is signed up and a success alert is displayed
+ * If there is an error, an alert is displayed to the user
+ * 
+ * The user can navigate back to the login screen using the back button
+ */
 export default function OwnerSignup() {
     const [name,setName] = useState<string>('');
     const [email,setEmail] = useState<string>('');
     const [password,setPassword] = useState<string>('');
     const [phone,setPhone] = useState<string>('');
     const [restaurantNumber,setRestaurantNumber] = useState<string>('');
+    /**
+     * Handles the sign up request by sending a post request to the backend
+     * with the user's details. If the request is successful, it shows an alert
+     * with the response message. If there is an error, it shows an alert with
+     * the error message.
+     * 
+     * @function
+     * @async
+     * @returns {undefined}
+     */
     const handleSignup = async() => {
         try{
             if(name==='' || email==='' || password==='' || phone==='' || restaurantNumber===''){

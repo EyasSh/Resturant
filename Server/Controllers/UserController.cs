@@ -11,6 +11,9 @@ using System.Net.Sockets;
 namespace Server.Controllers;
 [ApiController]
 [Route("api/user")] // Base route for all actions in this controller
+/// <summary>
+/// The user controller class is responsible for handling user-related actions such as login, sign-up, and account termination.
+/// </summary>
 public class UserController : ControllerBase
 {
     private readonly IHubContext<SocketService> _hubContext;
@@ -169,6 +172,12 @@ public class UserController : ControllerBase
         var meals = dbfetch.ToArray();
         return Ok(new { meals });
     }
+    /// <summary>
+    /// Retrieves the list of tables currently available in the restaurant system.
+    /// This action is restricted to authorized users.
+    /// </summary>
+    /// <returns>A successful status code (200) along with the list of tables as a JSON payload.</returns>
+
     [Authorize]
     [HttpGet("tables")]
     public IActionResult GetTables()
@@ -182,6 +191,9 @@ public class UserController : ControllerBase
 
 [ApiController]
 [Route("api/waiter")]
+/// <summary>
+/// A controller for managing waiters and waiter actions in the system.
+/// </summary>
 public class WaiterController : ControllerBase
 {
     IMongoCollection<Waiter> _waiters;
@@ -231,6 +243,9 @@ public class WaiterController : ControllerBase
 }
 [ApiController]
 [Route("api/owner")]
+/// <summary>
+/// A controller for managing restaurant owners and owner actions in the system.
+/// </summary>
 public class OwnerController : ControllerBase
 {
     IMongoCollection<Owner> _owners;
@@ -430,6 +445,10 @@ public class OwnerController : ControllerBase
         var meals = dbfetch.ToArray();
         return Ok(meals);
     }
+    /// <summary>
+    /// Retrieves the list of waiters from the restaurant's database. This action is restricted to authorized users.
+    /// </summary>
+    /// <returns>A successful status code (200) along with the list of waiters as a JSON payload.</returns>
     [Authorize]
     [HttpGet("waiters")]
     public async Task<IActionResult> GetWaiters()
@@ -439,6 +458,14 @@ public class OwnerController : ControllerBase
 
         return Ok(waiters);
     }
+    /// <summary>
+    /// Deletes a waiter from the restaurant's database. This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="id">The ID of the waiter to be deleted.</param>
+    /// <returns>A successful status code (200) if the waiter was deleted successfully, or a bad request status code (400) if the waiter is online or was not found.</returns>
+    /// <remarks>
+    /// This action is restricted to authorized users (i.e. the restaurant owners).
+    /// </remarks>
     [Authorize]
     [HttpDelete("delete/waiter")]
     public IActionResult RemoveWaiter([FromQuery] string id)
@@ -457,6 +484,20 @@ public class OwnerController : ControllerBase
         }
         return Ok("Waiter removed successfully.");
     }
+    /// <summary>
+    /// Deletes a table from the restaurant's database and updates the table numbers accordingly.
+    /// This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="number">The table number to be deleted.</param>
+    /// <returns>A successful status code (200) with the updated list of tables if the deletion is successful,
+    /// or a bad request status code (400) if the table is occupied, other tables are occupied making shifting impossible,
+    /// or if the table was not found.</returns>
+    /// <remarks>
+    /// The function checks if the table is occupied or if it exists. It prevents deletion if the table is occupied
+    /// or if shifting other table numbers is not possible due to occupied tables.
+    /// The table is removed from the database and from the SocketService list if all conditions are met.
+    /// </remarks>
+
     [Authorize]
     [HttpDelete("delete/tables")]
     public async Task<IActionResult> DeleteTable([FromQuery] int number)
@@ -507,6 +548,14 @@ public class OwnerController : ControllerBase
         return Ok(tables);
     }
 
+    /// <summary>
+    /// Shifts the table numbers down by one for all tables with numbers greater than the deleted table number.
+    /// </summary>
+    /// <param name="deletedTableNumber">The table number that was deleted.</param>
+    /// <remarks>
+    /// Shifting the table numbers is done in two steps: first, all tables in the database are updated in a bulk operation,
+    /// and second, the in-memory list of tables is updated.
+    /// </remarks>
     private async Task ShiftTableNumbers(int deletedTableNumber)
     {
         var tablesToShift = await _tables
@@ -533,6 +582,11 @@ public class OwnerController : ControllerBase
             }
         }
     }
+
+    /// <summary>
+    /// Retrieves the list of tables from the restaurant's database. This action is restricted to authorized users.
+    /// </summary>
+    /// <returns>A successful status code (200) along with the list of tables as a JSON payload.</returns>
 
     [Authorize]
     [HttpGet("tables")]

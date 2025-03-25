@@ -18,6 +18,11 @@ const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2; // Use 3 columns on larger screens, otherwise 2
 const cardWidth = Math.max((screenWidth / numColumns) - 30, 150); // Ensure cards don't get too small
 
+/**
+ * The main page of the app, displaying a grid of tables and allowing the user to assign themselves to a table or leave a table.
+ *
+ * @returns A JSX element representing the main page of the app.
+ */
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
@@ -25,6 +30,11 @@ export default function MainPage() {
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
+  /**
+   * Fetches the list of tables from the server and updates the state with the response.
+   * If the response is successful (200), the tables are stored in the state.
+   * If there is an error, an alert is displayed to the user.
+   */
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem('token');
       try {
@@ -39,6 +49,12 @@ export default function MainPage() {
       }
     };
 
+  /**
+   * Fetches the user data from AsyncStorage and sets the user ID in the component's state.
+   * If user data is found, it parses the data, sets the user ID, and attempts to establish a SignalR connection.
+   * If no user data is found, an alert is displayed to the user.
+   */
+
     const fetchUser = async () => {
       let user = await AsyncStorage.getItem('user');
       if (user) {
@@ -50,6 +66,21 @@ export default function MainPage() {
       }
     };
 
+  /**
+   * Establishes a connection to the SignalR hub with the specified user ID and "user" privilage level
+   * 
+   * The connection is established using the HubConnectionBuilder
+   * 
+   * The connection is then stored in the component's state
+   * 
+   * An event listener is set for the "ConnectNotification" event. When this event is triggered, an alert is displayed to the user
+   * and the session ID is stored in AsyncStorage
+   * 
+   * An event listener is set for the "ReceiveTableMessage" event. When this event is triggered, an alert is displayed to the user
+   * and the component's state is updated with the new table data
+   * 
+   * If an error occurs during connection, an error is logged to the console
+   */
     const connect = async (id: string) => {
       if (!id) return;
 
@@ -85,7 +116,15 @@ export default function MainPage() {
     fetchTables();
   }, []);
 
-  // ✅ Assign table handler
+
+  /**
+   * Assigns a user to a table and navigates to the menu.
+   * 
+   * @param userId The ID of the user to assign to the table.
+   * @param tableNumber The number of the table to assign the user to.
+   * 
+   * @throws {Error} If the assignment fails, an error is thrown.
+   */
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
       await signalRConnection?.invoke("AssignUserToTable", userId, tableNumber);
@@ -95,7 +134,15 @@ export default function MainPage() {
     }
   };
 
-  // ✅ Leave table handler
+
+  /**
+   * Leaves a table and updates the component's state.
+   * 
+   * @param userId The ID of the user leaving the table.
+   * @param tableNumber The number of the table to leave.
+   * 
+   * @throws {Error} If the operation fails, an error is thrown.
+   */
   const handleLeaveTable = async (userId: string, tableNumber: number) => {
     try {
       // Here you could also notify via SignalR if needed

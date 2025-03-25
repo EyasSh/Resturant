@@ -7,6 +7,12 @@ import CurvedButton from '@/components/ui/CurvedButton'
 import { WaiterTableProps } from '@/Types/WaiterTableProps'
 
 
+/**
+ * A Card component for waiters to view and manage tables.
+ * 
+ * @param {WaiterTableProps} props - The props of the component. Must include `tableNumber`, which is the number of the table to display.
+ * @returns {JSX.Element} A JSX element representing the card component.
+ */
 export default function WaiterTableCard(props:WaiterTableProps) {
     return(
         <ThemedView style={styles.container}>

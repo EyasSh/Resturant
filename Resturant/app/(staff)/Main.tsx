@@ -7,6 +7,10 @@ import { useNavigation } from "@react-navigation/native";
 
 
 
+/**
+ * This component is the main screen of the staff app. It displays a list of buttons
+ * for different types of staff, each of which navigates to a different login screen.
+ */
 function Main() {
     const navigation = useNavigation<NavigationProp>();
     return (

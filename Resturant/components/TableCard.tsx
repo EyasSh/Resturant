@@ -21,6 +21,33 @@ import CurvedButton from "./ui/CurvedButton";
   onLeaveTable: (userId:string, tableNumber:number)=>void
 }
 
+/**
+ * A component that represents a table card with information and actions for a specific table.
+ *
+ * This component displays details about a table, such as its number, occupancy status, 
+ * window side status, and capacity. It allows users to interact with the table card 
+ * through touch events. 
+ * 
+ * - If the table is occupied, it checks if the current user is assigned to it. If not, 
+ *   an alert is displayed; if yes, the user is navigated to the menu.
+ * - If the table is not occupied, the current user can be assigned to it using the 
+ *   provided callback function.
+ * - Users can also leave the table through the "Leave" button, triggering an appropriate 
+ *   callback.
+ * 
+ * Props:
+ * - `tableNumber` (number): The number of the table.
+ * - `isWindowSide` (boolean): Indicates if the table is by the window.
+ * - `isOccupied` (boolean): Indicates if the table is currently occupied.
+ * - `waiterId` (string): The ID of the waiter assigned to the table.
+ * - `userId` (string): The ID of the user assigned to the table.
+ * - `capacity` (number): The seating capacity of the table.
+ * - `width` (number | null | undefined): The width of the table card.
+ * - `hub` (signalR.HubConnection | null): SignalR hub connection for real-time updates.
+ * - `onAssignUserToTable` (function): Callback to assign the current user to the table.
+ * - `onLeaveTable` (function): Callback for the user to leave the table.
+ */
+
 export default function TableCard(props: TableProps) {
   const isOccupied = props.isOccupied;
   const isWindowSide = props.isWindowSide;
@@ -30,6 +57,19 @@ export default function TableCard(props: TableProps) {
   const number = props.tableNumber;
   const navigation = useNavigation<NavigationProp>();
 
+/**
+ * Handles the press event on the table card.
+ * 
+ * This function checks whether the table is occupied and whether the current user is the one assigned 
+ * to the table. Depending on these conditions, it alerts the user, navigates to the menu, or assigns 
+ * the user to the table.
+ * 
+ * - If the table is occupied and the current user is not the assigned user, an alert is shown indicating 
+ *   the table is already occupied.
+ * - If the table is occupied and the current user is the assigned user, an alert is shown and 
+ *   navigation to the menu occurs.
+ * - If the table is not occupied, the current user is assigned to the table using the provided callback.
+ */
   const handlePress = async () => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);

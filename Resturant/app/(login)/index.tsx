@@ -12,6 +12,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ThemedInput from '@/components/ThemedInput';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 
+/**
+ * A login screen for customers and staff to log in to the system.
+ * Customers can log in with their email and password to access the tabs layout.
+ * Staff can log in with their email and password to access the staff terminal.
+ * If the user does not have an account, they can sign up.
+ *
+ * @remarks
+ * This component uses the `useNavigation` hook from `@react-navigation/native` to
+ * navigate to the tabs layout or the signup screen.
+ *
+ * @returns A JSX element representing the login screen.
+ */
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -56,6 +68,14 @@ export default function Login() {
       width: 'auto',
     },
   });
+  /**
+   * Handles the login process for customers and staff.
+   * Performs validation and sends a request to the server to
+   * authenticate the user.
+   * If the user is authenticated, sets the token and user data in
+   * AsyncStorage and navigates to the tabs layout.
+   * If the user is not authenticated, displays an error message.
+   */
   const handleLogin = async() => {
     // Perform login validation (optional)
     if (email && password) {

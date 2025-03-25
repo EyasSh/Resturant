@@ -1,4 +1,7 @@
 namespace Server.Services;
+/// <summary>
+/// Request object for user signup.
+/// </summary>
 public class SignupRequest
 {
     public required string Name { get; set; }

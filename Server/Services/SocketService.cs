@@ -31,6 +31,7 @@ public class SocketService : Hub<IHubService>
     public static readonly ConcurrentDictionary<string, HashSet<string>> _waiterids2sid = new(); // MongoDB ID => Set of sids
     public static readonly ConcurrentDictionary<string, string> _tableConnections = new(); // Table ID => Waiter ID
     public static List<Table> _tables = new(); // List of tables
+    public static List<Order> _orders = new(); // List of orders
 
     // Map tables to assigned users and waiters
     public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID

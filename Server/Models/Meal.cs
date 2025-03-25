@@ -31,23 +31,38 @@ public class Meal
 /// <summary>
 /// Represents an order in the restaurant
 /// </summary>
-public class Order
+public class ProtoOrder
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? OrderId { get; set; }
+
     public Meal? Meal { get; set; }
     public int Quantity { get; set; }
-    public Order() { }
+    public ProtoOrder() { }
     /// <summary>
     /// Initializes a new instance of the <see cref="Order"/> class.
     /// </summary>
     /// <param name="meal">The meal.</param>
     /// <param name="quantity">The quantity.</param>
-    public Order(Meal? meal, int quantity)
+    public ProtoOrder(Meal? meal, int quantity)
     {
         Meal = meal;
         Quantity = quantity;
+    }
+}
+public class Order
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+    [BsonElement("meals")]
+    public ProtoOrder[]? Orders { get; set; }
+    [BsonElement("tableNumber")]
+    public int TableNumber { get; set; } = 0;
+    [BsonElement("total")]
+    public double Total { get; set; } = 0;
+    public Order() { }
+    public Order(ProtoOrder[] orders)
+    {
+        Orders = orders;
     }
 }
 

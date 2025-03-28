@@ -13,6 +13,7 @@ public interface IHubService
     Task ConnectNotification(string sid, bool isOkay, List<Table> tables);
     Task ReceiveMessage(Message message);
     Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0, List<Table>? tables = null);
+    Task ReceiveWaiterAssignMessage(string message, List<Table> tables);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -35,7 +36,7 @@ public class SocketService : Hub<IHubService>
 
     // Map tables to assigned users and waiters
     public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
-    public static readonly ConcurrentDictionary<string, string> _tableToWaiter = new(); // Table ID => Waiter ID
+    public static readonly ConcurrentDictionary<int, string> _tableToWaiter = new(); // Table ID => Waiter ID
 
     /// <summary>
     /// Called when a new connection is established.
@@ -156,23 +157,27 @@ public class SocketService : Hub<IHubService>
     /// <summary>
     /// Assigns a waiter to a table and adds them to the SignalR group.
     /// </summary>
-    public async Task AssignWaiterToTable(string waiterId, string tableId)
+    public async Task AssignWaiterToTable(string waiterId, int tableNumber)
     {
         var sid = Context.ConnectionId;
 
-        // Remove waiter from previous table, if any
-        if (_tableToWaiter.ContainsKey(waiterId))
-        {
-            var previousTable = _tableToWaiter[waiterId];
-            await Groups.RemoveFromGroupAsync(sid, previousTable);
-            _tableToWaiter.TryRemove(waiterId, out _);
-            Console.WriteLine($"Waiter {waiterId} left Table {previousTable}");
-        }
+
 
         // Assign waiter to the new table
-        _tableToWaiter[tableId] = waiterId;
-        await Groups.AddToGroupAsync(sid, tableId);
-        Console.WriteLine($"Waiter {waiterId} joined Table {tableId}");
+        _tableToWaiter[tableNumber] = waiterId;
+        if (string.IsNullOrEmpty(_tables[tableNumber - 1].WaiterId))
+        {
+            _tables[tableNumber - 1].WaiterId = waiterId;
+            await Clients.All.ReceiveWaiterAssignMessage($"Waiter {waiterId} joined Table {tableNumber}", _tables);
+
+        }
+        else
+        {
+            await Clients.Caller.ReceiveWaiterAssignMessage("Table already has a waiter", _tables);
+            return;
+        }
+        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
+        Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
 
         // Store waiter ID in dictionary
         _waiterConnections[sid] = waiterId;
@@ -188,16 +193,16 @@ public class SocketService : Hub<IHubService>
     /// <summary>
     /// Sends a message within a table.
     /// </summary>
-    public async Task SendMessageToTable(string tableId, string senderId, string recipientId, string message)
+    public async Task SendMessageToTable(int tableNumber, string senderId, string recipientId, string message)
     {
-        await Clients.Group(tableId).ReceiveMessage(new Message
+        await Clients.Group(tableNumber.ToString()).ReceiveMessage(new Message
         {
             SenderId = senderId,
             RecipientId = recipientId,
             message = message
         });
 
-        Console.WriteLine($"Message sent in Table {tableId} from {senderId} to {recipientId}: {message}");
+        Console.WriteLine($"Message sent in Table {tableNumber} from {senderId} to {recipientId}: {message}");
     }
     /// <summary>
     /// Handles the disconnection of a client from the server.

@@ -59,6 +59,7 @@ public class Order
     public int TableNumber { get; set; } = 0;
     [BsonElement("total")]
     public double Total { get; set; } = 0;
+    public bool IsReady { get; set; } = false;
     public Order() { }
     public Order(ProtoOrder[] orders)
     {

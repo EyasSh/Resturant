@@ -119,6 +119,7 @@ export default function Waiter() {
       text: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginVertical: 10,
+        marginBottom: 10,
+        marginTop: 20
       },
     });

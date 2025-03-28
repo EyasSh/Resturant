@@ -143,21 +143,18 @@ export default function MainPage() {
    * 
    * @throws {Error} If the operation fails, an error is thrown.
    */
-  const handleLeaveTable = async (userId: string, tableNumber: number) => {
+  const handleLeaveTable = async (tableNumber: number) => {
     try {
-      // Here you could also notify via SignalR if needed
-      setTables(prev =>
-        prev.map(table =>
-          table.tableNumber === tableNumber
-            ? { ...table, isOccupied: false, userId: "" }
-            : table
-        )
-      );
+      await signalRConnection?.invoke("LeaveTable",tableNumber);
+      await signalRConnection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
+        setTables(tables);
+      })
+      
     } catch (err) {
       console.error("Failed to leave table", err);
     }
   };
-
+useEffect(() => {}, [tables]);
   return (
     <ThemedView style={styles.wrapper}>
       <LogoutButton action={async () => await signalRConnection?.stop()} />
@@ -177,7 +174,7 @@ export default function MainPage() {
                 capacity={table.capacity}
                 hub={signalRConnection}
                 onAssignUserToTable={handleAssignUserToTable}
-                onLeaveTable={handleLeaveTable}
+                onLeaveTable={(tableNumber) => handleLeaveTable(tableNumber)}
               />
             ))}
         </ThemedView>

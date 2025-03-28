@@ -18,7 +18,7 @@ import CurvedButton from "./ui/CurvedButton";
   width: number |null | undefined;
   hub: signalR.HubConnection |null 
   onAssignUserToTable: (userId:string, tableNumber:number)=>void
-  onLeaveTable: (userId:string, tableNumber:number)=>void
+  onLeaveTable: (tableNumber:number)=>Promise<void>
 }
 
 /**
@@ -102,7 +102,7 @@ useEffect(() => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
     if (userId === u.id && props.onLeaveTable) {
-      props.onLeaveTable(u.id, number);
+     await props.onLeaveTable(number);
     }
   };
 

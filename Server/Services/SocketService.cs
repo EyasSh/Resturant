@@ -208,6 +208,14 @@ public class SocketService : Hub<IHubService>
                 return existingSids;
             });
     }
+    /// <summary>
+    /// Removes a waiter from a table and updates all clients about the table's updated status.
+    /// </summary>
+    /// <param name="tableNumber">The table number the waiter is leaving.</param>
+    /// <remarks>
+    /// This method is called when a waiter stops waiting at a table.
+    /// It sets the waiter ID of the table to an empty string and sends a message to all clients about the table's updated status.
+    /// </remarks>
     public async Task StopWaitingTable(int tableNumber)
     {
         var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;

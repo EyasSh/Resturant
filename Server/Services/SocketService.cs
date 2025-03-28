@@ -167,7 +167,7 @@ public class SocketService : Hub<IHubService>
     {
         var id = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
         _tables[tableNumber - 1].UserId = string.Empty;
-        _tables[tableNumber - 1].CheckOccupation();
+        _tables[tableNumber - 1].isOccupied = false;
         await Clients.All.ReceiveTableLeaveMessage(_tables);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableNumber.ToString());
         System.Console.WriteLine($"User {id} left Table {tableNumber}");

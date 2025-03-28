@@ -100,13 +100,17 @@ export default function MainPage() {
             setTables(tables);
           }
         });
-
+        connection.off("ReceiveTableMessage");
         connection.on("ReceiveTableMessage", (message: string, isOkay: boolean, userId: string, tableNumber: number, tables: TableProps[]) => {
           if (isOkay) {
             setTables(tables);
             console.log(`Table update: ${message}`);
           }
         });
+        connection.off("ReceiveTableLeaveMessage");
+        connection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
+          setTables(tables);
+        })
       } catch (error) {
         console.error('SignalR connection error:', error);
       }
@@ -146,9 +150,7 @@ export default function MainPage() {
   const handleLeaveTable = async (tableNumber: number) => {
     try {
       await signalRConnection?.invoke("LeaveTable",tableNumber);
-      await signalRConnection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
-        setTables(tables);
-      })
+      
       
     } catch (err) {
       console.error("Failed to leave table", err);
@@ -161,7 +163,7 @@ useEffect(() => {}, [tables]);
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
-          {signalRConnection && tables.length > 0 &&
+          {signalRConnection!=null && tables.length > 0 &&
             tables.map((table, index) => (
               <TableCard
                 key={index}
@@ -174,7 +176,7 @@ useEffect(() => {}, [tables]);
                 capacity={table.capacity}
                 hub={signalRConnection}
                 onAssignUserToTable={handleAssignUserToTable}
-                onLeaveTable={(tableNumber) => handleLeaveTable(tableNumber)}
+                onLeaveTable={async(tableNumber) => await handleLeaveTable(tableNumber)}
               />
             ))}
         </ThemedView>

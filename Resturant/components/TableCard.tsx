@@ -132,7 +132,7 @@ useEffect(() => {
         
             {isOccupied && userId === currentUserId ?<CurvedButton
               title="Leave"
-              action={handleLeave}
+              action={async()=>await handleLeave()}
               style={{ backgroundColor: "red" }}
             />:null} 
          

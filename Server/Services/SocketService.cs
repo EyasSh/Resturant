@@ -14,6 +14,8 @@ public interface IHubService
     Task ReceiveMessage(Message message);
     Task ReceiveTableMessage(string message, bool isOkay = false, string userId = "", int tableNum = 0, List<Table>? tables = null);
     Task ReceiveWaiterAssignMessage(string message, List<Table> tables);
+    Task ReceiveTableLeaveMessage(List<Table> tables);
+    Task ReceiveWaiterLeaveMessage(List<Table> tables);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -153,7 +155,24 @@ public class SocketService : Hub<IHubService>
                 return existingSids;
             });
     }
+    /// <summary>
+    /// Removes the user from the table and sends a message to all users about the table's updated status.
+    /// </summary>
+    /// <param name="tableNumber">The table number the user is leaving.</param>
+    /// <remarks>
+    /// This method is called when a user wants to leave a table.
+    /// It sets the user ID of the table to an empty string and sends a message to all users about the table's updated status.
+    /// </remarks>
+    public async Task LeaveTable(int tableNumber)
+    {
+        var id = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
+        _tables[tableNumber - 1].UserId = string.Empty;
+        _tables[tableNumber - 1].CheckOccupation();
+        await Clients.All.ReceiveTableLeaveMessage(_tables);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableNumber.ToString());
+        System.Console.WriteLine($"User {id} left Table {tableNumber}");
 
+    }
     /// <summary>
     /// Assigns a waiter to a table and adds them to the SignalR group.
     /// </summary>
@@ -189,7 +208,14 @@ public class SocketService : Hub<IHubService>
                 return existingSids;
             });
     }
-
+    public async Task StopWaitingTable(int tableNumber)
+    {
+        var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
+        _tables[tableNumber - 1].WaiterId = string.Empty;
+        await Clients.All.ReceiveWaiterLeaveMessage(_tables);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableNumber.ToString());
+        Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
+    }
     /// <summary>
     /// Sends a message within a table.
     /// </summary>

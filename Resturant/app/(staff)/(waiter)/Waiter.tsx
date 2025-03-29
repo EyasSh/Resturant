@@ -10,6 +10,8 @@ import { NavigationProp } from '@/Routes/NavigationTypes';
 import { useNavigation } from '@react-navigation/native';
 import WaiterTableCard from '@/components/WaiterTableCard';
 import { ScrollView, SafeAreaView } from 'react-native'
+import { WaiterTableProps } from '@/Types/WaiterTableProps';
+import { TableProps } from '@/components/TableCard';
 type Waiter=
 {
     id: string
@@ -31,6 +33,7 @@ export default function Waiter() {
     const [waiter, setWaiter] = useState<Waiter | null>(null);
     const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
     const navigation = useNavigation<NavigationProp>();
+    const [tables, setTables] = useState<WaiterTableProps[]>([]);
     useEffect(() => {
         /**
          * Fetches the waiter's data from AsyncStorage and sets the component's state.
@@ -73,12 +76,23 @@ export default function Waiter() {
                 await connection.start();  
                 setSignalRConnection(connection);
                 connection.off("ConnectNotification");
-                await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
-                    if(isOkay){
-                        alert('Session established');
-                        await AsyncStorage.setItem('sid', sid);
+                await connection.on(
+                    "ConnectNotification",
+                    async (sid: string, isOkay: boolean, tables: TableProps[]) => {
+                      if (isOkay) {
+                        alert("Session established");
+                        await AsyncStorage.setItem("sid", sid);
+                  
+                        const filteredTables: WaiterTableProps[] = tables.map((table) => ({
+                          tableNumber: table.tableNumber,
+                          waiterid: table.waiterId,
+                        }));
+                  
+                        setTables(filteredTables);
+                      }
                     }
-                })
+                  );
+                  
             } catch (error) {
                 console.error('SignalR connection error:', error);
             }
@@ -88,19 +102,27 @@ export default function Waiter() {
     }, [waiter?.id]); // Only runs when waiter.id is defined
     return (
        
-        <SafeAreaView style={styles.safeArea}>
+        <ThemedView style={styles.safeArea}>
             <ThemedView>
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <LogoutButton action={async () => await signalRConnection?.stop()} />
                     <ThemedText style={styles.text}>
                         Hello {waiter?.name}
                     </ThemedText>
-                     {Array.from({ length: 12 }).map((_, index) => (
-                        <WaiterTableCard key={index} tableNumber={index + 1}/>
-                    ))}
+                    {signalRConnection && tables.length > 0 ? (
+                             <>
+                                {tables.map((table, index) => (
+                                <WaiterTableCard key={index} tableNumber={table.tableNumber} />
+                                ))}
+                            </>
+                            ) : (
+                                    <ThemedText>An error occurred or there are no tables.</ThemedText>
+                                )}
+
+
                 </ScrollView>
             </ThemedView>
-        </SafeAreaView>
+        </ThemedView>
         
       );
     }

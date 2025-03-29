@@ -48,7 +48,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <OccupationProvider>
+        <StatusBar
+        style={colorScheme === 'dark' ? 'light' : 'dark'} // icon color
+        backgroundColor={colorScheme === 'dark' ? '#121212' : '#ffffff'} // status bar background
+        translucent={false}
+      />
       <Stack.Navigator>
         {/* Login is the initial screen */}
         <Stack.Screen 
@@ -81,8 +85,6 @@ export default function RootLayout() {
          <Stack.Screen name="+not-found" component={NotFoundScreen} /> 
         
       </Stack.Navigator>
-      </OccupationProvider>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }

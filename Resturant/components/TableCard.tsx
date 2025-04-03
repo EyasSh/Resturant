@@ -8,6 +8,7 @@ import { NavigationProp } from "@/Routes/NavigationTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from '@microsoft/signalr';
 import CurvedButton from "./ui/CurvedButton";
+import { HapticTab } from "./HapticTab";
  export type TableProps = {
   tableNumber: number;
   isWindowSide: boolean;

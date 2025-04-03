@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, TouchableOpacity } from 'react-native';
 import { View, Pressable,Text, StyleSheet } from 'react-native';
 import { ThemedText } from '../ThemedText';
+import { HapticTab } from '../HapticTab';
 type CurvedButtonPropTypes = {
     title: string,
     action: () => void,
@@ -9,9 +10,9 @@ type CurvedButtonPropTypes = {
 }
 function CurvedButton(props: CurvedButtonPropTypes) {
     return (
-        <TouchableOpacity onPress={props.action} style={[props.style, styles.button]}>
+        <HapticTab onPress={props.action} style={[props.style, styles.button]}>
           <Text style={styles.buttonText}>{props.title}</Text>  
-        </TouchableOpacity>
+        </HapticTab>
     );
 }
 const styles = StyleSheet.create({

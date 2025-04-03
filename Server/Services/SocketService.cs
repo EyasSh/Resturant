@@ -221,7 +221,7 @@ public class SocketService : Hub<IHubService>
         var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
         _tables[tableNumber - 1].WaiterId = string.Empty;
         await Clients.All.ReceiveWaiterLeaveMessage(_tables);
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableNumber.ToString());
+        await Groups.RemoveFromGroupAsync(waiterId, tableNumber.ToString());
         Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
     }
     /// <summary>

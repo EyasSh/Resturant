@@ -169,7 +169,7 @@ public class SocketService : Hub<IHubService>
         _tables[tableNumber - 1].UserId = string.Empty;
         _tables[tableNumber - 1].isOccupied = false;
         await Clients.All.ReceiveTableLeaveMessage(_tables);
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableNumber.ToString());
+        await Groups.RemoveFromGroupAsync(id, tableNumber.ToString());
         System.Console.WriteLine($"User {id} left Table {tableNumber}");
 
     }
@@ -178,8 +178,8 @@ public class SocketService : Hub<IHubService>
     /// </summary>
     public async Task AssignWaiterToTable(string waiterId, int tableNumber)
     {
+        var id = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
         var sid = Context.ConnectionId;
-
 
 
         // Assign waiter to the new table
@@ -195,7 +195,7 @@ public class SocketService : Hub<IHubService>
             await Clients.Caller.ReceiveWaiterAssignMessage("Table already has a waiter", _tables);
             return;
         }
-        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
+        await Groups.AddToGroupAsync(id, tableNumber.ToString());
         Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
 
         // Store waiter ID in dictionary

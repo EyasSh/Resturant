@@ -119,22 +119,22 @@ useEffect(() => {
           </ThemedText>
           <ThemedText style={styles.bottomInfoText}>{isWindowSide ? "Window Side" : "Not Window Side"}</ThemedText>
           <ThemedText style={styles.bottomInfoText}>{"Capacity: " + capacity}</ThemedText>
-          <ThemedView style={styles.bottomTableFunctions}>
-            <TouchableOpacity onPress={() => alert("image pressed")}>
-              <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image style={styles.image} source={require("@/assets/images/dining.png")} />
-            </TouchableOpacity>
-          </ThemedView>
         </ThemedView>
 
         
-            {isOccupied && userId === currentUserId ?<CurvedButton
-              title="Leave"
-              action={async()=>await handleLeave()}
-              style={{ backgroundColor: "red" }}
-            />:null} 
+            {isOccupied && userId === currentUserId ?
+            <>
+              <TouchableOpacity onPress={() => alert("image pressed")} style={styles.waiterImage}>
+                <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
+              </TouchableOpacity>
+              <CurvedButton
+                title="Leave"
+                action={async()=>await handleLeave()}
+                style={{ backgroundColor: "red" }}
+              />
+            </>
+            :null
+            } 
          
       </ThemedView>
     </TouchableOpacity>
@@ -171,7 +171,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginBottom: 10,
   },
-
+  waiterImage:{
+    marginVertical: 5,
+  },
   image: {
     width: 50,
     height: 50,

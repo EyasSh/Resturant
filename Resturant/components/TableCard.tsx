@@ -125,7 +125,7 @@ useEffect(() => {
         
             {isOccupied && userId === currentUserId ?
             <>
-              <TouchableOpacity onPress={() => alert("image pressed")} style={styles.waiterImage}>
+              <TouchableOpacity onPress={()=>navigation.navigate("UserNeeds")} style={styles.waiterImage}>
                 <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
               </TouchableOpacity>
               <CurvedButton

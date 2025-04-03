@@ -12,6 +12,7 @@ import LogoutButton from '@/components/LogoutButton';
 import { TableProps } from '@/components/TableCard';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
+import TableNeedMessage from '@/components/ui/TableNeedMessage';
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -160,7 +161,6 @@ useEffect(() => {}, [tables]);
   return (
     <ThemedView style={styles.wrapper}>
       <LogoutButton action={async () => await signalRConnection?.stop()} />
-
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {signalRConnection!=null && tables.length > 0 &&

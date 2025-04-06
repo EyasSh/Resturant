@@ -12,6 +12,7 @@ import WaiterTableCard from '@/components/WaiterTableCard';
 import { ScrollView, SafeAreaView } from 'react-native'
 import { WaiterTableProps } from '@/Types/WaiterTableProps';
 import { TableProps } from '@/components/TableCard';
+import { Order } from '@/Types/Order';
 type Waiter=
 {
     id: string
@@ -34,6 +35,7 @@ export default function Waiter() {
     const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
     const navigation = useNavigation<NavigationProp>();
     const [tables, setTables] = useState<WaiterTableProps[]>([]);
+    const [orders, setOrders]= useState<Order[]>([]);
     useEffect(() => {
         /**
          * Fetches the waiter's data from AsyncStorage and sets the component's state.
@@ -80,7 +82,6 @@ export default function Waiter() {
                     "ConnectNotification",
                     async (sid: string, isOkay: boolean, tables: TableProps[]) => {
                       if (isOkay) {
-                        alert("Session established");
                         await AsyncStorage.setItem("sid", sid);
                   
                         const filteredTables: WaiterTableProps[] = tables.map((table) => ({
@@ -92,14 +93,35 @@ export default function Waiter() {
                       }
                     }
                   );
-                  
+                  await connection.on("ReceiveOrders", (orders: Order[]) => {
+                    if(orders){
+                        setOrders(orders);
+                        AsyncStorage.setItem("orders", JSON.stringify(orders));
+                        
+                    }
+                    
+
+                }
+            );
             } catch (error) {
                 console.error('SignalR connection error:', error);
             }
         };
 
         connect();
+        
     }, [waiter?.id]); // Only runs when waiter.id is defined
+    useEffect(()=>{},[tables]); //re-renders when table state changes
+    useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
+    const handleWaitTable = (tableNumber: number) => {
+
+    }
+    const handlePeakOrder =()=>{
+        // Handle peak order action here
+    }
+    const handleMarkOrderReady =()=>{
+        // Handle mark order ready action here
+        }
     return (
        
         <ThemedView style={styles.safeArea}>

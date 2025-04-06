@@ -86,6 +86,7 @@ public class SocketService : Hub<IHubService>
 
                     Console.WriteLine($"Waiter connected sid: {sid}\n waiterid: {waiterid}");
                     await Clients.Caller.ConnectNotification(sid, true, _tables);
+                    await Clients.Caller.ReceiveOrders(_orders); // Send orders to the waiter
                 }
                 else if (privilageLevel == "owner")
                 {
@@ -94,6 +95,7 @@ public class SocketService : Hub<IHubService>
 
                     Console.WriteLine($"Owner connected sid: {sid}\n ownerid: {ownerId}");
                     await Clients.Caller.ConnectNotification(sid, true, _tables);
+
                 }
                 else if (privilageLevel == "user" && httpContext.Request.Query.ContainsKey("userid"))
                 {

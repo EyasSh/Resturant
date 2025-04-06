@@ -1,6 +1,7 @@
 import { ChatProps } from '@/Types/ChatProps';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
+import { Order } from '@/Types/Order';
 /**
  * This is the type definition for the navigation prop used in the app.
  * It defines the screens that can be navigated to.
@@ -24,6 +25,7 @@ export type RootStackParamList = {
     "Menu": undefined
     "Signup": undefined;
     "UserNeeds": undefined;
+    "OrderPeak": undefined | Order;
 }
 /**
  * This is the type definition for the navigation prop used in the app.

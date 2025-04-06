@@ -26,6 +26,7 @@ import RemoveMeal from './(staff)/(owner)/RemoveMeal';
 import FireStaff from './(staff)/(owner)/FireStaff';
 import Menu from '@/app/(Menu)/Menu';
 import UserNeeds from './(user)/UserNeeds';
+import OrderPeak from './(staff)/(waiter)/OrderPeak';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -77,6 +78,7 @@ export default function RootLayout() {
       <Stack.Screen name="FireStaff" component={FireStaff} options={{ headerShown: false }} />
       <Stack.Screen name="Menu" component={Menu}  options={{ headerShown: false }} />
       <Stack.Screen name = "UserNeeds" component={UserNeeds} options={{ headerShown: false }} />
+      <Stack.Screen name='OrderPeak' component={OrderPeak} options={{ headerShown: false }}/>
         {/* Signup screen */}
         <Stack.Screen name="Signup" component={Signup} options={
           { headerShown: false  }}/>

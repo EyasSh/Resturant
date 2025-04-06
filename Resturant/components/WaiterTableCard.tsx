@@ -19,18 +19,28 @@ export default function WaiterTableCard(props:WaiterTableProps) {
             <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
             <CurvedButton 
                 title="Wait Table" 
-                action={()=>{alert("Waiting Table")}} 
+                action={() => {
+                    if (props.occupyAction) props.occupyAction();
+                    else alert("Waiting Table is not implemented");
+                }}
                 style={{backgroundColor:"#4800ff"}}
             />
             <CurvedButton 
                 title="Peak Order" 
-                action={()=>{alert("Peak Order")}} 
+                action={() => {
+                    if (props.peakOrderAction) props.peakOrderAction();
+                    else alert("Peak Order is not implemented");
+                }}
+                
                 style={{backgroundColor:"#fc9b1c"}}
             />
             
             <CurvedButton
                 title='Mark order as ready'
-                action={()=>{alert("Mark as ready")}}
+                action={() => {
+                    if (props.markOrderReadyAction) props.markOrderReadyAction();
+                    else alert("Mark Order Ready is not implemented");
+                }}
                 style={{backgroundColor:"#4800ff"}} 
             />
         </ThemedView>

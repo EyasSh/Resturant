@@ -18,6 +18,7 @@ public interface IHubService
     Task ReceiveWaiterLeaveMessage(List<Table> tables);
     Task ReceiveOrderSuccessMessage(bool isOkay = false);
     Task ReceiveOrders(List<Order?> orders);
+    Task SendOrder(Order order);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -140,9 +141,6 @@ public class SocketService : Hub<IHubService>
         {
             await Clients.Caller.ReceiveTableMessage("User Already in a table.", false, userId, 0, _tables);
         }
-
-
-
         // Assign user to a table if he is not already in one
         _tableToUser[tableNumber] = userId;
         _tables[tableNumber - 1].UserId = userId;
@@ -196,14 +194,16 @@ public class SocketService : Hub<IHubService>
         {
             _tables[tableNumber - 1].WaiterId = waiterId;
             await Clients.All.ReceiveWaiterAssignMessage($"Waiter {waiterId} joined Table {tableNumber}", _tables);
+            await Groups.AddToGroupAsync(id, tableNumber.ToString());
+
 
         }
         else
         {
-            await Clients.Caller.ReceiveWaiterAssignMessage("Table already has a waiter", _tables);
+            System.Console.WriteLine($"Table {tableNumber} already has a waiter assigned.");
             return;
         }
-        await Groups.AddToGroupAsync(id, tableNumber.ToString());
+
         Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
 
         // Store waiter ID in dictionary
@@ -215,6 +215,34 @@ public class SocketService : Hub<IHubService>
                 existingSids.Add(sid);
                 return existingSids;
             });
+    }
+
+    /// <summary>
+    /// Sends the order for a table to the waiter.
+    /// </summary>
+    /// <param name="tableNumber">The table number to send the order for.</param>
+    /// <remarks>
+    /// This method is called when a waiter requests the order for a table.
+    /// It checks if the waiter is assigned to the table and if there is an order for the table.
+    /// If both conditions are met, it sends the order to the waiter.
+    /// </remarks>
+    public async Task PeakOrder(int tableNumber)
+    {
+        var order = _orders[tableNumber - 1];
+        var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
+        bool isWaiterForTable = !string.IsNullOrEmpty(waiterId) && _tables[tableNumber - 1].WaiterId == waiterId;
+        if (!isWaiterForTable)
+        {
+            Console.WriteLine($"Waiter {waiterId} is not assigned to Table {tableNumber}");
+            return;
+        }
+        if (order == null)
+        {
+            Console.WriteLine($"No order found for Table {tableNumber}");
+            return;
+        }
+        await Clients.Caller.SendOrder(order);
+        Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
     /// <summary>
     /// Removes a waiter from a table and updates all clients about the table's updated status.
@@ -310,6 +338,14 @@ public class SocketService : Hub<IHubService>
                 sids.Remove(sid);
                 if (sids.Count == 0) _waiterids2sid.TryRemove(waiterMongoId, out _);
             }
+            _tables.ForEach(t =>
+            {
+                if (t.WaiterId == id)
+                {
+                    t.WaiterId = string.Empty;
+                }
+            });
+            System.Console.WriteLine("Waiter left all tables");
         }
         else if (_ownerConnections.ContainsKey(sid))
         {
@@ -322,6 +358,7 @@ public class SocketService : Hub<IHubService>
         }
 
         Console.WriteLine($"Disconnected: {sid}");
+        await Clients.All.ReceiveTableLeaveMessage(_tables);
         await base.OnDisconnectedAsync(exception);
     }
 

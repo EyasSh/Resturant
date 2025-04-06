@@ -115,22 +115,22 @@ export default function Waiter() {
     useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
     
     /**
-     * Handles the peak order action.
-     * This function is called when the waiter presses the "Peak Order" button.
-     * It should be used to display the order for the waiter to see.
-     */
+    * Handles the peak order action.
+    * This function is called when the waiter presses the "Peak Order" button.
+    * It should be used to display the order for the waiter to see.
+    */
     const handlePeakOrder =()=>{
-        // Handle peak order action here
+        navigation.navigate("OrderPeak")
     }
 
-        /**
-         * Handles the wait table action.
-         * This function is called when the waiter presses the "Wait Table" button.
-         * It should be used to start waiting at the table and send a request to the server to update the table's status.
-         * @param tableNumber The number of the table to wait at.
-         */
+    /**
+    * Handles the wait table action.
+    * This function is called when the waiter presses the "Wait Table" button.
+    * It should be used to start waiting at the table and send a request to the server to update the table's status.
+    * @param tableNumber The number of the table to wait at.
+    */
     const handleWaitTable = (tableNumber: number) => {
-
+        signalRConnection?.invoke("AssignWaiterToTable", waiter?.id, tableNumber)
     }
     /**
      * Handles the mark order ready action.
@@ -139,6 +139,7 @@ export default function Waiter() {
      */
     const handleMarkOrderReady =()=>{
         // Handle mark order ready action here
+        alert("Mark Order Ready")
         }
     return (
        
@@ -152,7 +153,13 @@ export default function Waiter() {
                     {signalRConnection && tables.length > 0 ? (
                              <>
                                 {tables.map((table, index) => (
-                                <WaiterTableCard key={index} tableNumber={table.tableNumber} />
+                                <WaiterTableCard key={index} 
+                                    tableNumber={table.tableNumber}
+                                    peakOrderAction={()=>handlePeakOrder()}
+                                    occupyAction={()=>handleWaitTable(index+1)}
+                                    markOrderReadyAction={()=>handleMarkOrderReady()}
+                                     />
+                                    
                                 ))}
                             </>
                             ) : (

@@ -25,7 +25,7 @@ export type RootStackParamList = {
     "Menu": undefined
     "Signup": undefined;
     "UserNeeds": undefined;
-    "OrderPeak": undefined | Order;
+    "OrderPeak": undefined;
 }
 /**
  * This is the type definition for the navigation prop used in the app.

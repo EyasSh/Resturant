@@ -16,6 +16,8 @@ public interface IHubService
     Task ReceiveWaiterAssignMessage(string message, List<Table> tables);
     Task ReceiveTableLeaveMessage(List<Table> tables);
     Task ReceiveWaiterLeaveMessage(List<Table> tables);
+    Task ReceiveOrderSuccessMessage(bool isOkay = false);
+    Task ReceiveOrders(List<Order?> orders);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -34,7 +36,7 @@ public class SocketService : Hub<IHubService>
     public static readonly ConcurrentDictionary<string, HashSet<string>> _waiterids2sid = new(); // MongoDB ID => Set of sids
     public static readonly ConcurrentDictionary<string, string> _tableConnections = new(); // Table ID => Waiter ID
     public static List<Table> _tables = new(); // List of tables
-    public static List<Order> _orders = new(); // List of orders
+    public static List<Order?> _orders = new(); // List of orders
 
     // Map tables to assigned users and waiters
     public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
@@ -57,6 +59,8 @@ public class SocketService : Hub<IHubService>
             System.Console.WriteLine("Tables are null or empty.");
             _tables.Clear();
             _tables.AddRange(await _tableCollection.Find(_ => true).ToListAsync());
+            _orders = Enumerable.Repeat<Order?>(null, _tables.Count).ToList();
+
         }
 
         var sid = Context.ConnectionId;
@@ -170,6 +174,8 @@ public class SocketService : Hub<IHubService>
         _tables[tableNumber - 1].isOccupied = false;
         await Clients.All.ReceiveTableLeaveMessage(_tables);
         await Groups.RemoveFromGroupAsync(id, tableNumber.ToString());
+        _orders[tableNumber - 1] = null; // Clear the order for the table
+        await Clients.All.ReceiveOrders(_orders); // Send updated orders to all clients
         System.Console.WriteLine($"User {id} left Table {tableNumber}");
 
     }
@@ -237,6 +243,27 @@ public class SocketService : Hub<IHubService>
         });
 
         Console.WriteLine($"Message sent in Table {tableNumber} from {senderId} to {recipientId}: {message}");
+    }
+
+    /// <summary>
+    /// Sends a meal order to the server.
+    /// </summary>
+    /// <param name="order">The order to be sent.</param>
+    /// <remarks>
+    /// This method is called when a user sends a meal order from the menu.
+    /// It stores the order in the in-memory list of orders and sends a message to the waiter and all users at the table
+    /// with the order details.
+    /// </remarks>
+    public async Task OrderMeal(Order order)
+    {
+        int tableNumber = order.TableNumber;
+        _orders[order.TableNumber - 1] = order;
+        await Clients.Caller.ReceiveOrderSuccessMessage(true);
+        await Clients.Group(tableNumber.ToString()).ReceiveOrders(_orders);
+        var context = Context.GetHttpContext();
+        if (context == null) return;
+        string id = context.Request.Query["userid"].ToString() ?? string.Empty;
+        Console.WriteLine($"Order sent in Table {tableNumber} from {id}");
     }
     /// <summary>
     /// Handles the disconnection of a client from the server.

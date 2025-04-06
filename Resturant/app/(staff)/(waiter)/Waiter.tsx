@@ -113,12 +113,30 @@ export default function Waiter() {
     }, [waiter?.id]); // Only runs when waiter.id is defined
     useEffect(()=>{},[tables]); //re-renders when table state changes
     useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
-    const handleWaitTable = (tableNumber: number) => {
-
-    }
+    
+    /**
+     * Handles the peak order action.
+     * This function is called when the waiter presses the "Peak Order" button.
+     * It should be used to display the order for the waiter to see.
+     */
     const handlePeakOrder =()=>{
         // Handle peak order action here
     }
+
+        /**
+         * Handles the wait table action.
+         * This function is called when the waiter presses the "Wait Table" button.
+         * It should be used to start waiting at the table and send a request to the server to update the table's status.
+         * @param tableNumber The number of the table to wait at.
+         */
+    const handleWaitTable = (tableNumber: number) => {
+
+    }
+    /**
+     * Handles the mark order ready action.
+     * This function is called when the waiter presses the "Mark Order Ready" button.
+     * It should be used to mark the order as ready and send a request to the server to update the order's status.
+     */
     const handleMarkOrderReady =()=>{
         // Handle mark order ready action here
         }

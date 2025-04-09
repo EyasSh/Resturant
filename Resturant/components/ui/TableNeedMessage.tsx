@@ -6,7 +6,9 @@ import { HapticTab } from '../HapticTab';
 export default function TableNeedMessage(props:NeedMessageProps) {
     
     return (
-        <HapticTab style= {styles.container} onPress={()=>props.handleClick()}>
+        <HapticTab style= {styles.container} onPress={()=>{if (props.handleClick) props.handleClick()
+        else alert("This action is not implemented")
+        }}>
             <ThemedText >{props.message}</ThemedText>
         </HapticTab>
     );

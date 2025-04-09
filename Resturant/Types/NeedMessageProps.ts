@@ -1,9 +1,9 @@
 
 export type NeedMessageProps = {
     message: string,
-    handleClick : () => void,
+    handleClick? : () => void,
 }
 export type SelectedNeedMessages = {
     messages?:string[],
-    tableNumber?: number,
+    tableNumber?: number | undefined,
 }

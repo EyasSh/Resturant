@@ -128,9 +128,9 @@ function Owner() {
                         <ThemedText style={styles.largeText}>+</ThemedText>
                         <ThemedText style={styles.boldSmallText}>Add Meals</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.functionBox} onPress={() => alert("View tables")}>
-                        <Image source={require("@/assets/images/view.png")} style={{ width: 100, height: 100 }} />
-                        <ThemedText style={styles.boldSmallText}>View tables</ThemedText>
+                    <TouchableOpacity style={styles.functionBox} onPress={() => navigation.navigate("AddQuickMessage")}>
+                    <ThemedText style={styles.largeText}>+</ThemedText>
+                        <ThemedText style={styles.boldSmallText}>Add Quick Message</ThemedText>
                     </TouchableOpacity>
                 </ThemedView>
     

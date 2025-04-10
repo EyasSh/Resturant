@@ -252,14 +252,17 @@ public class OwnerController : ControllerBase
     IMongoCollection<Waiter> _waiters;
     IMongoCollection<Meal> _meals;
     IMongoCollection<Table> _tables;
+    IMongoCollection<QuickMessage> _messages;
     private readonly SocketService _socketService;
     private readonly SecurityManager _securityManager;
-    public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager, SocketService socketService)
+    public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager,
+    SocketService socketService)
     {
         _owners = dBWrapper.Owners;
         _waiters = dBWrapper.Waiters;
         _meals = dBWrapper.Meals;
         _tables = dBWrapper.Tables;
+        _messages = dBWrapper.QuickMessages;
         _securityManager = securityManager;
         _socketService = socketService;
     }
@@ -605,5 +608,37 @@ public class OwnerController : ControllerBase
             return Ok(tables);
         }
 
+    }
+    /// <summary>
+    /// Adds a new quick message to the database. This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="request">The quick message to be added.</param>
+    /// <returns>A successful status code (200) if the message was added successfully, or a bad request status code (400) if the message is empty or already exists.</returns>
+    [Authorize]
+    [HttpPost("add/message")]
+    public async Task<IActionResult> AddMessage([FromBody] QuickMessage request)
+    {
+        if (string.IsNullOrEmpty(request.Message))
+        {
+            return BadRequest("Message cannot be empty.");
+        }
+        var cursor = await _messages.FindAsync<QuickMessage>(message => message.Message == request.Message);
+        if (cursor.Any())
+        {
+            return BadRequest("Message already exists.");
+        }
+        await _messages.InsertOneAsync(request);
+        return Ok($"Message \"{request.Message}\" added successfully.");
+    }
+    [Authorize]
+    [HttpDelete("delete/message")]
+    public async Task<IActionResult> DeleteMessage([FromBody] string msg)
+    {
+        var message = await _messages.FindOneAndDeleteAsync(m => m.Message == msg);
+        if (message is null)
+        {
+            return BadRequest("Message not found.");
+        }
+        return Ok($"\"{message.Message}\" deleted successfully.");
     }
 }

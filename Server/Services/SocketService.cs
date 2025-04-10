@@ -260,20 +260,7 @@ public class SocketService : Hub<IHubService>
         await Groups.RemoveFromGroupAsync(waiterId, tableNumber.ToString());
         Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
     }
-    /// <summary>
-    /// Sends a message within a table.
-    /// </summary>
-    public async Task SendMessageToTable(int tableNumber, string senderId, string recipientId, string message)
-    {
-        await Clients.Group(tableNumber.ToString()).ReceiveMessage(new Message
-        {
-            SenderId = senderId,
-            RecipientId = recipientId,
-            message = message
-        });
 
-        Console.WriteLine($"Message sent in Table {tableNumber} from {senderId} to {recipientId}: {message}");
-    }
 
     /// <summary>
     /// Sends a meal order to the server.

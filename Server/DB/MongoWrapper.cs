@@ -15,6 +15,7 @@ public class MongoDBWrapper
     public IMongoCollection<Owner> Owners { get; init; }
     public IMongoCollection<Meal> Meals { get; init; }
     public IMongoCollection<Table> Tables { get; init; }
+    public IMongoCollection<QuickMessage> QuickMessages { get; init; }
 
     public MongoDBWrapper(IConfiguration configuration)
     {
@@ -37,6 +38,7 @@ public class MongoDBWrapper
         Owners = _database.GetCollection<Owner>("Owners");
         Meals = _database.GetCollection<Meal>("Meals");
         Tables = _database.GetCollection<Table>("Tables");
+        QuickMessages = _database.GetCollection<QuickMessage>("QuickMessages");
 
     }
 

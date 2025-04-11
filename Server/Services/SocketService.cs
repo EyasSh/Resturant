@@ -19,6 +19,7 @@ public interface IHubService
     Task ReceiveOrderSuccessMessage(bool isOkay = false);
     Task ReceiveOrders(List<Order?> orders);
     Task SendOrder(Order order);
+    Task ReceiveQuickMessageList(List<QuickMessage> messages);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -28,8 +29,10 @@ public class SocketService : Hub<IHubService>
     public SocketService(MongoDBWrapper dBWrapper)
     {
         _tableCollection = dBWrapper.Tables;
+        _messageCollection = dBWrapper.QuickMessages;
     }
     IMongoCollection<Table> _tableCollection;
+    IMongoCollection<QuickMessage> _messageCollection;
     public static readonly ConcurrentDictionary<string, string> _userConnections = new(); // sid => MongoDB ID
     public static readonly ConcurrentDictionary<string, string> _waiterConnections = new(); // sid => MongoDB ID
     public static readonly ConcurrentDictionary<string, string> _ownerConnections = new(); // sid => MongoDB ID
@@ -244,6 +247,11 @@ public class SocketService : Hub<IHubService>
         await Clients.Caller.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
+    public async Task GetQuickMsgs()
+    {
+        var msgs = FetchMessages();
+        await Clients.Caller.ReceiveQuickMessageList(msgs.Result);
+    }
     /// <summary>
     /// Removes a waiter from a table and updates all clients about the table's updated status.
     /// </summary>
@@ -349,6 +357,10 @@ public class SocketService : Hub<IHubService>
         await base.OnDisconnectedAsync(exception);
     }
 
-
+    private async Task<List<QuickMessage>> FetchMessages()
+    {
+        var msgs = await _messageCollection.Find(_ => true).ToListAsync();
+        return msgs;
+    }
 
 }

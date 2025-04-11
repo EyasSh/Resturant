@@ -24,7 +24,7 @@ export type RootStackParamList = {
     "FireStaff": undefined;
     "Menu": undefined
     "Signup": undefined;
-    "UserNeeds": undefined;
+    "UserNeeds": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
     "OrderPeak": undefined;
     "AddQuickMessage": undefined;
 }

@@ -58,6 +58,7 @@ export default function TableCard(props: TableProps) {
   const number = props.tableNumber;
   const navigation = useNavigation<NavigationProp>();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
 /**
  * Handles the press event on the table card.
  * 
@@ -78,7 +79,9 @@ useEffect(() => {
     setCurrentUserId(u.id);
   }
   getUserId();
+  setConnection(props.hub);
 })
+useEffect(() => {},[connection])
   const handlePress = async () => {
     const stringfiedUser = await AsyncStorage.getItem('user');
     const u = JSON.parse(stringfiedUser!);
@@ -125,7 +128,7 @@ useEffect(() => {
         
             {isOccupied && userId === currentUserId ?
             <>
-              <TouchableOpacity onPress={()=>navigation.navigate("UserNeeds")} style={styles.waiterImage}>
+              <TouchableOpacity onPress={()=>navigation.navigate("UserNeeds",{tableNumber:number,hub:connection})} style={styles.waiterImage}>
                 <Image style={styles.image} source={require("@/assets/images/waiter.png")} />
               </TouchableOpacity>
               <CurvedButton

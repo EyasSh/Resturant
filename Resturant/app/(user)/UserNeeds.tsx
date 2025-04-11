@@ -5,6 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import TableNeedMessage from "@/components/ui/TableNeedMessage";
 import { NeedMessageProps, SelectedNeedMessages } from "@/Types/NeedMessageProps";
 import CurvedButton from "@/components/ui/CurvedButton";
+import { useRoute } from "@react-navigation/native";
 
 /**
  * Component for managing user needs messages at a table.
@@ -19,6 +20,25 @@ import CurvedButton from "@/components/ui/CurvedButton";
 
 export default function UserNeeds() {
     const [selectedNeedMessages, setSelectedNeedMessages] = useState<SelectedNeedMessages | null>(null);
+    const [messages, setMessages] = useState<NeedMessageProps[] | null>([]);
+    const route = useRoute();
+    const {tableNumber , hub} = route.params as {tableNumber: number, hub: signalR.HubConnection|null};
+    useEffect(() => {
+        if(hub && hub.state === "Connected"){
+           console.log("Hub is Connected fetching messages");
+           hub.off("ReceiveQuickMessageList")
+           hub.invoke("GetQuickMsgs",)
+              hub.on("ReceiveQuickMessageList", (messages: NeedMessageProps[]) => {
+                 const updatedMessages = messages.map((msg,index) => ({
+                    message:msg.message,
+                    handleClick: () => Add(msg.message),
+                 }));
+                 setMessages(updatedMessages);
+                 console.log("Received messages");
+                });
+        }
+    }, []);
+    useEffect(() => {}, [messages]);
 /**
  * Adds a new message to the list of selected need messages for the table.
  *
@@ -89,16 +109,19 @@ export default function UserNeeds() {
             </ThemedView>
            
                
-            <ThemedText style={styles.needsText}>Press the messages below and let the waiter help</ThemedText>
-                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollView}>
+            <ThemedText style={styles.needsText}>Tell the waiter what you need via the quick messages</ThemedText>
+                <ScrollView  contentContainerStyle={styles.scrollView}>
                 
-                    <TableNeedMessage message="Water" handleClick={() => Add("Water") } />
-                    <TableNeedMessage message="Can you please come over" handleClick={() => Add("Can you please come over")}/>
-                    <TableNeedMessage message="Check please" handleClick={() => Add("Check please")}/>
-                    <TableNeedMessage message="I need extra food" handleClick={() => Add("I need extra food")}/>
-                    <TableNeedMessage message="Come and clean the table" handleClick={() => Add("Come and clean the table")}/>
+                    {messages?.map((msg, index) => (
+                        <TableNeedMessage key={index} message={msg.message} handleClick={msg.handleClick} />
+                    ))}
+                        
                 </ScrollView>
-           
+                <CurvedButton 
+                    action={()=>{alert(selectedNeedMessages?.messages)}} 
+                    title="Notify Waiter"
+                    style={{backgroundColor:"#4800ff",marginBottom: 15}} 
+                 />
         </ThemedView>
     );
 }
@@ -141,7 +164,8 @@ const styles = StyleSheet.create({
       },
     scrollView: {
         flexDirection: "row",
-        alignSelf: "flex-end",
+        flexWrap: "wrap",
         padding: 10,
+        gap : 10,
     },
 });

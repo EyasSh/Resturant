@@ -25,7 +25,7 @@ export type RootStackParamList = {
     "Menu": undefined
     "Signup": undefined;
     "UserNeeds": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
-    "OrderPeak": undefined;
+    "OrderPeak": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
     "AddQuickMessage": undefined;
 }
 /**

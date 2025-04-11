@@ -119,8 +119,8 @@ export default function Waiter() {
     * This function is called when the waiter presses the "Peak Order" button.
     * It should be used to display the order for the waiter to see.
     */
-    const handlePeakOrder =()=>{
-        navigation.navigate("OrderPeak")
+    const handlePeakOrder =(tableNumber: number)=>{
+        navigation.navigate("OrderPeak", {tableNumber, hub: signalRConnection});
     }
 
     /**
@@ -155,7 +155,7 @@ export default function Waiter() {
                                 {tables.map((table, index) => (
                                 <WaiterTableCard key={index} 
                                     tableNumber={table.tableNumber}
-                                    peakOrderAction={()=>handlePeakOrder()}
+                                    peakOrderAction={()=>handlePeakOrder(index+1)}
                                     occupyAction={()=>handleWaitTable(index+1)}
                                     markOrderReadyAction={()=>handleMarkOrderReady()}
                                      />

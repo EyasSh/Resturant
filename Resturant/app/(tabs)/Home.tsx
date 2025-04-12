@@ -24,6 +24,7 @@ const cardWidth = Math.max((screenWidth / numColumns) - 30, 150); // Ensure card
  *
  * @returns A JSX element representing the main page of the app.
  */
+export let hub: signalR.HubConnection | null = null;
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
@@ -92,7 +93,7 @@ export default function MainPage() {
       try {
         await connection.start();
         setSignalRConnection(connection);
-
+        hub = connection; // Store the connection in the global variable
         connection.off("ConnectNotification");
         connection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
           if (isOkay) {
@@ -133,7 +134,7 @@ export default function MainPage() {
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
       await signalRConnection?.invoke("AssignUserToTable", userId, tableNumber);
-      navigation.navigate('Menu');
+      navigation.navigate('Menu', { tableNumber });
     } catch (err) {
       console.error("Failed to assign user to table", err);
     }
@@ -175,7 +176,7 @@ useEffect(() => {}, [tables]);
                 waiterId={table.waiterId ?? ""}
                 capacity={table.capacity}
                 hub={signalRConnection}
-                onAssignUserToTable={handleAssignUserToTable}
+                onAssignUserToTable={async()=> await handleAssignUserToTable(userId, table.tableNumber)}
                 onLeaveTable={async(tableNumber) => await handleLeaveTable(tableNumber)}
               />
             ))}

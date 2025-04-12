@@ -16,7 +16,7 @@ public interface IHubService
     Task ReceiveWaiterAssignMessage(string message, List<Table> tables);
     Task ReceiveTableLeaveMessage(List<Table> tables);
     Task ReceiveWaiterLeaveMessage(List<Table> tables);
-    Task ReceiveOrderSuccessMessage(bool isOkay = false);
+    Task ReceiveOrderSuccessMessage(bool isOkay = false, Order? order = null);
     Task ReceiveOrders(List<Order?> orders);
     Task SendOrder(Order order);
     Task ReceiveQuickMessageList(List<QuickMessage> messages);
@@ -281,14 +281,24 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public async Task OrderMeal(Order order)
     {
-        int tableNumber = order.TableNumber;
-        _orders[order.TableNumber - 1] = order;
-        await Clients.Caller.ReceiveOrderSuccessMessage(true);
-        await Clients.Group(tableNumber.ToString()).ReceiveOrders(_orders);
-        var context = Context.GetHttpContext();
-        if (context == null) return;
-        string id = context.Request.Query["userid"].ToString() ?? string.Empty;
-        Console.WriteLine($"Order sent in Table {tableNumber} from {id}");
+        if (order != null)
+        {
+            int tableNumber = order.TableNumber;
+            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders}");
+            _orders[order.TableNumber - 1] = order;
+            await Clients.Group(tableNumber.ToString()).ReceiveOrderSuccessMessage(true, order);
+
+            var context = Context.GetHttpContext();
+            if (context == null) return;
+            string id = context.Request.Query["userid"].ToString() ?? string.Empty;
+            Console.WriteLine($"Order sent in Table {tableNumber} from {id}");
+        }
+        else
+        {
+            Console.WriteLine("Order is null.");
+            await Clients.Caller.ReceiveOrderSuccessMessage(false, null);
+        }
+
     }
     /// <summary>
     /// Handles the disconnection of a client from the server.

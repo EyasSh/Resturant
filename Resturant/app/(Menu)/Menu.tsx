@@ -9,7 +9,9 @@ import CurvedButton from "@/components/ui/CurvedButton";
 import { GestureHandlerRootView, ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { Image } from "react-native";
 import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
-import { RouteProp, useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { Order, ProtoOrder } from "@/Types/Order";
+import { hub } from "@/app/(tabs)/Home";
 type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
 
 export  type Meal = {
@@ -27,11 +29,14 @@ export  type Meal = {
  */
 export default function Menu() {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
-  const [list, setList] = useState<(Meal & { quantity: number })[]>([]);
+  const [list, setList] = useState<ProtoOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
-
+  const route = useRoute<RouteProp<RootStackParamList, 'Menu'>>();
+  const tableNumber = route.params?.tableNumber ?? 0;
+  
+  const hubConnection = hub;
 
   // Fetch meals from API
   useEffect(() => {
@@ -88,6 +93,7 @@ export default function Menu() {
 
     fetchMeals();
   }, [menuItems]);
+  useEffect(()=>{},[hubConnection])
 
   /**
    * Adds a meal item to the order list. If the item is already in the list, increments the quantity by one.
@@ -98,13 +104,13 @@ export default function Menu() {
 
     
     setList((prevList) => {
-      const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
+      const existingIndex = prevList.findIndex((i) => i.meal.mealId === item.mealId);
       if (existingIndex >= 0) {
         const updatedList = [...prevList];
         updatedList[existingIndex].quantity += 1;
         return updatedList;
       } else {
-        return [...prevList, { ...item, quantity: 1 }];
+        return [...prevList, { meal: item, quantity: 1 }];
       }
     });
   }
@@ -117,14 +123,14 @@ export default function Menu() {
 
   function removeItemFromList(item: Meal) {
     setList((prevList) => {
-      const existingIndex = prevList.findIndex((i) => i.mealId === item.mealId);
+      const existingIndex = prevList.findIndex((i) => i.meal.mealId === item.mealId);
       if (existingIndex >= 0) {
         const updatedList = [...prevList];
         if (updatedList[existingIndex].quantity > 1) {
           updatedList[existingIndex].quantity -= 1;
           return updatedList;
         } else {
-          return prevList.filter((i) => i.mealId !== item.mealId);
+          return prevList.filter((i) => i.meal.mealId !== item.mealId);
         }
       }
       return prevList;
@@ -138,7 +144,7 @@ export default function Menu() {
    */
   function calculateTotal() {
     return list
-      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .reduce((total, item) => total + item.meal.price * item.quantity, 0)
       .toFixed(2);
   }
 
@@ -158,70 +164,104 @@ export default function Menu() {
       </ThemedView>
     );
   }
+   const handleSendOrder = async () => {
+    
+    if(tableNumber === 0 || list.length === 0)
+      {
+        alert(`Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`);
+        return;
+      }
+    if(hub!== null && hub.state === "Connected"){
+      
+      hub?.off("ReceiveOrderSuccessMessage")
+      hub?.off("ReceiveOrders")
+      const order: Order = {
+        tableNumber: tableNumber,
+        meals: list,
+        total: Number(calculateTotal()),
+        isReady: false,
+      }
+      await hub?.invoke("OrderMeal",order)
+       await hub?.on("ReceiveOrderSuccessMessage", (isOkay: boolean, order: Order) => {
+        try{
+          if (isOkay && order) {
+            alert(`Order sent successfully\norder total: ${order.total}₪`);
+            setList(order.meals);
+            navigation.pop();
+  
+          }
+          else{
+            alert("Order failed to send");
+          }
+        }catch(e){
+          alert(`An error occurred while sending the order: ${e}`);
+        }
+        
+      })
+    }
+    else{
+      alert(`hub is ${hub} or disconnected at table ${tableNumber}`);
+    }
 
+   }
   return (
 
-      
     
     <ThemedView style={styles.container}>
-      <GestureHandlerRootView style={{padding:0}}>
-      <ScrollView style={{padding:0}}>
-      {menuItems.length > 0 ? (
-        menuItems.map((item) => {  // ✅ FIX: Make sure it returns JSX correctly
-          const selectedItem = list.find((i) => i.mealId === item.mealId);
-          const currentQuantity = selectedItem ? selectedItem.quantity : 0;
-  
-          return (
-            <ThemedView key={item.mealId} style={styles.menuItem}>
-              <ThemedView>
-              <ThemedText style={styles.name}>{item.mealName}</ThemedText>
-              <ThemedText style={styles.name}>{item.category}</ThemedText>
-              </ThemedView>
-              <ThemedText style={styles.price}>{(Number(item.price) || 0).toFixed(2)} ₪</ThemedText>
-              <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
-              <ThemedView>
-              <CurvedButton title="Add" action={() => addItemToList(item)} style={{backgroundColor:"#00B0CC",marginBottom:10}}/>
-                <CurvedButton title="Remove" action={() => removeItemFromList(item)} style={{backgroundColor:"red"}}/>
-                </ThemedView>
-            </ThemedView>
-          );
-        })
-      ) : (
-        <ThemedText style={styles.emptyText}>No menu items available.</ThemedText>
-      )}
-  
-      <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
-      {list.length > 0 ? (
-        <FlatList
-          data={list}
-          keyExtractor={(item) => item.mealId}  // ✅ FIX: Remove `.toString()` since MealId is already a string
-          renderItem={({ item }) => (
-            <View style={styles.selectedItem}>
-              <ThemedText>
-                {item.mealName} x {item.quantity}
-              </ThemedText>
-              <ThemedText>{(item.price * item.quantity).toFixed(2)} ₪</ThemedText>
+  <FlatList
+    data={menuItems}
+    keyExtractor={(item) => item.mealId}
+   
+    renderItem={({ item }) => {
+      const selectedItem = list.find((i) => i.meal.mealId === item.mealId);
+      const currentQuantity = selectedItem ? selectedItem.quantity : 0;
+
+      return (
+        <ThemedView style={styles.menuItem}>
+          <ThemedView>
+            <ThemedText style={styles.name}>{item.mealName}</ThemedText>
+            <ThemedText style={styles.name}>{item.category}</ThemedText>
+          </ThemedView>
+          <ThemedText style={styles.price}>{item.price.toFixed(2)} ₪</ThemedText>
+          <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
+          <ThemedView>
+            <CurvedButton title="Add" action={() => addItemToList(item)} style={{ backgroundColor: "#00B0CC", marginBottom: 10 }} />
+            <CurvedButton title="Remove" action={() => removeItemFromList(item)} style={{ backgroundColor: "red" }} />
+          </ThemedView>
+        </ThemedView>
+      );
+    }}
+    ListFooterComponent={
+      <>
+        <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
+
+        {list.length > 0 ? (
+          list.map((item) => (
+            <View key={item.meal.mealId} style={styles.selectedItem}>
+              <ThemedText>{item.meal.mealName} x {item.quantity}</ThemedText>
+              <ThemedText>{(item.meal.price * item.quantity).toFixed(2)} ₪</ThemedText>
             </View>
-          )}
-        />
-      ) : (
-        <Text style={styles.emptyText}>No items selected.</Text>
-      )}
-  
-      <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
-  
-      <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
-      <GestureHandlerRootView style={styles.paymentmethods}>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.pop()}>
-        <Image source={require("@/assets/images/money.png")} style={styles.image}/>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.paymeth} onPress={()=>navigation.pop()}>
-        <Image source={require("@/assets/images/payment-method.png")} style={styles.image}/>
-      </TouchableOpacity>
-      </GestureHandlerRootView>
-      </ScrollView>
-    </GestureHandlerRootView>
-    </ThemedView>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No items selected.</Text>
+        )}
+
+        <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
+        <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+
+        <GestureHandlerRootView style={styles.paymentmethods}>
+          <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+            <Image source={require("@/assets/images/money.png")} style={styles.image} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+            <Image source={require("@/assets/images/payment-method.png")} style={styles.image} />
+          </TouchableOpacity>
+        </GestureHandlerRootView>
+      </>
+    }
+  />
+</ThemedView>
+
     
   );
   
@@ -230,7 +270,6 @@ export default function Menu() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 30,
-    paddingTop: 30,
     height: "100%",
   },
   loadingContainer: {

@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from '@microsoft/signalr';
 import CurvedButton from "./ui/CurvedButton";
 import { useRoute, RouteProp } from '@react-navigation/native';
+import { Order } from "@/Types/Order";
 
  export type TableProps = {
   tableNumber: number;
@@ -86,6 +87,7 @@ export default function TableCard(props: TableProps) {
     init();
   }, [hub]);
 
+  const getHub= ()=>connection 
   const handlePress = async () => {
     if (!currentUserId) return;
 
@@ -99,7 +101,7 @@ export default function TableCard(props: TableProps) {
 
     if (isOccupied && userId === u.id) {
       alert("You are already assigned to this table");
-      navigation.navigate('Menu', { tableNumber});
+      navigation.navigate('Menu', { tableNumber, ref: getHub });
       return;
     }
 

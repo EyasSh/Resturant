@@ -13,6 +13,7 @@ import { TableProps } from '@/components/TableCard';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import TableNeedMessage from '@/components/ui/TableNeedMessage';
+import { Order } from "@/Types/Order";
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -113,6 +114,15 @@ export default function MainPage() {
         connection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
           setTables(tables);
         })
+        connection.off("ReceiveOrderSuccessMessage")
+        connection.on("ReceiveOrderSuccessMessage",(isOkay :boolean, order:Order) => {
+          if(isOkay){
+            alert("Order sent successfully")
+          }else{
+            alert("Failed to send order")
+          }
+        })
+       
       } catch (error) {
         console.error('SignalR connection error:', error);
       }
@@ -121,6 +131,8 @@ export default function MainPage() {
     fetchUser();
     fetchTables();
   }, []);
+
+
 
 
   /**
@@ -133,12 +145,25 @@ export default function MainPage() {
    */
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
+      // 🔍 Check if user is already seated at a different table
+      const existingTable = tables.find(
+        (t) => t.userId === userId && t.tableNumber !== tableNumber
+      );
+  
+      if (existingTable) {
+        alert(`User is already seated at table ${existingTable.tableNumber}. Cannot occupy another table.`);
+        return;
+      }
+  
+      // ✅ Safe to assign
       await signalRConnection?.invoke("AssignUserToTable", userId, tableNumber);
-      navigation.navigate('Menu', { tableNumber });
+      navigation.navigate('Menu', { tableNumber, ref: () => signalRConnection });
+  
     } catch (err) {
       console.error("Failed to assign user to table", err);
     }
   };
+  
 
 
   /**

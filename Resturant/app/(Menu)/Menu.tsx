@@ -11,7 +11,6 @@ import { Image } from "react-native";
 import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Order, ProtoOrder } from "@/Types/Order";
-import { hub } from "@/app/(tabs)/Home";
 type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
 
 export  type Meal = {
@@ -34,9 +33,8 @@ export default function Menu() {
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<RootStackParamList, 'Menu'>>();
-  const tableNumber = route.params?.tableNumber ?? 0;
-  
-  const hubConnection = hub;
+  const {tableNumber, ref} = route.params || { tableNumber: 0, hub: null };
+  const hubConnection = ref ? ref() : null; 
 
   // Fetch meals from API
   useEffect(() => {
@@ -93,9 +91,7 @@ export default function Menu() {
 
     fetchMeals();
   }, [menuItems]);
-  useEffect(()=>{
-   
-  },[hubConnection])
+  useEffect(()=>{},[hubConnection])
  
   
 
@@ -175,30 +171,31 @@ export default function Menu() {
         alert(`Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`);
         return;
       }
-    if(hub!== null && hub.state === "Connected"){
+    if(hubConnection!== null && hubConnection.state === "Connected"){
       
-      hub?.off("ReceiveOrderSuccessMessage")
-      hub?.off("ReceiveOrders")
+      hubConnection.off("ReceiveOrderSuccessMessage")
+      hubConnection.off("ReceiveOrders")
       const order: Order = {
         tableNumber: tableNumber,
         orders: list,
         total: Number(calculateTotal()),
         isReady: false,
       }
-      await hub?.invoke("OrderMeal",order)
-      setList(order.orders)
-     await hub.on("ReceiveOrderSuccessMessage",(isOkay :boolean, order:Order) => {
-        if(isOkay){
-          
-        }else{
-          alert("Failed to send order")
+      await hubConnection.invoke("OrderMeal",order)
+      hubConnection.on("ReceiveOrderSuccessMessage", (isOkay: boolean, order: Order) => {
+        if (isOkay) {
+          alert("Order sent successfully");
+        } else {
+          alert("Failed to send order");
         }
       })
-      alert("Order sent successfully")
+      hubConnection.off("ReceiveOrderSuccessMessage")
+     
+     
       
     }
     else{
-      alert(`hub is ${hub} or disconnected at table ${tableNumber}`);
+      alert(`hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
     }
 
    }
@@ -248,10 +245,10 @@ export default function Menu() {
         <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
 
         <GestureHandlerRootView style={styles.paymentmethods}>
-          <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+          <TouchableOpacity style={styles.paymeth} onPress={()=>{handleSendOrder(); navigation.pop();}}>
             <Image source={require("@/assets/images/money.png")} style={styles.image} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+          <TouchableOpacity style={styles.paymeth} onPress={()=>{handleSendOrder(); navigation.pop();}}>
             <Image source={require("@/assets/images/payment-method.png")} style={styles.image} />
           </TouchableOpacity>
         </GestureHandlerRootView>

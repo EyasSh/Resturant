@@ -281,13 +281,14 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public async Task OrderMeal(Order order)
     {
-        if (order != null)
+        if (order != null && order.Orders != null)
         {
             int tableNumber = order.TableNumber;
             System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
             _orders[order.TableNumber - 1] = order;
+            await Task.Delay(5000); // Simulate delay for order processing
             await Clients.Group(tableNumber.ToString()).ReceiveOrderSuccessMessage(true, order);
-
+            System.Console.WriteLine("Event fired: (ReceiveOrderSuccessMessage)");
             var context = Context.GetHttpContext();
             if (context == null) return;
             string id = context.Request.Query["userid"].ToString() ?? string.Empty;

@@ -2,6 +2,7 @@ import { ChatProps } from '@/Types/ChatProps';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { Order } from '@/Types/Order';
+import * as signalR from '@microsoft/signalr';
 /**
  * This is the type definition for the navigation prop used in the app.
  * It defines the screens that can be navigated to.
@@ -22,7 +23,7 @@ export type RootStackParamList = {
     "RemoveTable": undefined;
     "RemoveMeal": undefined;
     "FireStaff": undefined;
-    "Menu": {tableNumber: number}|undefined
+    "Menu": {tableNumber: number,ref: () => signalR.HubConnection|null}|undefined
     "Signup": undefined;
     "UserNeeds": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
     "OrderPeak": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;

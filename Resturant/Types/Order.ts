@@ -8,7 +8,7 @@ export type ProtoOrder ={
 export type Order =  {
     id?: string,
     tableNumber: number,
-    meals: ProtoOrder[],
+    orders: ProtoOrder[],
     total: number,
     isReady: boolean
 }

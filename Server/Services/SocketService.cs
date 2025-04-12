@@ -284,7 +284,7 @@ public class SocketService : Hub<IHubService>
         if (order != null)
         {
             int tableNumber = order.TableNumber;
-            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders}");
+            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
             _orders[order.TableNumber - 1] = order;
             await Clients.Group(tableNumber.ToString()).ReceiveOrderSuccessMessage(true, order);
 

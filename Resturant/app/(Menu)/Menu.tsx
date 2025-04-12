@@ -93,7 +93,11 @@ export default function Menu() {
 
     fetchMeals();
   }, [menuItems]);
-  useEffect(()=>{},[hubConnection])
+  useEffect(()=>{
+   
+  },[hubConnection])
+ 
+  
 
   /**
    * Adds a meal item to the order list. If the item is already in the list, increments the quantity by one.
@@ -177,27 +181,21 @@ export default function Menu() {
       hub?.off("ReceiveOrders")
       const order: Order = {
         tableNumber: tableNumber,
-        meals: list,
+        orders: list,
         total: Number(calculateTotal()),
         isReady: false,
       }
       await hub?.invoke("OrderMeal",order)
-       await hub?.on("ReceiveOrderSuccessMessage", (isOkay: boolean, order: Order) => {
-        try{
-          if (isOkay && order) {
-            alert(`Order sent successfully\norder total: ${order.total}₪`);
-            setList(order.meals);
-            navigation.pop();
-  
-          }
-          else{
-            alert("Order failed to send");
-          }
-        }catch(e){
-          alert(`An error occurred while sending the order: ${e}`);
+      setList(order.orders)
+     await hub.on("ReceiveOrderSuccessMessage",(isOkay :boolean, order:Order) => {
+        if(isOkay){
+          
+        }else{
+          alert("Failed to send order")
         }
-        
       })
+      alert("Order sent successfully")
+      
     }
     else{
       alert(`hub is ${hub} or disconnected at table ${tableNumber}`);

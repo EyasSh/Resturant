@@ -120,7 +120,24 @@ export default function Waiter() {
     * It should be used to display the order for the waiter to see.
     */
     const handlePeakOrder =(tableNumber: number)=>{
-        navigation.navigate("OrderPeak", {tableNumber, hub: signalRConnection});
+        //Logic for getting the order by table number
+        signalRConnection?.invoke("PeakOrder", tableNumber)
+        signalRConnection?.on("SendOrder", (order: Order) => {
+            try{
+                setOrders(prevOrders => {
+                    const updatedOrders = [...prevOrders];
+                    updatedOrders[tableNumber - 1] = order; // newOrder is the order you received from the socket
+                    return updatedOrders;
+                  });
+                  navigation.navigate("OrderPeak", {order: order});
+                  
+            }catch(error){
+                alert(error)
+            }finally{
+                signalRConnection?.off("SendOrder")
+            }
+        })
+        
     }
 
     /**
@@ -131,6 +148,7 @@ export default function Waiter() {
     */
     const handleWaitTable = (tableNumber: number) => {
         signalRConnection?.invoke("AssignWaiterToTable", waiter?.id, tableNumber)
+        alert(`Table ${tableNumber} is now being waited at.`);
     }
     /**
      * Handles the mark order ready action.

@@ -23,10 +23,10 @@ export type RootStackParamList = {
     "RemoveTable": undefined;
     "RemoveMeal": undefined;
     "FireStaff": undefined;
-    "Menu": {tableNumber: number,ref: () => signalR.HubConnection|null}|undefined
+    "Menu": {tableNumber: number,ref: () => signalR.HubConnection|null} |undefined
     "Signup": undefined;
     "UserNeeds": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
-    "OrderPeak": {tableNumber: number, hub:signalR.HubConnection|null} | undefined;
+    "OrderPeak": {tableNumber: number, hub:signalR.HubConnection|null} | {order:Order}| undefined;
     "AddQuickMessage": undefined;
 }
 /**

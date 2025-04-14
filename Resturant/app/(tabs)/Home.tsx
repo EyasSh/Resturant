@@ -2,7 +2,7 @@ import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet,  Dimensions , ScrollView } from 'react-native';
+import { StyleSheet,  Dimensions , ScrollView, ToastAndroid } from 'react-native';
 import TableCard from '@/components/TableCard';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import TableNeedMessage from '@/components/ui/TableNeedMessage';
 import { Order } from "@/Types/Order";
+import Toast from 'react-native-toast-message';
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -98,7 +99,8 @@ export default function MainPage() {
         connection.off("ConnectNotification");
         connection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
           if (isOkay) {
-            alert('Session established');
+            ToastAndroid.show("Connected to the server", ToastAndroid.CENTER);
+            
             await AsyncStorage.setItem('sid', sid);
             setTables(tables);
           }
@@ -117,7 +119,7 @@ export default function MainPage() {
         connection.off("ReceiveOrderSuccessMessage")
         connection.on("ReceiveOrderSuccessMessage",(isOkay :boolean, order:Order) => {
           if(isOkay){
-            alert("Order sent successfully")
+            ToastAndroid.show("Order sent successfully", ToastAndroid.CENTER);
           }else{
             alert("Failed to send order")
           }
@@ -151,7 +153,7 @@ export default function MainPage() {
       );
   
       if (existingTable) {
-        alert(`User is already seated at table ${existingTable.tableNumber}. Cannot occupy another table.`);
+        ToastAndroid.show(`Already seated at table ${existingTable.tableNumber}. Cannot occupy another table.`, ToastAndroid.LONG);
         return;
       }
   
@@ -160,7 +162,7 @@ export default function MainPage() {
       navigation.navigate('Menu', { tableNumber, ref: () => signalRConnection });
   
     } catch (err) {
-      console.error("Failed to assign user to table", err);
+      ToastAndroid.show("Failed to assign user to table", ToastAndroid.CENTER);
     }
   };
   
@@ -180,7 +182,7 @@ export default function MainPage() {
       
       
     } catch (err) {
-      console.error("Failed to leave table", err);
+      ToastAndroid.show("Failed to leave table", ToastAndroid.CENTER);
     }
   };
 useEffect(() => {}, [tables]);

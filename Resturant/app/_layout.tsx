@@ -28,6 +28,7 @@ import Menu from '@/app/(Menu)/Menu';
 import UserNeeds from './(user)/UserNeeds';
 import OrderPeak from './(staff)/(waiter)/OrderPeak';
 import AddQuickMessage from './(staff)/(owner)/AddQuickMessage';
+import Toast from 'react-native-toast-message';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -50,6 +51,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Toast />
         <StatusBar
         style={colorScheme === 'dark' ? 'light' : 'dark'} // icon color
         backgroundColor={colorScheme === 'dark' ? '#121212' : '#ffffff'} // status bar background

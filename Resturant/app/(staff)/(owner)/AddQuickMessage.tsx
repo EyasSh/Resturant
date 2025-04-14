@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { StyleSheet} from "react-native";
+import { StyleSheet, ToastAndroid} from "react-native";
 import ThemedInput from "@/components/ThemedInput";
 import CurvedButton from "@/components/ui/CurvedButton";
 import axios from "axios";
@@ -34,10 +34,10 @@ export default function AddQuickMessage() {
                     }
                 }
             )
-            alert(res.data)
+            ToastAndroid.show(res.data, ToastAndroid.LONG)
         }
         catch(e){
-            alert(e)
+            ToastAndroid.show(`${e}`, ToastAndroid.LONG)
         }
     }
     return(

@@ -232,19 +232,13 @@ public class SocketService : Hub<IHubService>
     public async Task PeakOrder(int tableNumber)
     {
         var order = _orders[tableNumber - 1];
-        var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
-        bool isWaiterForTable = !string.IsNullOrEmpty(waiterId) && _tables[tableNumber - 1].WaiterId == waiterId;
-        if (!isWaiterForTable)
-        {
-            Console.WriteLine($"Waiter {waiterId} is not assigned to Table {tableNumber}");
-            return;
-        }
+
         if (order == null)
         {
             Console.WriteLine($"No order found for Table {tableNumber}");
             return;
         }
-        await Clients.Caller.SendOrder(order);
+        await Clients.All.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
     public async Task GetQuickMsgs()
@@ -286,9 +280,7 @@ public class SocketService : Hub<IHubService>
             int tableNumber = order.TableNumber;
             System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
             _orders[order.TableNumber - 1] = order;
-            await Task.Delay(5000); // Simulate delay for order processing
-            await Clients.Group(tableNumber.ToString()).ReceiveOrderSuccessMessage(true, order);
-            System.Console.WriteLine("Event fired: (ReceiveOrderSuccessMessage)");
+            await Clients.Caller.ReceiveOrderSuccessMessage(true, order);
             var context = Context.GetHttpContext();
             if (context == null) return;
             string id = context.Request.Query["userid"].ToString() ?? string.Empty;

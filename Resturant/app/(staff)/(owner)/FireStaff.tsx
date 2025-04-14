@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { StyleSheet, TouchableOpacity, View, ScrollView } from "react-native";
+import { StyleSheet, TouchableOpacity, View, ScrollView, ToastAndroid } from "react-native";
 import axios from "axios";
 import ip from "@/Data/Addresses";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -56,11 +56,13 @@ export default function FireStaff() {
                 },
             });
             if(res && res.status===400){
-                alert(res.data)
+                
+                 ToastAndroid.show(`${res.data}`, ToastAndroid.LONG);
                 return;
             }
             if (res && res.status === 200) {
-                alert(res.data);
+               
+                ToastAndroid.show("Removed Waiter Successfully", ToastAndroid.LONG);
 
                 // ✅ Remove from state immediately
                 setWaiters(prevWaiters => prevWaiters.filter(waiter => waiter.id !== id));

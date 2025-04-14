@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CurvedButton from '@/components/ui/CurvedButton';
 import { useState} from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ToastAndroid } from 'react-native';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
 
@@ -47,10 +47,10 @@ export default function OwnerSignup() {
                 Phone: phone,
                 RestaurantNumber:restaurantNumber
             })
-            alert(res.data);
+            
             
             if(res && res.status===200){
-                alert(res.data);
+                ToastAndroid.show("Signup Successful", ToastAndroid.LONG);
             }
         }
         catch(e){

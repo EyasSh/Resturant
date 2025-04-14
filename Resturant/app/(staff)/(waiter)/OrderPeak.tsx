@@ -29,10 +29,10 @@ export default function OrderPeak() {
                         ]}
                     >
                         <ThemedText style={[styles.mealText, { color: dark ? "#fff" : "#000" }]}>
-                            {item.meal.mealName} - {item.quantity}
+                            {item.meal.mealName} x {item.quantity}
                         </ThemedText>
                         <ThemedText style={[styles.categoryText, { color: dark ? "#ccc" : "#444" }]}>
-                            {item.meal.category}
+                            {item.meal.category+"\t\t"+item.meal.price.toFixed(2)} ₪
                         </ThemedText>
                     </ThemedView>
                 )}

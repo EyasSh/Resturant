@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CurvedButton from '@/components/ui/CurvedButton';
 import { useState} from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ToastAndroid } from 'react-native';
 import axios from 'axios';
 import ip from "@/Data/Addresses";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,7 +51,7 @@ export default function WaiterSignup() {
             }
         })
             if(res && res.status===200){
-                alert(res.data);
+                ToastAndroid.show("Waiter added successfully!", ToastAndroid.SHORT);
             }
         }
         catch(e){

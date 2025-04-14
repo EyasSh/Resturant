@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import ThemedInput from "@/components/ThemedInput";
 import CurvedButton from "@/components/ui/CurvedButton";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ToastAndroid } from "react-native";
 import Logo from "@/components/ui/Logo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -62,9 +62,9 @@ export default function AddMealForm() {
             })
 
 
-            alert(`${name} Added Successfully!\nPrice: ${price}`);
+            ToastAndroid.show(`${name} Added Successfully!\nPrice: ${price}`, ToastAndroid.CENTER);
         }catch(e){
-            alert(e);
+            ToastAndroid.show(`${e}`, ToastAndroid.LONG);
         }
         
     }

@@ -5,7 +5,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import ThemedInput from '@/components/ThemedInput';
 import CurvedButton from '@/components/ui/CurvedButton';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
@@ -47,10 +47,10 @@ export default function AddTableForm() {
                 }
             })
             if(res && res.status===200){
-                alert("Table added successfully!");
+                ToastAndroid.show("Table added successfully!", ToastAndroid.LONG);
             }
         }catch(e){
-            alert(e);
+            ToastAndroid.show(`${e}`,ToastAndroid.LONG);
         }
         
     }

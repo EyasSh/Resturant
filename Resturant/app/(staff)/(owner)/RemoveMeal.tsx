@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { StyleSheet} from "react-native";
+import { StyleSheet, ToastAndroid} from "react-native";
 import axios from "axios";
 import ip from "@/Data/Addresses";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -49,7 +49,7 @@ export default function RemoveMeal() {
                 "x-auth-token": token,
             }});
             if (res && res.status === 200) {
-                alert(`${mealToRemove.mealName} removed successfully!\nPrice: ${mealToRemove.price}`);
+                ToastAndroid.show(`${mealToRemove.mealName} removed successfully!\nPrice: ${mealToRemove.price}`, ToastAndroid.SHORT);
             }
             // ✅ Remove meal from array
             const updatedMeals = meals.filter(meal => meal.mealId !== mealId);

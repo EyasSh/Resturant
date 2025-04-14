@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState,useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, Image, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoutButton from '@/components/LogoutButton';
 import axios from 'axios';
@@ -94,7 +94,7 @@ function Owner() {
                 setSignalRConnection(connection);
                 await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
                     if(isOkay){
-                        alert('Session established');
+                        ToastAndroid.show('Session established', ToastAndroid.SHORT);
                         await AsyncStorage.setItem('sid', sid);
                     }
                 })

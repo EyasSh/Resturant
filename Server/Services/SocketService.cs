@@ -149,7 +149,7 @@ public class SocketService : Hub<IHubService>
         _tables[tableNumber - 1].UserId = userId;
         _tables[tableNumber - 1].CheckOccupation();
         System.Console.WriteLine($"User {userId} assigned to Table {tableNumber}, isOccupied: {_tables[tableNumber - 1].isOccupied}");
-        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
+        await Groups.AddToGroupAsync(userId, tableNumber.ToString());
         await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true, userId, tableNumber, _tables);
         System.Console.WriteLine($"User {userId} joined Table {tableNumber}");
         // Store user ID in dictionary

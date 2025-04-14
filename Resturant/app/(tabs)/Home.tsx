@@ -2,7 +2,7 @@ import { useTheme } from '@react-navigation/native';
 import Logo from "@/components/ui/Logo";import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet,  Dimensions , ScrollView, ToastAndroid } from 'react-native';
+import { StyleSheet,  Dimensions , ScrollView, ToastAndroid, Alert } from 'react-native';
 import TableCard from '@/components/TableCard';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
@@ -31,6 +31,7 @@ export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
   const [userId, setUserId] = useState<any | null>(null);
+  const [orders, setOrders] = useState<Order[] |null>([]);
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
@@ -47,6 +48,8 @@ export default function MainPage() {
         });
         if (res && res.status === 200) {
           setTables(res.data.tables);
+          setOrders(new Array(res.data.tables.length).fill([]));
+
         }
       } catch (e) {
         alert(e);
@@ -116,6 +119,7 @@ export default function MainPage() {
         connection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
           setTables(tables);
         })
+        
         connection.off("ReceiveOrderSuccessMessage")
         connection.on("ReceiveOrderSuccessMessage",(isOkay :boolean, order:Order) => {
           if(isOkay){
@@ -135,7 +139,20 @@ export default function MainPage() {
   }, []);
 
 
-
+useEffect(()=>{
+  signalRConnection?.off("ReceiveOrderReadyMessage");
+        signalRConnection?.on("ReceiveOrderReadyMessage", (order: Order, tableNumber: number) => {
+          if (order) {
+            setOrders(prevOrders => {
+              const updatedOrders = [...(prevOrders ?? [])];
+              updatedOrders[order.tableNumber - 1] = order; // newOrder is the order you received from the socket
+              console.log(`Order is ready at table ${tableNumber}`, ToastAndroid.CENTER);
+              return updatedOrders;
+            });
+            
+          }
+        });
+},[orders])
 
   /**
    * Assigns a user to a table and navigates to the menu.

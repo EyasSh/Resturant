@@ -20,6 +20,7 @@ public interface IHubService
     Task ReceiveOrders(List<Order?> orders);
     Task SendOrder(Order order);
     Task ReceiveQuickMessageList(List<QuickMessage> messages);
+    public Task ReceiveOrderReadyMessage(Order order,int tableNumber);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -292,6 +293,22 @@ public class SocketService : Hub<IHubService>
             await Clients.Caller.ReceiveOrderSuccessMessage(false, null);
         }
 
+    }
+    public async Task MarkOrderAsReady(int tableNumber)
+    {
+        var order = _orders[tableNumber - 1];
+        if (order != null)
+        {
+            System.Console.WriteLine($"Order for Table {tableNumber} marked as ready: {order.Orders.Length} items");
+            order.IsReady = true;
+            Console.WriteLine($"Order for Table {tableNumber} marked as ready.");
+            await Clients.Group(tableNumber.ToString()).ReceiveOrderReadyMessage(order, tableNumber);
+            System.Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
+        }
+        else
+        {
+            Console.WriteLine($"No order found for Table {tableNumber}");
+        }
     }
     /// <summary>
     /// Handles the disconnection of a client from the server.

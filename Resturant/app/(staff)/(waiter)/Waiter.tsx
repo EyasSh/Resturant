@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {useEffect, useState} from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ToastAndroid } from 'react-native';
 import LogoutButton from '@/components/LogoutButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as signalR from '@microsoft/signalr';
@@ -155,9 +155,26 @@ export default function Waiter() {
      * This function is called when the waiter presses the "Mark Order Ready" button.
      * It should be used to mark the order as ready and send a request to the server to update the order's status.
      */
-    const handleMarkOrderReady =()=>{
+    const handleMarkOrderReady =(tableNumber: number)=>{
         // Handle mark order ready action here
-        alert("Mark Order Ready")
+        signalRConnection?.invoke("MarkOrderAsReady", tableNumber)
+        signalRConnection?.on("ReceiveOrderReadyMessage", async(order: Order, tableNumber: number) => {
+            try{
+                setOrders(prevOrders => {
+                    const updatedOrders = [...prevOrders];
+                    updatedOrders[tableNumber - 1] = order; // newOrder is the order you received from the socket
+                    return updatedOrders;
+                  });
+                  ToastAndroid.show(`Order for table ${tableNumber} is ready`, ToastAndroid.SHORT);
+                  await AsyncStorage.setItem("orders", JSON.stringify(orders));
+                
+                  
+            }catch(error){
+                alert(error)
+            }finally{
+                signalRConnection?.off("SendOrder")
+            }
+        })
         }
     return (
        
@@ -175,7 +192,7 @@ export default function Waiter() {
                                     tableNumber={table.tableNumber}
                                     peakOrderAction={()=>handlePeakOrder(index+1)}
                                     occupyAction={()=>handleWaitTable(index+1)}
-                                    markOrderReadyAction={()=>handleMarkOrderReady()}
+                                    markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
                                      />
                                     
                                 ))}

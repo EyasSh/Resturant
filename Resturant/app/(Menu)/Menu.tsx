@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Button, FlatList, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, View, Text, Button, FlatList, ActivityIndicator, ToastAndroid } from "react-native";
 import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,6 +11,8 @@ import { Image } from "react-native";
 import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Order, ProtoOrder } from "@/Types/Order";
+import { Connection } from "@/Data/Hub";
+import Toast from "react-native-toast-message";
 type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
 
 export  type Meal = {
@@ -33,66 +35,99 @@ export default function Menu() {
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<RootStackParamList, 'Menu'>>();
-  const {tableNumber, ref} = route.params || { tableNumber: 0, hub: null };
-  const hubConnection = ref ? ref() : null; 
+  const {tableNumber} = route.params || { tableNumber: 0};
+  const [hubConnection,setHubConnection] = useState<signalR.HubConnection | null>(null);
+const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
 
-  // Fetch meals from API
+
   useEffect(() => {
-    if (menuItems.length > 0) {
-      
-      return; // No need to fetch again if we already have items
+    async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
+      const start = Date.now();
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          const conn = Connection.getHub();
+          if (conn && conn.state === "Connected") {
+            clearInterval(checkInterval);
+            resolve(conn);
+          } else if (Date.now() - start > timeout) {
+            clearInterval(checkInterval);
+            resolve(null);
+          }
+        }, 100); // check every 100ms
+      });
     }
-    /**
-     * Fetches meals from the API and updates the component state.
-     * If there is an error fetching the meals, an error message is displayed.
-     * If the user is not authenticated, an error is thrown.
-     * If the response is not successful, an error is thrown.
-     * If the response data is not an array of meals, an error is thrown.
-     * If the response data is an empty array, the state is set to an empty array.
-     * If the response data is a non-empty array of meals, the state is updated with the new data.
-     * Finally, the loading state is set to false.
-     */
-    async function fetchMeals() {
+  
+    async function fetchMealsAndHub() {
       try {
         setLoading(true);
         const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          throw new Error("User is not authenticated.");
-        }
-
+        if (!token) throw new Error("User is not authenticated.");
+  
         const response = await axios.get(`http://${ip.julian}:5256/api/user/meals`, {
-          headers: {
-            "X-Auth-Token": token,
-          },
+          headers: { "X-Auth-Token": token },
         });
-
-        if (response.status !== 200) {
-          throw new Error("Failed to fetch meals.");
-        }
-
-
+  
+        if (response.status !== 200) throw new Error("Failed to fetch meals.");
+  
         const data: Meal[] = response.data.meals;
-        
-
-        if (Array.isArray(response.data.meals) && response.data.meals.length > 0) {
-
-          setMenuItems([...data]); // Spread to force state update
+        setMenuItems(Array.isArray(data) ? data : []);
+  
+        const conn = await waitForHubConnection();
+        if (conn) {
+          setHubConnection(conn);
+          ToastAndroid.show("Connected set at Menu", ToastAndroid.CENTER);
 
         } else {
-          setMenuItems([]); // Ensure it does not remain undefined
+          ToastAndroid.show("SignalR connection not ready", ToastAndroid.LONG);
         }
-        
       } catch (err: any) {
         setError(err.message);
+        console.error("Error fetching meals:", err.message);
       } finally {
         setLoading(false);
       }
     }
-
-    fetchMeals();
-  }, [menuItems]);
-  useEffect(()=>{},[hubConnection])
- 
+  
+    fetchMealsAndHub();
+  }, []);
+  useEffect(() => {
+    hubConnection?.on("ReceiveOrderSuccessMessage", ( isOkay: boolean, order: Order) => {
+      if (isOkay) {
+        ToastAndroid.show(`Order sent successfully for table ${order.tableNumber}`, ToastAndroid.LONG);
+        setList([]); // Clear the order list after sending
+        navigation.pop(); // Navigate back to the previous screen
+      } else {
+        ToastAndroid.show(`Failed to send order`, ToastAndroid.LONG);
+      }
+    });
+  }, [hubConnection]);
+  
+    
+  const handleSendOrder = async () => {
+    if (tableNumber === 0 || list.length === 0) {
+      alert(`Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`);
+      return;
+    }
+  
+    if (hubConnection && hubConnection.state === "Connected") {
+      const order: Order = {
+        tableNumber: tableNumber,
+        orders: list,
+        total: Number(calculateTotal()),
+        isReady: false,
+      };
+  
+      try {
+        hubConnection.invoke("OrderMeal", order);
+      } catch (err) {
+        console.error("Failed to send order:", err);
+        alert("Error sending order to the server.");
+      }
+    } else {
+      alert(`Hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
+    }
+  };
+  
   
 
   /**
@@ -164,41 +199,7 @@ export default function Menu() {
       </ThemedView>
     );
   }
-   const handleSendOrder = async () => {
-    
-    if(tableNumber === 0 || list.length === 0)
-      {
-        alert(`Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`);
-        return;
-      }
-    if(hubConnection!== null && hubConnection.state === "Connected"){
-      
-      hubConnection.off("ReceiveOrderSuccessMessage")
-      hubConnection.off("ReceiveOrders")
-      const order: Order = {
-        tableNumber: tableNumber,
-        orders: list,
-        total: Number(calculateTotal()),
-        isReady: false,
-      }
-      await hubConnection.invoke("OrderMeal",order)
-      hubConnection.on("ReceiveOrderSuccessMessage", (isOkay: boolean, order: Order) => {
-        if (isOkay) {
-          alert("Order sent successfully");
-        } else {
-          alert("Failed to send order");
-        }
-      })
-      hubConnection.off("ReceiveOrderSuccessMessage")
-     
-     
-      
-    }
-    else{
-      alert(`hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
-    }
-
-   }
+ 
   return (
 
     
@@ -244,14 +245,15 @@ export default function Menu() {
         <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
         <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
 
-        <GestureHandlerRootView style={styles.paymentmethods}>
-          <TouchableOpacity style={styles.paymeth} onPress={()=>{handleSendOrder(); navigation.pop();}}>
+        <ThemedView style={styles.paymentmethods}>
+          <TouchableOpacity style={styles.paymeth} onPress={async()=>{await handleSendOrder();}}>
             <Image source={require("@/assets/images/money.png")} style={styles.image} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.paymeth} onPress={()=>{handleSendOrder(); navigation.pop();}}>
+          <TouchableOpacity style={styles.paymeth} onPress={async()=>{await handleSendOrder();}}>
             <Image source={require("@/assets/images/payment-method.png")} style={styles.image} />
           </TouchableOpacity>
-        </GestureHandlerRootView>
+        </ThemedView>
+        
       </>
     }
   />

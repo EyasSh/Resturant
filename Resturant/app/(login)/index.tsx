@@ -93,7 +93,10 @@ export default function Login() {
             
         }
         // Navigate to the tabs layout
-        navigation.navigate('Tabs');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Tabs' }],
+        });
       }
       catch(e:any){
         alert(e.message);

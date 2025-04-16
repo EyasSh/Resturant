@@ -101,7 +101,7 @@ export default function TableCard(props: TableProps) {
 
     if (isOccupied && userId === u.id) {
       alert("You are already assigned to this table");
-      navigation.navigate('Menu', { tableNumber, ref: getHub });
+      navigation.navigate('Menu', { tableNumber});
       return;
     }
 
@@ -142,7 +142,7 @@ export default function TableCard(props: TableProps) {
           <>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("UserNeeds", { tableNumber, hub: connection })
+                navigation.navigate("UserNeeds", { tableNumber })
               }
               style={styles.waiterImage}
             >

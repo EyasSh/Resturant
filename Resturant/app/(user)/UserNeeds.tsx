@@ -6,6 +6,7 @@ import TableNeedMessage from "@/components/ui/TableNeedMessage";
 import { NeedMessageProps, SelectedNeedMessages } from "@/Types/NeedMessageProps";
 import CurvedButton from "@/components/ui/CurvedButton";
 import { useRoute } from "@react-navigation/native";
+import { Connection } from "@/Data/Hub";
 
 /**
  * Component for managing user needs messages at a table.
@@ -22,7 +23,8 @@ export default function UserNeeds() {
     const [selectedNeedMessages, setSelectedNeedMessages] = useState<SelectedNeedMessages | null>(null);
     const [messages, setMessages] = useState<NeedMessageProps[] | null>([]);
     const route = useRoute();
-    const {tableNumber , hub} = route.params as {tableNumber: number, hub: signalR.HubConnection|null};
+    const {tableNumber} = route.params as {tableNumber: number};
+    const hub = Connection.getHub();
     useEffect(() => {
         if(hub && hub.state === "Connected"){
            console.log("Hub is Connected fetching messages");

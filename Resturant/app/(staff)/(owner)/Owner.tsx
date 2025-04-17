@@ -9,6 +9,7 @@ import ip from '@/Data/Addresses';
 import * as signalR from '@microsoft/signalr';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import { useNavigation } from '@react-navigation/native';
+import { Connection } from '@/Data/Hub';
 type OwnerDTO={
     id : string,
     name: string,
@@ -85,12 +86,10 @@ function Owner() {
          * If an error occurs during connection, an error is logged to the console
          */
         const connect = async () => {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl(`http://${ip.julian}:5256/hub?ownerid=${owner.id}&privilagelevel=owner`)
-                .build();
+            const connection = await Connection.connectHub(owner.id, "owner");
             
             try {
-                await connection.start();
+                
                 setSignalRConnection(connection);
                 await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
                     if(isOkay){

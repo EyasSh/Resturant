@@ -9,10 +9,11 @@ import ip from '@/Data/Addresses';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import { useNavigation } from '@react-navigation/native';
 import WaiterTableCard from '@/components/WaiterTableCard';
-import { ScrollView, SafeAreaView } from 'react-native'
+import { ScrollView} from 'react-native'
 import { WaiterTableProps } from '@/Types/WaiterTableProps';
 import { TableProps } from '@/components/TableCard';
 import { Order } from '@/Types/Order';
+import { Connection } from '@/Data/Hub';
 type Waiter=
 {
     id: string
@@ -71,11 +72,9 @@ export default function Waiter() {
          * If an error occurs during connection, an error is logged to the console
          */
         const connect = async () => {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl(`http://${ip.julian}:5256/hub?waiterid=${waiter.id}&privilagelevel=waiter`)
-                .build();
+            
             try {
-                await connection.start();  
+                const connection =await Connection.connectHub(waiter?.id, "waiter");
                 setSignalRConnection(connection);
                 connection.off("ConnectNotification");
                 await connection.on(

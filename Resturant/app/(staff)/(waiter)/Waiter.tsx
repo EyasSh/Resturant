@@ -57,59 +57,54 @@ export default function Waiter() {
     }, []);
 
     useEffect(() => {
-        if (!waiter?.id) return; // Prevents calling connect() when waiter.id is not available
-
-        /**
-         * Establishes a connection to the SignalR hub with the specified waiter ID and "waiter" privilage level
-         * 
-         * The connection is established using the HubConnectionBuilder
-         * 
-         * The connection is then stored in the component's state
-         * 
-         * An event listener is set for the "ConnectNotification" event. When this event is triggered, an alert is displayed to the user
-         * and the session ID is stored in AsyncStorage
-         * 
-         * If an error occurs during connection, an error is logged to the console
-         */
-        const connect = async () => {
-            
-            try {
-                const connection =await Connection.connectHub(waiter?.id, "waiter");
-                setSignalRConnection(connection);
-                connection.off("ConnectNotification");
-                await connection.on(
-                    "ConnectNotification",
-                    async (sid: string, isOkay: boolean, tables: TableProps[]) => {
-                      if (isOkay) {
-                        await AsyncStorage.setItem("sid", sid);
-                  
-                        const filteredTables: WaiterTableProps[] = tables.map((table) => ({
-                          tableNumber: table.tableNumber,
-                          waiterid: table.waiterId,
-                        }));
-                  
-                        setTables(filteredTables);
-                      }
-                    }
-                  );
-                  await connection.on("ReceiveOrders", (orders: Order[]) => {
-                    if(orders){
-                        setOrders(orders);
-                        AsyncStorage.setItem("orders", JSON.stringify(orders));
-                        
-                    }
-                    
-
-                }
+        // define an async init routine
+        const initSignalR = async () => {
+          if (!waiter?.id) {
+            // bail out early if there's no waiter.id yet
+            return;
+          }
+      
+          try {
+            const connection = await Connection.connectHub(waiter.id, "waiter");
+            setSignalRConnection(connection);
+            if(connection){
+                // detach any old listeners
+            connection.off("ConnectNotification");
+            connection.off("ReceiveOrders");
+      
+            // register the new ones
+            connection.on(
+              "ConnectNotification",
+              async (sid: string, isOkay: boolean, tables: TableProps[]) => {
+                if (!isOkay) return;
+                await AsyncStorage.setItem("sid", sid);
+                setTables(
+                  tables.map((t) => ({
+                    tableNumber: t.tableNumber,
+                    waiterid: t.waiterId,
+                  }))
+                );
+              }
             );
-            } catch (error) {
-                console.error('SignalR connection error:', error);
+      
+            connection.on("ReceiveOrders", (orders: Order[]) => {
+              if (!orders?.length) return;
+              setOrders(orders);
+              AsyncStorage.setItem("orders", JSON.stringify(orders));
+            });
             }
+            
+          } catch (error) {
+            console.error("SignalR connection error:", error);
+          }
         };
-
-        connect();
-        
-    }, [waiter?.id]); // Only runs when waiter.id is defined
+      
+        // always call it—inside it you’ll early‑return if id’s missing
+        initSignalR();
+      
+       
+      }, [waiter?.id]);
+      
     useEffect(()=>{},[tables]); //re-renders when table state changes
     useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
     

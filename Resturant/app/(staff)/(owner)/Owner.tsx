@@ -91,12 +91,17 @@ function Owner() {
             try {
                 
                 setSignalRConnection(connection);
-                await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
-                    if(isOkay){
-                        ToastAndroid.show('Session established', ToastAndroid.SHORT);
-                        await AsyncStorage.setItem('sid', sid);
-                    }
-                })
+                if(connection){
+                    // detach any old listeners
+                    connection.off("ConnectNotification");
+                    await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
+                        if(isOkay){
+                            ToastAndroid.show('Session established', ToastAndroid.SHORT);
+                            await AsyncStorage.setItem('sid', sid);
+                        }
+                    })
+                }
+                
             } catch (error) {
                 console.error('SignalR connection error:', error);
             }

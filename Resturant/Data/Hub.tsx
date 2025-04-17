@@ -7,18 +7,41 @@ export class Connection {
       return this.hub;
     }
   
-    public static setHub(newHub: signalR.HubConnection): void {
+    public static setHub(newHub: signalR.HubConnection | null): void {
       this.hub = newHub;
     }
     public static connectHub = async (id: string, privilagelevel: string) => {
+      if(privilagelevel==="user"){
         const connection = new signalR.HubConnectionBuilder()
         .withUrl(`http://${ip.julian}:5256/hub?userid=${id}&privilagelevel=${privilagelevel}`)
         .withAutomaticReconnect()   
         .build();
         await connection.start();
-
         this.setHub(connection);
-        return connection;
+        
+      }
+      else if(privilagelevel==="waiter"){
+        const connection = new signalR.HubConnectionBuilder()
+        .withUrl(`http://${ip.julian}:5256/hub?waiterid=${id}&privilagelevel=${privilagelevel}`)
+        .withAutomaticReconnect()   
+        .build();
+        await connection.start();
+        this.setHub(connection);
+        
+      }
+      else{
+        const connection = new signalR.HubConnectionBuilder()
+        .withUrl(`http://${ip.julian}:5256/hub?ownerid=${id}&privilagelevel=${privilagelevel}`)
+        .withAutomaticReconnect()   
+        .build();
+        await connection.start();
+        this.setHub(connection);
+        
+      }
+      return this.hub;
+        
+
+     
   
     }
   }

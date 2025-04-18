@@ -17,9 +17,8 @@ import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { HapticTab } from '@/components/HapticTab';
 import ip from '@/Data/Addresses';
+import { QuickMessage } from '@/Types/QuickMessage';
 
-// Define the QuickMessage type
-type QuickMessage = { id: string; message: string };
 const API_BASE = `http://${ip.julian}:5256/api/owner`;
 
 function RemoveQuickMessage() {

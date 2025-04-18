@@ -22,6 +22,7 @@ export type RootStackParamList = {
     "AddTableForm": undefined;
     "RemoveTable": undefined;
     "RemoveMeal": undefined;
+    "RemoveQuickMessage": undefined;
     "FireStaff": undefined;
     "Menu": {tableNumber: number} |undefined
     "Signup": undefined;

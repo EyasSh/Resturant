@@ -630,15 +630,60 @@ public class OwnerController : ControllerBase
         await _messages.InsertOneAsync(request);
         return Ok($"Message \"{request.Message}\" added successfully.");
     }
-    [Authorize]
+    // DELETE api/owner/delete/message
     [HttpDelete("delete/message")]
-    public async Task<IActionResult> DeleteMessage([FromBody] string msg)
+    public async Task<IActionResult> DeleteMessage([FromBody] SingleDeleteRequest request)
     {
-        var message = await _messages.FindOneAndDeleteAsync(m => m.Message == msg);
-        if (message is null)
+        if (!EnsureRestaurantEmpty())
         {
-            return BadRequest("Message not found.");
+            return BadRequest(new { error = "Restaurant must be empty before deleting messages." });
         }
-        return Ok($"\"{message.Message}\" deleted successfully.");
+
+        var filter = Builders<QuickMessage>.Filter.Eq(m => m.Id, request.QuickMessageId);
+        var deleted = await _messages.FindOneAndDeleteAsync(filter);
+        if (deleted == null)
+        {
+            return NotFound(new { error = "Message not found." });
+        }
+
+        return Ok(new { success = true, message = deleted.Message });
+    }
+
+    // DELETE api/owner/delete/messages
+    [HttpDelete("delete/messages")]
+    public async Task<IActionResult> DeleteMessages([FromBody] BulkDeleteRequest request)
+    {
+        if (!EnsureRestaurantEmpty())
+        {
+            return BadRequest(new { error = "Restaurant must be empty before deleting messages." });
+        }
+
+        if (request.QuickMessageIds == null || !request.QuickMessageIds.Any())
+        {
+            return BadRequest(new { error = "No message IDs provided." });
+        }
+
+        var filter = Builders<QuickMessage>.Filter.In(m => m.Id, request.QuickMessageIds);
+        var result = await _messages.DeleteManyAsync(filter);
+        if (result.DeletedCount == 0)
+        {
+            return NotFound(new { error = "No messages found for given IDs." });
+        }
+
+        return Ok(new { success = true, deletedCount = result.DeletedCount });
+    }
+
+    private bool EnsureRestaurantEmpty()
+    {
+        return SocketService._tables.All(t => string.IsNullOrEmpty(t.UserId) && t.isOccupied == false);
+    }
+
+    [Authorize]
+    [HttpGet("messages")]
+    public async Task<IActionResult> GetMessages()
+    {
+        var dbfetch = await _messages.Find(_ => true).ToListAsync();
+        var messages = dbfetch.ToArray();
+        return Ok(messages);
     }
 }

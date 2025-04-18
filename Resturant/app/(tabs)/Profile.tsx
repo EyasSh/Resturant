@@ -17,7 +17,6 @@ import LogoutButton from '@/components/LogoutButton';
  * 
  * @returns A ThemedView containing a welcome message and the user's name.
  */
-
 export default function Profile() {
   const [name, setName] = useState(null);
 

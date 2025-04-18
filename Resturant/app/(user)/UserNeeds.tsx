@@ -18,7 +18,6 @@ import { Connection } from "@/Data/Hub";
  * notify the waiter. The selected messages are stored in the component's state, and 
  * duplicates are prevented. Users can also remove messages from the selected list.
  */
-
 export default function UserNeeds() {
     const [selectedNeedMessages, setSelectedNeedMessages] = useState<SelectedNeedMessages | null>(null);
     const [messages, setMessages] = useState<NeedMessageProps[] | null>([]);

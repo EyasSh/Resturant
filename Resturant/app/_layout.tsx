@@ -34,6 +34,17 @@ import RemoveQuickMessage from './(staff)/(owner)/RemoveQuickMessage';
 
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * RootLayout sets up the main application layout and navigation structure.
+ * It initializes the font loading, theme setting based on the color scheme,
+ * and configures the stack navigator with various screens for the application.
+ * The layout includes a status bar and a toast notification component.
+ * 
+ * Screens are grouped into sections for login, staff operations, signup, 
+ * and tab navigation, each with header visibility options.
+ * The component also handles splash screen visibility based on font loading status.
+ */
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({

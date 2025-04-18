@@ -17,9 +17,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
  * @component
  * @returns A component consisting of a themed view, text, input field, and button.
  */
-
 export default function AddQuickMessage() {
     const [message, setMessage] = useState<string>("")
+/**
+ * Sends a POST request to add a quick message to the server.
+ *
+ * This function retrieves the authentication token from AsyncStorage and
+ * uses it to authenticate the request. The message to be added is sent
+ * in the request body. On success, it displays a toast with the server's
+ * response message. On failure, it displays an error message in a toast.
+ */
+
     const handleAddMessage = async() => {
         try{
             const token = await AsyncStorage.getItem('token')

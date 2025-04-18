@@ -7,6 +7,16 @@ import { RootStackParamList } from "@/Routes/NavigationTypes";
 import { Order } from "@/Types/Order";
 import { useTheme } from "@react-navigation/native";
 
+/**
+ * A screen that displays the details of an order.
+ *
+ * This screen is used to display the details of an order that was placed
+ * by a waiter. It displays each meal in the order, along with the quantity
+ * and price of each meal. The total price of the order is also displayed
+ * at the bottom of the screen.
+ *
+ * @returns A JSX element representing the OrderPeak screen.
+ */
 export default function OrderPeak() {
     const route = useRoute<RouteProp<RootStackParamList, 'OrderPeak'>>();
     const params = route.params;

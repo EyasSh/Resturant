@@ -5,6 +5,13 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 
+/**
+ * NotFoundScreen is a React component that displays a message indicating
+ * that the requested screen does not exist. It provides a link for users
+ * to navigate back to the home screen. The component utilizes ThemedText
+ * and ThemedView for consistent styling across the application.
+ */
+
 export default function NotFoundScreen() {
   return (
     <>

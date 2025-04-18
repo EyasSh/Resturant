@@ -28,7 +28,6 @@ export default function AddTableForm() {
  * capacity and window side preference. On successful addition, it alerts
  * the user. If an error occurs, it alerts the user with the error message.
  */
-
     const handleSubmit=async()=>{
         const token = await AsyncStorage.getItem("token");
         if(!token){

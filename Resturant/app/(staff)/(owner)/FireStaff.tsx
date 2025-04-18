@@ -20,7 +20,20 @@ import CurvedButton from "@/components/ui/CurvedButton";
 export default function FireStaff() {
     const [waiters, setWaiters] = useState<FireWaiterParams[]>([]);
 
-    // ✅ Fetch Waiters Function (Similar to fetchMeals)
+/**
+ * Fetches the list of waiters from the server and updates the component's state.
+ * 
+ * @async
+ * @returns {Promise<void>} A Promise that resolves when the waiters list is successfully
+ * fetched and updated in the state, or rejects with an error if the request fails.
+ * 
+ * @remarks
+ * This function retrieves the authentication token from AsyncStorage and uses it
+ * to make an authorized GET request to the server. Upon successful response, it
+ * maps the waiters' data to ensure proper handling of various field names and updates
+ * the state with the list of waiters. If an error occurs, it is caught and handled.
+ */
+
     const fetchWaiters = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
@@ -45,7 +58,19 @@ export default function FireStaff() {
         }
     };
 
-    // ✅ Remove Waiter Function
+
+    /**
+     * Removes a waiter from the restaurant's database.
+     * 
+     * @param id The ID of the waiter to be removed.
+     * 
+     * @returns A Promise that resolves if the waiter was removed successfully, or rejects if there is an error.
+     * 
+     * @remarks
+     * This function is called when a user clicks the "Remove" button on a waiter in the "Fire Staff" screen.
+     * It removes the waiter from the restaurant's database and updates the component's state immediately.
+     * It also re-fetches the list of waiters from the API to ensure consistency.
+     */
     const RemoveWaiter = async (id: string) => {
         try {
             const token = await AsyncStorage.getItem('token');

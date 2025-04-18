@@ -24,8 +24,6 @@ const cardWidth = Math.max((screenWidth / numColumns) - 30, 150); // Ensure card
  *
  * @returns A JSX element representing the main page of the app.
  */
-
-
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
@@ -34,6 +32,11 @@ export default function MainPage() {
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
+    /**
+     * Fetches the list of tables from the server and updates the state.
+     * If the response is successful (200), the tables are stored in the state
+     * If there is an error, an alert is displayed to the user
+     */
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem("token");
       try {
@@ -48,6 +51,15 @@ export default function MainPage() {
         alert(e);
       }
     };
+
+/**
+ * Fetches the current user's information from AsyncStorage and establishes a connection.
+ * If the user data is found, it parses the data and sets the user ID state.
+ * It also connects using the user's ID.
+ * If no user data is found, it displays an alert notifying the user.
+ *
+ * @returns {Promise<void>}
+ */
 
     const fetchUser = async () => {
       const user = await AsyncStorage.getItem("user");
@@ -67,6 +79,15 @@ export default function MainPage() {
   useEffect(() => {
     if (!signalRConnection) return;
 
+  /**
+   * Registers listeners for the SignalR hub.
+   *
+   * Listeners are registered for the following events:
+   * - "ConnectNotification": When a user connects to the server, their session ID is stored in AsyncStorage and the tables state is updated.
+   * - "ReceiveTableMessage": When a user joins or leaves a table, the tables state is updated and a Toast notification is displayed.
+   * - "ReceiveTableLeaveMessage": When a user leaves a table, the tables state is updated.
+   * - "ReceiveOrderReadyMessage": When an order is ready for a table, the order is added to the orders state and a Toast notification is displayed.
+   */
     const registerListeners = () => {
       signalRConnection.off("ConnectNotification");
       signalRConnection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
@@ -115,6 +136,13 @@ export default function MainPage() {
     };
   }, [signalRConnection]);
 
+  /**
+   * Establishes a connection to the SignalR hub with the given user ID.
+   *
+   * If the connection is successful, it stores the connection in the component's state and displays a Toast notification.
+   * If the connection fails, it displays an alert with the error message.
+   * @param {string} id - The user ID to use for the connection.
+   */
   const connect = async (id: string) => {
     if (!id) return;
 
@@ -136,6 +164,12 @@ export default function MainPage() {
     }
   };
 
+  /**
+   * Assigns a user to a table and navigates to the menu screen.
+   * @param {string} userId - The ID of the user to assign to the table.
+   * @param {number} tableNumber - The number of the table to assign the user to.
+   * @throws {Error} If the user is already assigned to a table.
+   */
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
       const existingTable = tables.find(t => t.userId === userId && t.tableNumber !== tableNumber);
@@ -151,6 +185,11 @@ export default function MainPage() {
     }
   };
 
+  /**
+   * Leaves a table and updates the tables state.
+   * @param {number} tableNumber - The number of the table to leave.
+   * @throws {Error} If the user is not assigned to the table or if the connection to the hub fails.
+   */
   const handleLeaveTable = async (tableNumber: number) => {
     try {
       if(signalRConnection){

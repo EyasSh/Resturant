@@ -21,6 +21,13 @@ import { QuickMessage } from '@/Types/QuickMessage';
 
 const API_BASE = `http://${ip.julian}:5256/api/owner`;
 
+/**
+ * Component for removing quick messages.
+ *
+ * The component displays a list of quick messages. Users can select multiple
+ * quick messages by pressing on them. The selected quick messages can be
+ * removed by pressing the "Remove Selected" button.
+ */
 function RemoveQuickMessage() {
   const navigation = useNavigation<NavigationProp>();
   const [quickMessages, setQuickMessages] = useState<QuickMessage[]>([]);
@@ -28,6 +35,10 @@ function RemoveQuickMessage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [removing, setRemoving] = useState<boolean>(false);
 
+  /**
+   * Shows a toast message, or an alert box on iOS.
+   * @param {string} msg The message to display.
+   */
   const showToast = (msg: string) => {
     if (Platform.OS === 'android') ToastAndroid.show(msg, ToastAndroid.SHORT);
     else Alert.alert(msg);
@@ -83,6 +94,15 @@ function RemoveQuickMessage() {
     }
   }, [selectedIds]);
 
+  /**
+   * Renders a single item of the FlatList, representing a quick message.
+   * The item is a HapticTab that can be pressed to toggle the quick message's
+   * selection. The tab displays a checkbox and the text of the quick message.
+   * If the quick message is selected, its checkbox is marked with a '☑' symbol.
+   * Otherwise, it is marked with a '☐' symbol.
+   * @param {object} props The props of the FlatList item, containing the quick message.
+   * @returns {JSX.Element} A JSX element representing the FlatList item.
+   */
   const renderItem = ({ item }: { item: QuickMessage }) => {
     const isSelected = selectedIds.includes(item.id);
     return (

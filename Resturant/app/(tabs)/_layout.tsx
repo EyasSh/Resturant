@@ -10,6 +10,16 @@ import ProfilePage from './Profile';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Profile from './Profile';
 const Tab = createBottomTabNavigator();
+/**
+ * TabLayout is a navigator for the bottom tab bar.
+ * It has two tabs: Home and Profile.
+ * The Home tab displays the main page of the app.
+ * The Profile tab displays the user's profile information.
+ * The tab bar uses the tint color of the current color scheme.
+ * The header is hidden.
+ * On iOS, the tab bar is positioned at the bottom of the screen.
+ * On Android, the tab bar is positioned at the bottom of the screen.
+ */
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 

@@ -28,6 +28,7 @@ export type RootStackParamList = {
     "Signup": undefined;
     "UserNeeds": {tableNumber: number} | undefined;
     "OrderPeak": {tableNumber: number} | {order:Order}| undefined;
+    "PeakNeeds": {tableNumber: number} | undefined;
     "AddQuickMessage": undefined;
 }
 /**

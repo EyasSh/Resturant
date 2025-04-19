@@ -30,6 +30,7 @@ import OrderPeak from './(staff)/(waiter)/OrderPeak';
 import AddQuickMessage from './(staff)/(owner)/AddQuickMessage';
 import Toast from 'react-native-toast-message';
 import RemoveQuickMessage from './(staff)/(owner)/RemoveQuickMessage';
+import PeakNeeds from './(staff)/(waiter)/PeakNeeds';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -96,6 +97,7 @@ export default function RootLayout() {
       <Stack.Screen name='OrderPeak' component={OrderPeak} options={{ headerShown: false }}/>
       <Stack.Screen name='AddQuickMessage' component={AddQuickMessage} options={{ headerShown: false }}/>
       <Stack.Screen name='RemoveQuickMessage' component={RemoveQuickMessage} options={{ headerShown: false }}/>
+      <Stack.Screen name='PeakNeeds' component={PeakNeeds} options={{ headerShown: false }}/>
 
         {/* Signup screen */}
         <Stack.Screen name="Signup" component={Signup} options={

@@ -5,15 +5,20 @@ import { ThemedText } from './ThemedText'
 import { StyleSheet, Image } from 'react-native'
 import CurvedButton from '@/components/ui/CurvedButton'
 import { WaiterTableProps } from '@/Types/WaiterTableProps'
+import { useNavigation, RouteProp, useRoute } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/Routes/NavigationTypes';
+
 
 
 /**
  * A Card component for waiters to view and manage tables.
  * 
  * @param {WaiterTableProps} props - The props of the component. Must include `tableNumber`, which is the number of the table to display.
- * @returns {JSX.Element} A JSX element representing the card component.
- */
+ * @returns {JSX.Element} A JSX element representing the card component.*/
+  
 export default function WaiterTableCard(props:WaiterTableProps) {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     return(
         <ThemedView style={styles.container}>
             <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
@@ -34,7 +39,11 @@ export default function WaiterTableCard(props:WaiterTableProps) {
                 
                 style={{backgroundColor:"#fc9b1c"}}
             />
-            
+            <CurvedButton
+                title="Peak Needs" 
+                action={() => {navigation.navigate("PeakNeeds",{tableNumber:props.tableNumber})}}
+                style={{backgroundColor:"#fc9b1c"}}
+            />
             <CurvedButton
                 title='Mark order as ready'
                 action={() => {

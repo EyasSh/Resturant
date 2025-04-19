@@ -20,7 +20,9 @@ public interface IHubService
     Task ReceiveOrders(List<Order?> orders);
     Task SendOrder(Order order);
     Task ReceiveQuickMessageList(List<QuickMessage> messages);
-    public Task ReceiveOrderReadyMessage(Order order,int tableNumber);
+    Task ReceiveOrderReadyMessage(Order order, int tableNumber);
+    Task ReceiveMessagesToWaiter(string[] msgs);
+    Task ReceiveSuccessOrFail(string message);
 }
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
@@ -164,6 +166,69 @@ public class SocketService : Hub<IHubService>
             });
     }
     /// <summary>
+    /// Sends the given quick messages to the waiter of the given table number.
+    /// </summary>
+    /// <param name="tableNumber">The table number to send the messages to.</param>
+    /// <param name="quickMessages">The list of quick messages to be sent.</param>
+    /// <exception cref="Exception">An exception is thrown if there is an error sending the messages to the waiter.</exception>
+    public async Task SendMessagesToWaiter(SelectedNeedMessages needs)
+    {
+        try
+        {
+            System.Console.WriteLine($"Sending messages to waiter for Table {needs.TableNumber}");
+            if (needs.messages == null || needs.messages.Length == 0)
+            {
+                await Clients.Caller.ReceiveSuccessOrFail("No messages to send.");
+                return;
+            }
+            await Clients.Group(needs.TableNumber.ToString()).ReceiveMessagesToWaiter(needs.messages);
+            await Clients.Caller.ReceiveSuccessOrFail("Messages sent to waiter successfully.");
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error sending messages to waiter: {ex.Message}");
+            await Clients.Caller.ReceiveSuccessOrFail($"Failed to send messages: {ex.Message}.");
+        }
+        finally
+        {
+            System.Console.WriteLine($"Finished sending messages to waiter for Table {needs.TableNumber}");
+
+        }
+
+
+    }
+
+
+    /// <summary>
+    /// Sends a meal order to the server.
+    /// </summary>
+    /// <param name="order">The order to be sent.</param>
+    /// <remarks>
+    /// This method is called when a user sends a meal order from the menu.
+    /// It stores the order in the in-memory list of orders and sends a message to the waiter and all users at the table
+    /// with the order details.
+    /// </remarks>
+    public async Task OrderMeal(Order order)
+    {
+        if (order != null && order.Orders != null)
+        {
+            int tableNumber = order.TableNumber;
+            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
+            _orders[order.TableNumber - 1] = order;
+            await Clients.Caller.ReceiveOrderSuccessMessage(true, order);
+            var context = Context.GetHttpContext();
+            if (context == null) return;
+            string id = context.Request.Query["userid"].ToString() ?? string.Empty;
+            Console.WriteLine($"Order sent in Table {tableNumber} from {id}");
+        }
+        else
+        {
+            Console.WriteLine("Order is null.");
+            await Clients.Caller.ReceiveOrderSuccessMessage(false, null);
+        }
+
+    }
+    /// <summary>
     /// Removes the user from the table and sends a message to all users about the table's updated status.
     /// </summary>
     /// <param name="tableNumber">The table number the user is leaving.</param>
@@ -242,6 +307,13 @@ public class SocketService : Hub<IHubService>
         await Clients.All.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
+    /// <summary>
+    /// Retrieves a list of quick messages from the message collection in MongoDB and sends them to the caller.
+    /// </summary>
+    /// <remarks>
+    /// This method is called to fetch all quick messages stored in the database and deliver them to the client that initiated the request.
+    /// </remarks>
+
     public async Task GetQuickMsgs()
     {
         var msgs = FetchMessages();
@@ -264,40 +336,18 @@ public class SocketService : Hub<IHubService>
         Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
     }
 
-
     /// <summary>
-    /// Sends a meal order to the server.
+    /// Marks a meal order as ready and sends a message to all users at the table and the waiter with the order details.
     /// </summary>
-    /// <param name="order">The order to be sent.</param>
+    /// <param name="tableNumber">The table number the order is for.</param>
     /// <remarks>
-    /// This method is called when a user sends a meal order from the menu.
-    /// It stores the order in the in-memory list of orders and sends a message to the waiter and all users at the table
-    /// with the order details.
+    /// This method is called when a waiter marks an order as ready from the waiter app.
+    /// It sets the order's IsReady property to true and sends a message to all users at the table and the waiter with the order details.
     /// </remarks>
-    public async Task OrderMeal(Order order)
-    {
-        if (order != null && order.Orders != null)
-        {
-            int tableNumber = order.TableNumber;
-            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
-            _orders[order.TableNumber - 1] = order;
-            await Clients.Caller.ReceiveOrderSuccessMessage(true, order);
-            var context = Context.GetHttpContext();
-            if (context == null) return;
-            string id = context.Request.Query["userid"].ToString() ?? string.Empty;
-            Console.WriteLine($"Order sent in Table {tableNumber} from {id}");
-        }
-        else
-        {
-            Console.WriteLine("Order is null.");
-            await Clients.Caller.ReceiveOrderSuccessMessage(false, null);
-        }
-
-    }
     public async Task MarkOrderAsReady(int tableNumber)
     {
         var order = _orders[tableNumber - 1];
-        if (order != null)
+        if (order != null && order.Orders != null)
         {
             System.Console.WriteLine($"Order for Table {tableNumber} marked as ready: {order.Orders.Length} items");
             order.IsReady = true;

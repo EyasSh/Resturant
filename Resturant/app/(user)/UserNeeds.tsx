@@ -7,6 +7,7 @@ import { NeedMessageProps, SelectedNeedMessages } from "@/Types/NeedMessageProps
 import CurvedButton from "@/components/ui/CurvedButton";
 import { useRoute } from "@react-navigation/native";
 import { Connection } from "@/Data/Hub";
+import { QuickMessage } from "@/Types/QuickMessage";
 
 /**
  * Component for managing user needs messages at a table.
@@ -40,6 +41,19 @@ export default function UserNeeds() {
         }
     }, []);
     useEffect(() => {}, [messages]);
+    const sendNeeds= async(needs: SelectedNeedMessages)=>
+    {
+        if(hub && hub.state === "Connected"){
+            console.log("Hub is Connected sending messages");
+            needs.tableNumber = tableNumber;
+            await hub.invoke("SendMessagesToWaiter", needs);
+            hub.on("ReceiveSuccessOrFail", (message: string) => {
+                alert(message);
+            });
+        }else{
+            console.log("Hub is not connected");
+        }
+    }
 /**
  * Adds a new message to the list of selected need messages for the table.
  *
@@ -119,7 +133,7 @@ export default function UserNeeds() {
                         
                 </ScrollView>
                 <CurvedButton 
-                    action={()=>{alert(selectedNeedMessages?.messages)}} 
+                    action={()=>{sendNeeds(selectedNeedMessages as SelectedNeedMessages)}} 
                     title="Notify Waiter"
                     style={{backgroundColor:"#4800ff",marginBottom: 15}} 
                  />

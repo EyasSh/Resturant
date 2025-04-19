@@ -18,3 +18,8 @@ public class QuickMessage
     }
 
 }
+public class SelectedNeedMessages
+{
+    public int TableNumber { get; set; } = 0;
+    public string[]? messages { get; set; } = null;
+}

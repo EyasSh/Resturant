@@ -8,6 +8,7 @@ import CurvedButton from "@/components/ui/CurvedButton";
 import { useRoute } from "@react-navigation/native";
 import { Connection } from "@/Data/Hub";
 import { QuickMessage } from "@/Types/QuickMessage";
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 
 /**
  * Component for managing user needs messages at a table.
@@ -48,7 +49,7 @@ export default function UserNeeds() {
             needs.tableNumber = tableNumber;
             await hub.invoke("SendMessagesToWaiter", needs);
             hub.on("ReceiveSuccessOrFail", (message: string) => {
-                alert(message);
+                ShowMessageOnPlat(message);
             });
         }else{
             console.log("Hub is not connected");

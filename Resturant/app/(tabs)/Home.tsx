@@ -14,6 +14,7 @@ import { NavigationProp } from '@/Routes/NavigationTypes';
 import { Order } from "@/Types/Order";
 import { Connection } from '@/Data/Hub';
 import Toast from 'react-native-toast-message';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 
 const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2; // Use 3 columns on larger screens, otherwise 2
@@ -92,7 +93,7 @@ export default function MainPage() {
       signalRConnection.off("ConnectNotification");
       signalRConnection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
         if (isOkay) {
-          ToastAndroid.show("Connected to the server", ToastAndroid.CENTER);
+          ShowMessageOnPlat("Connected to the server");
           await AsyncStorage.setItem("sid", sid);
           setTables(tables);
         }
@@ -102,7 +103,7 @@ export default function MainPage() {
       signalRConnection.on("ReceiveTableMessage", (message: string, isOkay: boolean, userId: string, tableNumber: number, tables: TableProps[]) => {
         if (isOkay) {
           setTables(tables);
-          ToastAndroid.show(`Table ${tableNumber} is now occupied by user ${userId}`, ToastAndroid.CENTER);
+          ShowMessageOnPlat(`Table ${tableNumber} is now occupied by user ${userId}`);
           
         }
       });
@@ -118,7 +119,7 @@ export default function MainPage() {
           setOrders(prevOrders => {
             const updatedOrders = [...(prevOrders ?? [])];
             updatedOrders[order.tableNumber - 1] = order;
-            console.log(`Order is ready at table ${tableNumber}`, ToastAndroid.CENTER);
+            ShowMessageOnPlat(`Order is ready at table ${tableNumber}`);
             return updatedOrders;
           });
         }
@@ -155,7 +156,7 @@ export default function MainPage() {
 
       }
       if(connection.state === "Connected"){
-        ToastAndroid.show("Connected to the server", ToastAndroid.SHORT);
+        ShowMessageOnPlat("Connected to the server");
       }
       setSignalRConnection(connection);
       Connection.setHub(connection);
@@ -174,14 +175,14 @@ export default function MainPage() {
     try {
       const existingTable = tables.find(t => t.userId === userId && t.tableNumber !== tableNumber);
       if (existingTable) {
-        ToastAndroid.show(`Already seated at table ${existingTable.tableNumber}. Cannot occupy another table.`, ToastAndroid.LONG);
+        ShowMessageOnPlat(`Already seated at table ${existingTable.tableNumber}. Cannot occupy another table.`);
         return;
       }
 
       signalRConnection?.invoke("AssignUserToTable", userId, tableNumber);
       navigation.navigate("Menu", { tableNumber });
     } catch (err) {
-      ToastAndroid.show("Failed to assign user to table", ToastAndroid.CENTER);
+      ShowMessageOnPlat("Failed to assign user to table");
     }
   };
 
@@ -196,12 +197,12 @@ export default function MainPage() {
         signalRConnection.invoke("LeaveTable", tableNumber);
         signalRConnection.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
           setTables(tables);
-          ToastAndroid.show(`Left table ${tableNumber}`, ToastAndroid.CENTER);
+          ShowMessageOnPlat(`Left table ${tableNumber}`);
         });
       }
       
     } catch (err) {
-      ToastAndroid.show("Failed to leave table", ToastAndroid.CENTER);
+      ShowMessageOnPlat("Failed to leave table");
     }
   };
 

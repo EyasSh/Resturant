@@ -12,7 +12,7 @@ import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Order, ProtoOrder } from "@/Types/Order";
 import { Connection } from "@/Data/Hub";
-import Toast from "react-native-toast-message";
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
 
 export  type Meal = {
@@ -75,10 +75,10 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
         const conn = await waitForHubConnection();
         if (conn) {
           setHubConnection(conn);
-          ToastAndroid.show("Connected set at Menu", ToastAndroid.CENTER);
+          ShowMessageOnPlat("Connected set at Menu");
 
         } else {
-          ToastAndroid.show("SignalR connection not ready", ToastAndroid.LONG);
+          ShowMessageOnPlat("SignalR connection not ready");
         }
       } catch (err: any) {
         setError(err.message);
@@ -93,11 +93,11 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
   useEffect(() => {
     hubConnection?.on("ReceiveOrderSuccessMessage", ( isOkay: boolean, order: Order) => {
       if (isOkay) {
-        ToastAndroid.show(`Order sent successfully for table ${order.tableNumber}`, ToastAndroid.LONG);
+        ShowMessageOnPlat(`Order sent successfully for table ${order.tableNumber}`);
         setList([]); // Clear the order list after sending
         navigation.pop(); // Navigate back to the previous screen
       } else {
-        ToastAndroid.show(`Failed to send order`, ToastAndroid.LONG);
+        ShowMessageOnPlat(`Failed to send order`);
       }
     });
   }, [hubConnection]);

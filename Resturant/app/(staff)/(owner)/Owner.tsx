@@ -10,6 +10,7 @@ import * as signalR from '@microsoft/signalr';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import { useNavigation } from '@react-navigation/native';
 import { Connection } from '@/Data/Hub';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 type OwnerDTO={
     id : string,
     name: string,
@@ -96,7 +97,7 @@ function Owner() {
                     connection.off("ConnectNotification");
                     await connection.on("ConnectNotification", async(sid: string,isOkay: boolean) => {
                         if(isOkay){
-                            ToastAndroid.show('Session established', ToastAndroid.SHORT);
+                            ShowMessageOnPlat('Session established');
                             await AsyncStorage.setItem('sid', sid);
                         }
                     })

@@ -127,7 +127,7 @@ export default function Login() {
       <CurvedButton
         title="Login"
         action={handleLogin}
-        style={{ backgroundColor: '#34baeb'}}
+        style={{ backgroundColor: '#34baeb' }}
       />
       <View style={styles.signupContainer}>
         <ThemedText style={styles.emailText}>Don't have an account?</ThemedText>

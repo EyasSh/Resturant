@@ -6,6 +6,7 @@ import { useState} from 'react';
 import { StyleSheet, ToastAndroid } from 'react-native';
 import axios from 'axios';
 import ip from '@/Data/Addresses';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 
 /**
  * The owner signup screen, which displays a form for the owner to sign up
@@ -50,7 +51,7 @@ export default function OwnerSignup() {
             
             
             if(res && res.status===200){
-                ToastAndroid.show("Signup Successful", ToastAndroid.LONG);
+                ShowMessageOnPlat("Signup Successful");
             }
         }
         catch(e){

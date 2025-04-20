@@ -11,6 +11,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useTheme } from "@react-navigation/native";
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 
 /**
  * Component for adding a meal to the database and AsyncStorage.
@@ -62,9 +63,9 @@ export default function AddMealForm() {
             })
 
 
-            ToastAndroid.show(`${name} Added Successfully!\nPrice: ${price}`, ToastAndroid.CENTER);
+            ShowMessageOnPlat(`${name} Added Successfully!\nPrice: ${price}`);
         }catch(e){
-            ToastAndroid.show(`${e}`, ToastAndroid.LONG);
+            ShowMessageOnPlat(`${e}`);
         }
         
     }

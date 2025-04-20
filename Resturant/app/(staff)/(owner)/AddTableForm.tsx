@@ -7,6 +7,7 @@ import ThemedInput from '@/components/ThemedInput';
 import CurvedButton from '@/components/ui/CurvedButton';
 import { StyleSheet, ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 
 /**
  * A form for the owner to add a table to the database. The form
@@ -46,10 +47,10 @@ export default function AddTableForm() {
                 }
             })
             if(res && res.status===200){
-                ToastAndroid.show("Table added successfully!", ToastAndroid.LONG);
+                ShowMessageOnPlat("Table added successfully!");
             }
         }catch(e){
-            ToastAndroid.show(`${e}`,ToastAndroid.LONG);
+            ShowMessageOnPlat(`${e}`);
         }
         
     }

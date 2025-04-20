@@ -7,6 +7,7 @@ import CurvedButton from "@/components/ui/CurvedButton";
 import axios from "axios";
 import ip from "@/Data/Addresses";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 
 /**
  * AddQuickMessage component allows the user to input a quick message and 
@@ -42,10 +43,10 @@ export default function AddQuickMessage() {
                     }
                 }
             )
-            ToastAndroid.show(res.data, ToastAndroid.LONG)
+            ShowMessageOnPlat(res.data)
         }
         catch(e){
-            ToastAndroid.show(`${e}`, ToastAndroid.LONG)
+            ShowMessageOnPlat(`${e}`)
         }
     }
     return(

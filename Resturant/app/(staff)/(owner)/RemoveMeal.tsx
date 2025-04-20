@@ -10,6 +10,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Meal } from "../../(Menu)/Menu";
 import CurvedButton from "@/components/ui/CurvedButton";
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 
 /**
  * Component for removing meals from the database and AsyncStorage.
@@ -49,7 +50,7 @@ export default function RemoveMeal() {
                 "x-auth-token": token,
             }});
             if (res && res.status === 200) {
-                ToastAndroid.show(`${mealToRemove.mealName} removed successfully!\nPrice: ${mealToRemove.price}`, ToastAndroid.SHORT);
+                ShowMessageOnPlat(`${mealToRemove.mealName} removed successfully!\nPrice: ${mealToRemove.price}`);
             }
             // ✅ Remove meal from array
             const updatedMeals = meals.filter(meal => meal.mealId !== mealId);

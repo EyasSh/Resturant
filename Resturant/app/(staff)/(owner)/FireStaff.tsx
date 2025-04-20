@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { FireWaiterParams } from "@/Types/FireWaiterParams";
 import CurvedButton from "@/components/ui/CurvedButton";
-
+import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 /**
  * FireStaff Component
  * 
@@ -82,7 +82,7 @@ export default function FireStaff() {
             });
             if(res && res.status===400){
                 
-                 ToastAndroid.show(`${res.data}`, ToastAndroid.LONG);
+                ShowMessageOnPlat(`${res.data}`);
                 return;
             }
             if (res && res.status === 200) {
@@ -97,7 +97,7 @@ export default function FireStaff() {
             }
         } catch (error) {
             console.error("Error removing waiter:", error);
-            alert("Error removing waiter.");
+            ShowMessageOnPlat("Error removing waiter.");
         }
     };
 

@@ -9,6 +9,7 @@ import axios from 'axios';
 import ip from '@/Data/Addresses'
 import CurvedButton from '@/components/ui/CurvedButton';
 import ThemedInput from '@/components/ThemedInput';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 /**
  * Signup component
  * 
@@ -65,7 +66,7 @@ export default function Signup() {
                 phone: phone
             })
             if(res && res.status===200){
-                alert(res.data);
+                ShowMessageOnPlat(res.data);
             }
         }
         catch(e:any){

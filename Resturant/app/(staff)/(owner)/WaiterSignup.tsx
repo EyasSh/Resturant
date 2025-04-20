@@ -7,6 +7,7 @@ import { StyleSheet, ToastAndroid } from 'react-native';
 import axios from 'axios';
 import ip from "@/Data/Addresses";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 
 /**
  * The waiter signup screen, which displays a form for the owner to sign up a waiter
@@ -51,7 +52,7 @@ export default function WaiterSignup() {
             }
         })
             if(res && res.status===200){
-                ToastAndroid.show("Waiter added successfully!", ToastAndroid.SHORT);
+                ShowMessageOnPlat("Waiter added successfully!");
             }
         }
         catch(e){

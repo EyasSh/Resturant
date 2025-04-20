@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import Logo from '@/components/ui/Logo';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 
 /**
  * Component for the waiter login screen
@@ -39,7 +40,7 @@ export default  function WaiterLogin() {
     const handleLogin = async() => {
         try{
             if(email==='' || password===''){
-                alert("Please fill all the fields");
+                ShowMessageOnPlat("Please fill all the fields");
                 return;
             }
             const res = await axios.post(`http://${ip.julian}:5256/api/waiter`,{

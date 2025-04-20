@@ -253,40 +253,60 @@ public class SocketService : Hub<IHubService>
     /// </summary>
     public async Task AssignWaiterToTable(string waiterId, int tableNumber)
     {
-        var id = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
-        var sid = Context.ConnectionId;
+        // grab context values
+        var httpWaiterId = Context.GetHttpContext()
+                                 ?.Request
+                                 .Query["waiterid"]
+                                 .ToString()
+                             ?? string.Empty;
+        var connectionId = Context.ConnectionId;
 
-
-        // Assign waiter to the new table
-        _tableToWaiter[tableNumber] = waiterId;
-        if (string.IsNullOrEmpty(_tables[tableNumber - 1].WaiterId))
+        // validate tableNumber
+        var idx = tableNumber - 1;
+        if (idx < 0 || idx >= _tables.Count)
         {
-            _tables[tableNumber - 1].WaiterId = waiterId;
-            await Clients.All.ReceiveWaiterAssignMessage($"Waiter {waiterId} joined Table {tableNumber}", _tables);
-            await Groups.AddToGroupAsync(id, tableNumber.ToString());
-            Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
+            await Clients.Caller
+                         .ReceiveWaiterAssignMessage(
+                             $"Invalid table number: {tableNumber}",
+                             _tables);
             return;
-
         }
-        else
+
+        var table = _tables[idx];
+
+        // only assign if there is no waiter yet
+        if (!string.IsNullOrEmpty(table.WaiterId))
         {
-            System.Console.WriteLine($"Table {tableNumber} already has a waiter assigned.");
+            await Clients.Caller
+                         .ReceiveWaiterAssignMessage(
+                             $"Table {tableNumber} is already occupied by waiter {table.WaiterId}",
+                             _tables);
+            return;
+        }
 
-        }// Store waiter ID in dictionary
-        _waiterConnections[sid] = waiterId;
-        _waiterids2sid.AddOrUpdate(waiterId,
-            new HashSet<string> { sid },
-            (key, existingSids) =>
-            {
-                existingSids.Add(sid);
-                return existingSids;
-            });
-        return;
+        // assign the waiter
+        table.WaiterId = waiterId;
+        _tableToWaiter[tableNumber] = waiterId;
 
+        // add the connection to the group for that table
+        await Groups.AddToGroupAsync(httpWaiterId, tableNumber.ToString());
 
+        // broadcast to everyone the new state
+        await Clients.All
+                     .ReceiveWaiterAssignMessage(
+                         $"Waiter {waiterId} joined Table {tableNumber}",
+                         _tables);
+        Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
 
-
+        // track this waiter’s connection
+        _waiterConnections[connectionId] = waiterId;
+        _waiterids2sid.AddOrUpdate(
+            waiterId,
+            new HashSet<string> { connectionId },
+            (key, set) => { set.Add(connectionId); return set; }
+        );
     }
+
 
     /// <summary>
     /// Sends the order for a table to the waiter.

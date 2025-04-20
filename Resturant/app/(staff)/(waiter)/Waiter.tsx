@@ -14,6 +14,7 @@ import { WaiterTableProps } from '@/Types/WaiterTableProps';
 import { TableProps } from '@/components/TableCard';
 import { Order } from '@/Types/Order';
 import { Connection } from '@/Data/Hub';
+import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 type Waiter=
 {
     id: string
@@ -78,12 +79,15 @@ export default function Waiter() {
               async (sid: string, isOkay: boolean, tables: TableProps[]) => {
                 if (!isOkay) return;
                 await AsyncStorage.setItem("sid", sid);
+
                 setTables(
                   tables.map((t) => ({
                     tableNumber: t.tableNumber,
                     waiterid: t.waiterId,
                   }))
+                  
                 );
+                ShowMessageOnPlat(tables[0].waiterId)
               }
             );
       
@@ -92,14 +96,7 @@ export default function Waiter() {
               setOrders(orders);
               AsyncStorage.setItem("orders", JSON.stringify(orders));
             });
-            connection.on("ReceiveWaiterAssignMessage",(message:string, tables: TableProps[])=>{
-              setTables(
-                tables.map((t) => ({
-                  tableNumber: t.tableNumber,
-                  waiterid: t.waiterId,
-                }))
-              );
-            })
+            
             }
             
           } catch (error) {
@@ -113,7 +110,9 @@ export default function Waiter() {
        
       }, [waiter?.id]);
       
-    useEffect(()=>{},[tables]); //re-renders when table state changes
+    useEffect(()=>{
+      alert("Tables updated")
+    },[tables]); //re-renders when table state changes
     useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
     
     /**
@@ -150,6 +149,18 @@ export default function Waiter() {
     */
     const handleWaitTable = (tableNumber: number) => {
         signalRConnection?.invoke("AssignWaiterToTable", waiter?.id, tableNumber)
+        signalRConnection?.on("ReceiveWaiterAssignMessage",(message:string, tables: TableProps[])=>{
+          if(message==="Waiter already assigned to this table"){
+            ShowMessageOnPlat(message);
+            return;
+          }
+          setTables(
+            tables.map((t) => ({
+              tableNumber: t.tableNumber,
+              waiterid: t.waiterId,
+            }))
+          );
+        })
         
     }
     const handleLeaveTable = (tableNumber: number) => {
@@ -158,7 +169,7 @@ export default function Waiter() {
         setTables(
           tables.map((t) => ({
             tableNumber: t.tableNumber,
-            waiterid: t.waiterId,
+            waiterid: t.waiterId
           })))
       })
     }
@@ -206,6 +217,8 @@ export default function Waiter() {
                                     occupyAction={()=>handleWaitTable(index+1)}
                                     leaveAction={()=>handleLeaveTable(index+1)}
                                     markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
+                                    waiterid={tables[index].waiterid}
+
                                      />
                                     
                                 ))}

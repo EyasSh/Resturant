@@ -264,18 +264,15 @@ public class SocketService : Hub<IHubService>
             _tables[tableNumber - 1].WaiterId = waiterId;
             await Clients.All.ReceiveWaiterAssignMessage($"Waiter {waiterId} joined Table {tableNumber}", _tables);
             await Groups.AddToGroupAsync(id, tableNumber.ToString());
-
+            Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
+            return;
 
         }
         else
         {
             System.Console.WriteLine($"Table {tableNumber} already has a waiter assigned.");
-            return;
-        }
 
-        Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
-
-        // Store waiter ID in dictionary
+        }// Store waiter ID in dictionary
         _waiterConnections[sid] = waiterId;
         _waiterids2sid.AddOrUpdate(waiterId,
             new HashSet<string> { sid },
@@ -284,6 +281,11 @@ public class SocketService : Hub<IHubService>
                 existingSids.Add(sid);
                 return existingSids;
             });
+        return;
+
+
+
+
     }
 
     /// <summary>

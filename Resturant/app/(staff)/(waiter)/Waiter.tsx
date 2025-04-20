@@ -92,6 +92,14 @@ export default function Waiter() {
               setOrders(orders);
               AsyncStorage.setItem("orders", JSON.stringify(orders));
             });
+            connection.on("ReceiveWaiterAssignMessage",(message:string, tables: TableProps[])=>{
+              setTables(
+                tables.map((t) => ({
+                  tableNumber: t.tableNumber,
+                  waiterid: t.waiterId,
+                }))
+              );
+            })
             }
             
           } catch (error) {
@@ -142,7 +150,17 @@ export default function Waiter() {
     */
     const handleWaitTable = (tableNumber: number) => {
         signalRConnection?.invoke("AssignWaiterToTable", waiter?.id, tableNumber)
-        alert(`Table ${tableNumber} is now being waited at.`);
+        
+    }
+    const handleLeaveTable = (tableNumber: number) => {
+      signalRConnection?.invoke("StopWaitingTable", tableNumber)
+      signalRConnection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
+        setTables(
+          tables.map((t) => ({
+            tableNumber: t.tableNumber,
+            waiterid: t.waiterId,
+          })))
+      })
     }
     /**
      * Handles the mark order ready action.
@@ -186,6 +204,7 @@ export default function Waiter() {
                                     tableNumber={table.tableNumber}
                                     peakOrderAction={()=>handlePeakOrder(index+1)}
                                     occupyAction={()=>handleWaitTable(index+1)}
+                                    leaveAction={()=>handleLeaveTable(index+1)}
                                     markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
                                      />
                                     

@@ -1,5 +1,5 @@
 import ip from '../Data/Addresses'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { ThemedView } from './ThemedView'
 import { ThemedText } from './ThemedText'
 import { StyleSheet, Image } from 'react-native'
@@ -14,7 +14,8 @@ import {Connection} from '@/Data/Hub'
 export default function WaiterTableCard(props: WaiterTableProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currWaiterId, setCurrWaiterId] = useState<string | null>(null)
-  const [waiterId, setWaiterId] = useState<string | undefined>("")
+  const [waiterId, setWaiterId] = useState<string | null |undefined>("")
+  const [buttonText, setButtonText] = useState<string>("")
 
   useEffect(() => {
     const getId = async () => {
@@ -29,47 +30,63 @@ export default function WaiterTableCard(props: WaiterTableProps) {
       
     }
     getId()
-  }, [props.waiterid, currWaiterId])
-
+  }, [props.waiterid])
+  useEffect(() => {
+    if (currWaiterId !== "" && waiterId === "") {
+      setButtonText("Wait Table")
+    } else if (currWaiterId === waiterId) {
+      setButtonText("Leave Table")
+    } else {
+      setButtonText("Table being waited")
+    }
+  }, [currWaiterId, waiterId])
+  
+useEffect(() => {},[buttonText])
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
             <CurvedButton 
-                title="Wait Table" 
+                title={buttonText}
                 action={() => {
-                    if (props.occupyAction) props.occupyAction();
+                    if (buttonText==="Wait Table" && props.occupyAction) {props.occupyAction(); setWaiterId(currWaiterId);}
+                    else if(buttonText==="Leave Table" && props.leaveAction) {props.leaveAction(); setWaiterId("")}
                     else alert("Waiting Table is not implemented");
                 }}
-                style={{backgroundColor:"#4800ff"}}
+                style={buttonText==="Wait Table"? {backgroundColor:"#4800ff"}:{ backgroundColor:"#ff0a00"}}
             />
-            <CurvedButton
-              title='Peak Needs'
-              action={() => {
-                if (props.peakNeedAction) props.peakNeedAction();
-                else alert("Peak Needs is not implemented");
-              }}
-              style={{backgroundColor:"#fc9b1c"}}
+            {currWaiterId && waiterId && currWaiterId===waiterId && buttonText==="Leave Table" ? 
+            <>
+               <CurvedButton
+               title='Peak Needs'
+               action={() => {
+                 if (props.peakNeedAction) props.peakNeedAction();
+                 else alert("Peak Needs is not implemented");
+               }}
+               style={{backgroundColor:"#fc9b1c"}}
+              />
+             <CurvedButton 
+                 title="Peak Order" 
+                 action={() => {
+                     if (props.peakOrderAction) props.peakOrderAction();
+                     else alert("Peak Order is not implemented");
+                 }}
+                 
+                 style={{backgroundColor:"#fc9b1c"}}
              />
-            <CurvedButton 
-                title="Peak Order" 
-                action={() => {
-                    if (props.peakOrderAction) props.peakOrderAction();
-                    else alert("Peak Order is not implemented");
-                }}
-                
-                style={{backgroundColor:"#fc9b1c"}}
-            />
+             
+             <CurvedButton
+                 title='Mark order as ready'
+ 
+                 action={() => {
+                     if (props.markOrderReadyAction) props.markOrderReadyAction();
+                     else alert("Mark Order Ready is not implemented");
+                 }}
+                 style={{backgroundColor:"#4800ff"}} 
+             />
+             </>
+            :null}  
             
-            <CurvedButton
-                title='Mark order as ready'
-
-                action={() => {
-                    if (props.markOrderReadyAction) props.markOrderReadyAction();
-                    else alert("Mark Order Ready is not implemented");
-                }}
-                style={{backgroundColor:"#4800ff"}} 
-            />
       
     </ThemedView>
   )

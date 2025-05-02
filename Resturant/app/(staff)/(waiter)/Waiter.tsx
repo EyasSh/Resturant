@@ -150,8 +150,14 @@ export default function Waiter() {
     const handleWaitTable = (tableNumber: number) => {
         signalRConnection?.invoke("AssignWaiterToTable", waiter?.id, tableNumber)
         signalRConnection?.on("ReceiveWaiterAssignMessage",(message:string, tables: TableProps[])=>{
-          if(message==="Waiter already assigned to this table"){
+          if(message.includes(`Table ${tableNumber} is already occupied by waiter`)){
             ShowMessageOnPlat(message);
+            setTables(
+              tables.map((t) => ({
+                tableNumber: t.tableNumber,
+                waiterid: t.waiterId,
+              }))
+            );
             return;
           }
           setTables(

@@ -12,6 +12,7 @@ export type WaiterTableProps = {
     occupyAction?: ()=>void
     leaveAction?: ()=>void
     peakOrderAction?: ()=>void
+    peakNeedAction?: ()=>void
     markOrderReadyAction?: ()=>void
     hub? : signalR.HubConnection | null
 

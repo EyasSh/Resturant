@@ -64,12 +64,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Toast />
+
         <StatusBar
         style={colorScheme === 'dark' ? 'light' : 'dark'} // icon color
         backgroundColor={colorScheme === 'dark' ? '#121212' : '#ffffff'} // status bar background
         translucent={false}
       />
+            <Toast />
       <Stack.Navigator>
         {/* Login is the initial screen */}
         <Stack.Screen 

@@ -111,9 +111,9 @@ export default function Waiter() {
       }, [waiter?.id]);
       
     useEffect(()=>{
-      alert("Tables updated")
+      ShowMessageOnPlat("Tables updated")
     },[tables]); //re-renders when table state changes
-    useEffect(()=>{alert("Orders updated")},[orders]); //re-renders when order state changes
+    useEffect(()=>{ShowMessageOnPlat("Orders updated")},[orders]); //re-renders when order state changes
     
     /**
     * Handles the peak order action.
@@ -180,6 +180,15 @@ export default function Waiter() {
       })
     }
     /**
+     * Handles the peak needs action.
+     * This function is called when the waiter presses the "Peak Needs" button.
+     * It should be used to navigate to the "PeakNeeds" screen and pass the table number as a parameter.
+     * @param tableNumber The number of the table to peak needs at.
+     */
+    const handlePeakNeeds = (tableNumber: number) => {
+        navigation.navigate("PeakNeeds", { tableNumber });
+    }
+    /**
      * Handles the mark order ready action.
      * This function is called when the waiter presses the "Mark Order Ready" button.
      * It should be used to mark the order as ready and send a request to the server to update the order's status.
@@ -223,6 +232,7 @@ export default function Waiter() {
                                     occupyAction={()=>handleWaitTable(index+1)}
                                     leaveAction={()=>handleLeaveTable(index+1)}
                                     markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
+                                    peakNeedAction={()=>handlePeakNeeds(index+1)}
                                     waiterid={tables[index].waiterid}
 
                                      />

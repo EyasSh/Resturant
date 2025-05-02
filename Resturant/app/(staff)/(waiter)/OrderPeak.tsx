@@ -63,7 +63,7 @@ export default function OrderPeak() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 50,
     },
     list: {
         paddingBottom: 40,

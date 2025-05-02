@@ -43,6 +43,14 @@ export default function WaiterTableCard(props: WaiterTableProps) {
                 }}
                 style={{backgroundColor:"#4800ff"}}
             />
+            <CurvedButton
+              title='Peak Needs'
+              action={() => {
+                if (props.peakNeedAction) props.peakNeedAction();
+                else alert("Peak Needs is not implemented");
+              }}
+              style={{backgroundColor:"#fc9b1c"}}
+             />
             <CurvedButton 
                 title="Peak Order" 
                 action={() => {

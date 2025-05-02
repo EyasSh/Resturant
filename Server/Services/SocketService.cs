@@ -48,6 +48,7 @@ public class SocketService : Hub<IHubService>
     // Map tables to assigned users and waiters
     public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
     public static readonly ConcurrentDictionary<int, string> _tableToWaiter = new(); // Table ID => Waiter ID
+    public static ConcurrentDictionary<string, SelectedNeedMessages> tableToNeeds = new(); //Table number=> needs of the user
 
     /// <summary>
     /// Called when a new connection is established.
@@ -175,12 +176,19 @@ public class SocketService : Hub<IHubService>
     {
         try
         {
+            if (_tables[needs.TableNumber - 1].WaiterId == null || _tables[needs.TableNumber - 1].WaiterId == string.Empty)
+            {
+                await Clients.Caller.ReceiveSuccessOrFail("No waiter assigned to this table.");
+                return;
+            }
             System.Console.WriteLine($"Sending messages to waiter for Table {needs.TableNumber}");
             if (needs.messages == null || needs.messages.Length == 0)
             {
                 await Clients.Caller.ReceiveSuccessOrFail("No messages to send.");
                 return;
             }
+            // Store the messages in the dictionary
+            tableToNeeds.AddOrUpdate(needs.TableNumber.ToString(), needs, (key, oldValue) => needs);
             await Clients.Group(needs.TableNumber.ToString()).ReceiveMessagesToWaiter(needs.messages);
             await Clients.Caller.ReceiveSuccessOrFail("Messages sent to waiter successfully.");
         }
@@ -243,6 +251,9 @@ public class SocketService : Hub<IHubService>
         _tables[tableNumber - 1].isOccupied = false;
         await Clients.All.ReceiveTableLeaveMessage(_tables);
         await Groups.RemoveFromGroupAsync(id, tableNumber.ToString());
+        _orders[tableNumber - 1] = null; // Clear the order for the table
+        await Clients.All.ReceiveOrders(_orders); // Send updated orders to all clients
+        tableToNeeds.TryRemove(tableNumber.ToString(), out _); // Clear the messages for the table
         _orders[tableNumber - 1] = null; // Clear the order for the table
         await Clients.All.ReceiveOrders(_orders); // Send updated orders to all clients
         System.Console.WriteLine($"User {id} left Table {tableNumber}");
@@ -329,13 +340,33 @@ public class SocketService : Hub<IHubService>
         await Clients.All.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
+        /// <summary>
+        /// Retrieves the user needs messages for a table.
+        /// </summary>
+        /// <param name="tableNumber">The table number to retrieve the messages for.</param>
+        /// <remarks>
+        /// This method is called when a waiter requests the messages for a table.
+        /// It checks if there are any messages stored for the table in the in-memory dictionary.
+        /// If there are messages, it sends them to the waiter.
+        /// Otherwise, it sends a failure message to the waiter.
+        /// </remarks>
+    public async Task GetUserNeeds(int tableNumber)
+    {
+        if (tableToNeeds.TryGetValue(tableNumber.ToString(), out var needs))
+        {
+            await Clients.Caller.ReceiveMessagesToWaiter(needs.messages ?? Array.Empty<string>());
+        }
+        else
+        {
+            await Clients.Caller.ReceiveSuccessOrFail("No messages found for this table.");
+        }
+    }
     /// <summary>
     /// Retrieves a list of quick messages from the message collection in MongoDB and sends them to the caller.
     /// </summary>
     /// <remarks>
     /// This method is called to fetch all quick messages stored in the database and deliver them to the client that initiated the request.
     /// </remarks>
-
     public async Task GetQuickMsgs()
     {
         var msgs = FetchMessages();

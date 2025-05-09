@@ -42,6 +42,18 @@ export default function UserNeeds() {
         }
     }, []);
     useEffect(() => {}, [messages]);
+/**
+ * Sends the selected need messages to the waiter for the specified table.
+ *
+ * @param {SelectedNeedMessages} needs - The need messages and table number to be sent.
+ *
+ * This function checks if the SignalR hub is connected, and if so, it sends the 
+ * specified need messages to the waiter using the "SendMessagesToWaiter" method. 
+ * It listens for a success or failure response and displays the message using 
+ * ShowMessageOnPlat. If the hub is not connected, it logs a message indicating 
+ * the lack of connection.
+ */
+
     const sendNeeds= async(needs: SelectedNeedMessages)=>
     {
         if(hub && hub.state === "Connected"){
@@ -92,7 +104,6 @@ export default function UserNeeds() {
  * current list of messages for a specific table. If the message is not found, no
  * update is made to the state.
  */
-
     const Remove = (messageToRemove: string) => {
         setSelectedNeedMessages(prev => {
           if (!prev?.messages) return prev;

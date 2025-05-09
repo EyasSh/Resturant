@@ -49,7 +49,6 @@ import { Order } from "@/Types/Order";
  * - `onAssignUserToTable` (function): Callback to assign the current user to the table.
  * - `onLeaveTable` (function): Callback for the user to leave the table.
  */
-
 export default function TableCard(props: TableProps) {
   const {
     isOccupied,
@@ -70,6 +69,12 @@ export default function TableCard(props: TableProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /**
+     * Initializes the component by fetching the user data from AsyncStorage
+     * and setting the userId state. Also sets the SignalR hub connection.
+     * If either fails, logs the error to the console.
+     * Finally, sets loading to false.
+     */
     const init = async () => {
       try {
         const stringfiedUser = await AsyncStorage.getItem('user');
@@ -87,7 +92,18 @@ export default function TableCard(props: TableProps) {
     init();
   }, [hub]);
 
-  const getHub= ()=>connection 
+  /**
+   * Handles the press event on the table card.
+   *
+   * This function checks if the current user is assigned to the table or not.
+   * - If the table is occupied by another user, an alert is shown indicating that
+   *   the table is already occupied.
+   * - If the table is occupied by the current user, an alert is displayed to notify
+   *   that the user is already assigned to the table, and then navigates to the menu.
+   * - If the table is not occupied, it calls the callback function to assign the
+   *   current user to the table.
+   */
+
   const handlePress = async () => {
     if (!currentUserId) return;
 

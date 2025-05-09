@@ -193,6 +193,11 @@ export default function Waiter() {
         })
         
     }
+/**
+ * Handles the action of leaving a table.
+ * Invokes the server to stop waiting at the specified table and updates the table's state upon receiving a leave message.
+ * @param {number} tableNumber - The number of the table to leave.
+ */
     const handleLeaveTable = (tableNumber: number) => {
       signalRConnection?.invoke("StopWaitingTable", tableNumber)
       signalRConnection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {

@@ -8,6 +8,19 @@ export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
+/**
+ * A Text component that changes its color based on the active theme.
+ *
+ * @param {Object} props
+ * @param {string} [props.lightColor] - The text color to use in light theme.
+ * @param {string} [props.darkColor] - The text color to use in dark theme.
+ * @param {string} [props.type] - The type of text to display. Can be one of
+ *   'default', 'title', 'defaultSemiBold', 'subtitle', or 'link'. Defaults to
+ *   'default'.
+ * @param {Object} [props.style] - Additional style to apply to the Text component.
+ * @param {Object} [props.rest] - Any other props to pass to the Text component.
+ * @returns {React.ReactElement}
+ */
 export function ThemedText({
   style,
   lightColor,

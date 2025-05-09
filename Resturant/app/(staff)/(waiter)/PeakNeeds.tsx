@@ -7,6 +7,15 @@ import { StyleSheet } from 'react-native';
 import { Connection } from '@/Data/Hub';
 import { useTheme } from '@react-navigation/native';
 
+/**
+ * Component to display the peak needs for a given table.
+ *
+ * @param {number} tableNumber - The table number to display peak needs for.
+ *
+ * This component will fetch the list of peak needs for the given table and display them
+ * in a scrollable list. If there are no peak needs for the table, it will display a message
+ * indicating that the customer does not need anything.
+ */
 function PeakNeeds() {
     const route = useRoute<RouteProp<RootStackParamList, 'PeakNeeds'>>();
     const { tableNumber } = route.params as { tableNumber: number };

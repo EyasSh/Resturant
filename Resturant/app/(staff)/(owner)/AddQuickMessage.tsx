@@ -28,7 +28,6 @@ export default function AddQuickMessage() {
  * in the request body. On success, it displays a toast with the server's
  * response message. On failure, it displays an error message in a toast.
  */
-
     const handleAddMessage = async() => {
         try{
             const token = await AsyncStorage.getItem('token')

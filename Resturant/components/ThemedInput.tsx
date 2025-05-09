@@ -26,7 +26,6 @@ type InputProps={
  * @returns A themed TextInput wrapped in a GestureHandlerRootView, tailored 
  * to the input type with appropriate styling and behavior.
  */
-
 function ThemedInput(props:InputProps) {
    const {colors,dark:isDark  } = useTheme(); // Access theme colors
    const isTypeIncluded=inputTypes.includes(props.type);

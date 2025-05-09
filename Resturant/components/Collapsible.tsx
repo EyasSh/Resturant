@@ -7,6 +7,16 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+/**
+ * A collapsible component that expands or collapses its content
+ * when its heading is pressed.
+ *
+ * @param {{ children: React.ReactNode, title: string }} props
+ * @param {React.ReactNode} props.children - The content to be toggled.
+ * @param {string} props.title - The title of the collapsible block.
+ *
+ * @returns {React.ReactElement}
+ */
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';

@@ -3,6 +3,14 @@ import { StyleSheet } from 'react-native';
 import {ThemedText} from '@/components/ThemedText';
 import { NeedMessageProps } from '@/Types/NeedMessageProps';
 import { HapticTab } from '../HapticTab';
+/**
+ * A component that displays a table need message as a tappable button.
+ *
+ * @param {NeedMessageProps} props The properties of the component.
+ * @param {string} props.message The message to display on the button.
+ * @param {function} [props.handleClick] The function to call when the button is pressed.
+ * @returns {React.ReactElement} The component.
+ */
 export default function TableNeedMessage(props:NeedMessageProps) {
     
     return (

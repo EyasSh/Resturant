@@ -96,7 +96,31 @@ export default function Waiter() {
               setOrders(orders);
               AsyncStorage.setItem("orders", JSON.stringify(orders));
             });
-            
+            connection.on("ReceiveWaiterAssignMessage", (message: string, tables: TableProps[]) => {
+              if (message.includes("Table is already occupied by waiter")) {
+                ShowMessageOnPlat(message);
+                setTables(
+                  tables.map((t) => ({
+                    tableNumber: t.tableNumber,
+                    waiterid: t.waiterId,
+                  }))
+                );
+                return;
+              }
+              setTables(
+                tables.map((t) => ({
+                  tableNumber: t.tableNumber,
+                  waiterid: t.waiterId,
+                }))
+              );
+            })
+            connection?.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
+              setTables(
+                tables.map((t) => ({
+                  tableNumber: t.tableNumber,
+                  waiterid: t.waiterId
+                })))
+            })
             }
             
           } catch (error) {
@@ -234,7 +258,7 @@ export default function Waiter() {
                                     markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
                                     peakNeedAction={()=>handlePeakNeeds(index+1)}
                                     waiterid={tables[index].waiterid}
-
+                                     setter={setTables}
                                      />
                                     
                                 ))}

@@ -10,12 +10,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/Routes/NavigationTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {Connection} from '@/Data/Hub'
+import { TableProps } from './TableCard'
 
 export default function WaiterTableCard(props: WaiterTableProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currWaiterId, setCurrWaiterId] = useState<string | null>(null)
   const [waiterId, setWaiterId] = useState<string | null |undefined>("")
   const [buttonText, setButtonText] = useState<string>("")
+  const hub = Connection.getHub()
 
   useEffect(() => {
     const getId = async () => {
@@ -49,9 +51,21 @@ useEffect(() => {},[buttonText])
             <CurvedButton 
                 title={buttonText}
                 action={() => {
-                    if (buttonText==="Wait Table" && props.occupyAction) {props.occupyAction(); setWaiterId(currWaiterId);}
-                    else if(buttonText==="Leave Table" && props.leaveAction) {props.leaveAction(); setWaiterId("")}
-                    else alert("Waiting Table is not implemented");
+                    if (buttonText==="Wait Table" && props.occupyAction) {
+                      props.occupyAction(); 
+                      setWaiterId(currWaiterId);
+
+                    }
+                    else if(buttonText==="Leave Table" && props.leaveAction) {
+                      props.leaveAction(); setWaiterId("")
+                      hub?.on("ReceiveWaiterLeaveMessage",(tables:TableProps[]) => {
+                        if (props.setter) props.setter(tables.map((t) => ({
+                          tableNumber: t.tableNumber,
+                          waiterid: t.waiterId
+                        })))
+                      })
+                    }
+                    else alert("Table is being waited");
                 }}
                 style={buttonText==="Wait Table"? {backgroundColor:"#4800ff"}:{ backgroundColor:"#ff0a00"}}
             />

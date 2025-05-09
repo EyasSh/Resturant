@@ -1,3 +1,4 @@
+import { TableProps } from '@/components/TableCard'
 import * as signalR from '@microsoft/signalr'
 /**
  * Props for the WaiterTable component
@@ -14,6 +15,7 @@ export type WaiterTableProps = {
     peakOrderAction?: ()=>void
     peakNeedAction?: ()=>void
     markOrderReadyAction?: ()=>void
+    setter?:React.Dispatch<React.SetStateAction<WaiterTableProps[]>>
     hub? : signalR.HubConnection | null
 
 }

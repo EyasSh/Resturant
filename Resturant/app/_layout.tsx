@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, NavigationContainer, ThemeProvider } from '@re
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
+//import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -31,6 +31,8 @@ import AddQuickMessage from './(staff)/(owner)/AddQuickMessage';
 import Toast from 'react-native-toast-message';
 import RemoveQuickMessage from './(staff)/(owner)/RemoveQuickMessage';
 import PeakNeeds from './(staff)/(waiter)/PeakNeeds';
+import {StatusBar,SafeAreaView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 
 SplashScreen.preventAutoHideAsync();
@@ -52,6 +54,8 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const Stack = createStackNavigator();
+  const insets = useSafeAreaInsets();
+  const STATUS_BAR_BG= colorScheme === 'dark' ? '#121212' : '#eee';
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -63,13 +67,20 @@ export default function RootLayout() {
   }
 
   return (
+    <>
+     <StatusBar
+        translucent
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+      />
+
+      {/* this view sits under the status bar */}
+      <View style={{
+        height: insets.top,
+        backgroundColor: STATUS_BAR_BG
+      }}/>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
 
-        <StatusBar
-        style={colorScheme === 'dark' ? 'light' : 'dark'} // icon color
-        backgroundColor={colorScheme === 'dark' ? '#121212' : '#ffffff'} // status bar background
-        translucent={false}
-      />
+        
             <Toast />
       <Stack.Navigator>
         {/* Login is the initial screen */}
@@ -110,5 +121,6 @@ export default function RootLayout() {
         
       </Stack.Navigator>
     </ThemeProvider>
+    </>
   );
 }

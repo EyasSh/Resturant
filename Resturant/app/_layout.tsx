@@ -121,6 +121,7 @@ export default function RootLayout() {
         
       </Stack.Navigator>
     </ThemeProvider>
+    <View style={{ height: insets.bottom, backgroundColor: STATUS_BAR_BG }} />
     </>
   );
 }

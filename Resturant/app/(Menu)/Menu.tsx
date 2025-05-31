@@ -1,21 +1,31 @@
+// src/screens/Menu.tsx
+
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Text, Button, FlatList, ActivityIndicator, ToastAndroid } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  Image,
+} from "react-native";
 import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
-import { GestureHandlerRootView, ScrollView, TouchableOpacity } from "react-native-gesture-handler";
-import { Image } from "react-native";
-import { NavigationProp, RootStackParamList } from '@/Routes/NavigationTypes';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { NavigationProp, RootStackParamList } from "@/Routes/NavigationTypes";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Order, ProtoOrder } from "@/Types/Order";
 import { Connection } from "@/Data/Hub";
 import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
-type ScreenProps = RouteProp<RootStackParamList, 'Menu'>
+import mealImages from "@/Types/MealImages";
 
-export  type Meal = {
+type ScreenProps = RouteProp<RootStackParamList, "Menu">;
+
+export type Meal = {
   mealId: string;
   mealName: string;
   price: number;
@@ -34,11 +44,12 @@ export default function Menu() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp<RootStackParamList, 'Menu'>>();
-  const {tableNumber} = route.params || { tableNumber: 0};
-  const [hubConnection,setHubConnection] = useState<signalR.HubConnection | null>(null);
-const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
+  const route = useRoute<ScreenProps>();
+  const { tableNumber } = route.params || { tableNumber: 0 };
+  const [hubConnection, setHubConnection] = useState<signalR.HubConnection | null>(null);
 
+  const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
+  // … (the same useEffect blocks for fetching meals & setting up SignalR) …
 
   useEffect(() => {
     async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
@@ -53,30 +64,29 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
             clearInterval(checkInterval);
             resolve(null);
           }
-        }, 100); // check every 100ms
+        }, 100);
       });
     }
-  
+
     async function fetchMealsAndHub() {
       try {
         setLoading(true);
         const token = await AsyncStorage.getItem("token");
         if (!token) throw new Error("User is not authenticated.");
-  
+
         const response = await axios.get(`http://${ip.julian}:5256/api/user/meals`, {
           headers: { "X-Auth-Token": token },
         });
-  
+
         if (response.status !== 200) throw new Error("Failed to fetch meals.");
-  
+
         const data: Meal[] = response.data.meals;
         setMenuItems(Array.isArray(data) ? data : []);
-  
+
         const conn = await waitForHubConnection();
         if (conn) {
           setHubConnection(conn);
           ShowMessageOnPlat("Connected set at Menu");
-
         } else {
           ShowMessageOnPlat("SignalR connection not ready");
         }
@@ -87,28 +97,35 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
         setLoading(false);
       }
     }
-  
+
     fetchMealsAndHub();
   }, []);
+
   useEffect(() => {
-    hubConnection?.on("ReceiveOrderSuccessMessage", ( isOkay: boolean, order: Order) => {
+    hubConnection?.on("ReceiveOrderSuccessMessage", (isOkay: boolean, order: Order) => {
       if (isOkay) {
         ShowMessageOnPlat(`Order sent successfully for table ${order.tableNumber}`);
         setList([]); // Clear the order list after sending
-        navigation.pop(); // Navigate back to the previous screen
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        }
+        else{
+          navigation.navigate("Tabs");
+        }
       } else {
         ShowMessageOnPlat(`Failed to send order`);
       }
     });
   }, [hubConnection]);
-  
-    
+
   const handleSendOrder = async () => {
     if (tableNumber === 0 || list.length === 0) {
-      alert(`Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`);
+      alert(
+        `Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`
+      );
       return;
     }
-  
+
     if (hubConnection && hubConnection.state === "Connected") {
       const order: Order = {
         tableNumber: tableNumber,
@@ -116,9 +133,10 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
         total: Number(calculateTotal()),
         isReady: false,
       };
-  
+
       try {
         hubConnection.invoke("OrderMeal", order);
+       
       } catch (err) {
         console.error("Failed to send order:", err);
         alert("Error sending order to the server.");
@@ -127,17 +145,8 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
       alert(`Hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
     }
   };
-  
-  
 
-  /**
-   * Adds a meal item to the order list. If the item is already in the list, increments the quantity by one.
-   * Otherwise, adds the item to the list with a quantity of one.
-   * @param {Meal} item - The meal to add to the list.
-   */
   function addItemToList(item: Meal) {
-
-    
     setList((prevList) => {
       const existingIndex = prevList.findIndex((i) => i.meal.mealId === item.mealId);
       if (existingIndex >= 0) {
@@ -149,12 +158,6 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
       }
     });
   }
-/**
- * Removes a meal item from the order list. If the item's quantity is greater than one,
- * decrements the quantity by one. Otherwise, removes the item from the list entirely.
- * If the item is not found, the list remains unchanged.
- * @param {Meal} item - The meal to remove from the list.
- */
 
   function removeItemFromList(item: Meal) {
     setList((prevList) => {
@@ -171,16 +174,9 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
       return prevList;
     });
   }
-  
-  /**
-   * Calculates the total cost of the order by summing the prices of all items on the list
-   * and multiplying each price by its corresponding quantity.
-   * @returns {string} The total cost of the order as a string with two decimal places.
-   */
+
   function calculateTotal() {
-    return list
-      .reduce((total, item) => total + item.meal.price * item.quantity, 0)
-      .toFixed(2);
+    return list.reduce((total, item) => total + item.meal.price * item.quantity, 0).toFixed(2);
   }
 
   if (loading) {
@@ -199,75 +195,112 @@ const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
       </ThemedView>
     );
   }
- 
+
   return (
-
-    
     <ThemedView style={styles.container}>
-  <FlatList
-    data={menuItems}
-    keyExtractor={(item) => item.mealId}
-   
-    renderItem={({ item }) => {
-      const selectedItem = list.find((i) => i.meal.mealId === item.mealId);
-      const currentQuantity = selectedItem ? selectedItem.quantity : 0;
+      <FlatList
+        data={menuItems}
+        keyExtractor={(item) => item.mealId}
+        renderItem={({ item }) => {
+          const selectedItem = list.find((i) => i.meal.mealId === item.mealId);
+          const currentQuantity = selectedItem ? selectedItem.quantity : 0;
 
-      return (
-        <ThemedView style={styles.menuItem}>
-          <ThemedView>
-            <ThemedText style={styles.name}>{item.mealName}</ThemedText>
-            <ThemedText style={styles.name}>{item.category}</ThemedText>
-          </ThemedView>
-          <ThemedText style={styles.price}>{item.price.toFixed(2)} ₪</ThemedText>
-          <ThemedText style={styles.price}>x{currentQuantity}</ThemedText>
-          <ThemedView>
-            <CurvedButton title="Add" action={() => addItemToList(item)} style={{ backgroundColor: "#00B0CC", marginBottom: 10 }} />
-            <CurvedButton title="Remove" action={() => removeItemFromList(item)} style={{ backgroundColor: "red" }} />
-          </ThemedView>
-        </ThemedView>
-      );
-    }}
-    ListFooterComponent={
-      <>
-        <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
+          // 1) Build the lookup key by stripping ALL whitespace
+          const imageKey = item.mealName.replace(/\s+/g, "");
 
-        {list.length > 0 ? (
-          list.map((item) => (
-            <View key={item.meal.mealId} style={styles.selectedItem}>
-              <ThemedText>{item.meal.mealName} x {item.quantity}</ThemedText>
-              <ThemedText>{(item.meal.price * item.quantity).toFixed(2)} ₪</ThemedText>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.emptyText}>No items selected.</Text>
-        )}
+          // 2) Attempt to get the static require from mealImages; fallback to a “no-pictures” placeholder if needed
+          const sourceImage =
+            mealImages[imageKey] ?? require("@/assets/images/no-pictures.png");
 
-        <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
-        <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+          return (
+            <ThemedView style={styles.menuItem}>
+              {/* LEFT: Image */}
+              <Image source={sourceImage} style={styles.listImage} resizeMode="cover" />
 
-        <ThemedView style={styles.paymentmethods}>
-          <TouchableOpacity style={styles.paymeth} onPress={async()=>{await handleSendOrder();}}>
-            <Image source={require("@/assets/images/money.png")} style={styles.image} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.paymeth} onPress={async()=>{await handleSendOrder();}}>
-            <Image source={require("@/assets/images/payment-method.png")} style={styles.image} />
-          </TouchableOpacity>
-        </ThemedView>
-        
-      </>
-    }
-  />
-</ThemedView>
+              {/* MIDDLE: Text block */}
+              <View style={styles.textContainer}>
+                <ThemedText style={styles.name}>{item.mealName}</ThemedText>
+                <ThemedText style={styles.category}>{item.category}</ThemedText>
+                <ThemedText style={styles.price}>{item.price.toFixed(2)} ₪</ThemedText>
+                {currentQuantity > 0 && (
+                  <ThemedText style={styles.quantity}>x{currentQuantity}</ThemedText>
+                )}
+              </View>
 
-    
+              {/* RIGHT: Add/Remove buttons */}
+              <View style={styles.buttonContainer}>
+                <CurvedButton
+                  title="Add"
+                  action={() => addItemToList(item)}
+                  style={styles.addButton}
+                />
+                <CurvedButton
+                  title="Remove"
+                  action={() => removeItemFromList(item)}
+                  style={styles.removeButton}
+                />
+              </View>
+            </ThemedView>
+          );
+        }}
+        ListFooterComponent={
+          <>
+            <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
+
+            {list.length > 0 ? (
+              list.map((item) => (
+                <View key={item.meal.mealId} style={styles.selectedItem}>
+                  <ThemedText>
+                    {item.meal.mealName} x {item.quantity}
+                  </ThemedText>
+                  <ThemedText>
+                    {(item.meal.price * item.quantity).toFixed(2)} ₪
+                  </ThemedText>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>No items selected.</Text>
+            )}
+
+            <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
+            <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+
+            <ThemedView style={styles.paymentmethods}>
+              <TouchableOpacity
+                style={styles.paymeth}
+                onPress={async () => {
+                  await handleSendOrder();
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/money.png")}
+                  style={styles.image}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.paymeth}
+                onPress={async () => {
+                  await handleSendOrder();
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/payment-method.png")}
+                  style={styles.image}
+                />
+              </TouchableOpacity>
+            </ThemedView>
+          </>
+        }
+      />
+    </ThemedView>
   );
-  
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     paddingHorizontal: 30,
-    height: "100%",
+  
   },
   loadingContainer: {
     flex: 1,
@@ -283,26 +316,61 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
+
+  /***** LIST ITEM STYLES *****/
   menuItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
+  listImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
-  price: {
-    fontSize: 16,
+  category: {
+    fontSize: 14,
     color: "gray",
+    marginTop: 2,
   },
+  price: {
+    fontSize: 14,
+    color: "gray",
+    marginTop: 4,
+  },
+  quantity: {
+    fontSize: 14,
+    color: "gray",
+    marginTop: 2,
+  },
+  buttonContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  addButton: {
+    backgroundColor: "#00B0CC",
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  removeButton: {
+    backgroundColor: "red",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+
+  /***** FOOTER & PAYMENT STYLES (unchanged) *****/
   subtitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -327,35 +395,33 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: "right",
   },
-  ptext:{
-    textAlign:'center',
-    marginTop:10,
-    fontSize:18,
-    fontWeight:'bold'
+  ptext: {
+    textAlign: "center",
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  paymentmethods:{
-    display:'flex',
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'center',
+  paymentmethods: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
   },
-  paymeth:{
-    display:'flex',
-    flexDirection:'column',
-    alignItems:'center',
-    justifyContent:'center',
-    width:150,
-    height:150,
-    margin:10,
-    borderColor:"grey",
-    borderWidth:1,
-    borderRadius:5,
-    padding:10
-},
-image: {
+  paymeth: {
+    width: 150,
+    height: 150,
+    margin: 10,
+    borderColor: "grey",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  image: {
     width: 100,
     height: 100,
     borderRadius: 10,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
 });

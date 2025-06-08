@@ -15,6 +15,7 @@ import { Order } from "@/Types/Order";
 import { Connection } from '@/Data/Hub';
 import Toast from 'react-native-toast-message';
 import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
+import CurvedButton from '@/components/ui/CurvedButton';
 
 const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2; // Use 3 columns on larger screens, otherwise 2
@@ -209,6 +210,8 @@ export default function MainPage() {
   return (
     <ThemedView style={styles.wrapper}>
       <LogoutButton action={async () => await signalRConnection?.stop()} />
+        <CurvedButton title="View Menu" action={() => navigation.navigate("Menu",{tableNumber: -1})} 
+          style={{backgroundColor:"yellow", alignSelf:"center",marginTop:10}}/>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {signalRConnection != null && tables.length > 0 &&

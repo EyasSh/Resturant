@@ -15,7 +15,7 @@ import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { NavigationProp, RootStackParamList } from "@/Routes/NavigationTypes";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Order, ProtoOrder } from "@/Types/Order";
@@ -204,11 +204,7 @@ export default function Menu() {
         renderItem={({ item }) => {
           const selectedItem = list.find((i) => i.meal.mealId === item.mealId);
           const currentQuantity = selectedItem ? selectedItem.quantity : 0;
-
-          // 1) Build the lookup key by stripping ALL whitespace
           const imageKey = item.mealName.replace(/\s+/g, "");
-
-          // 2) Attempt to get the static require from mealImages; fallback to a “no-pictures” placeholder if needed
           const sourceImage =
             mealImages[imageKey] ?? require("@/assets/images/no-pictures.png");
 
@@ -227,68 +223,80 @@ export default function Menu() {
                 )}
               </View>
 
-              {/* RIGHT: Add/Remove buttons */}
-              <View style={styles.buttonContainer}>
-                <CurvedButton
-                  title="Add"
-                  action={() => addItemToList(item)}
-                  style={styles.addButton}
-                />
-                <CurvedButton
-                  title="Remove"
-                  action={() => removeItemFromList(item)}
-                  style={styles.removeButton}
-                />
-              </View>
+              {/* RIGHT: Add/Remove buttons – only when tableNumber ≥ 0 */}
+              {tableNumber >= 0 && (
+                <View style={styles.buttonContainer}>
+                  <CurvedButton
+                    title="Add"
+                    action={() => addItemToList(item)}
+                    style={styles.addButton}
+                  />
+                  <CurvedButton
+                    title="Remove"
+                    action={() => removeItemFromList(item)}
+                    style={styles.removeButton}
+                  />
+                </View>
+              )}
             </ThemedView>
           );
         }}
         ListFooterComponent={
           <>
+          {tableNumber >= 0 && (
+          <>
             <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
 
             {list.length > 0 ? (
-              list.map((item) => (
-                <View key={item.meal.mealId} style={styles.selectedItem}>
-                  <ThemedText>
-                    {item.meal.mealName} x {item.quantity}
-                  </ThemedText>
-                  <ThemedText>
-                    {(item.meal.price * item.quantity).toFixed(2)} ₪
-                  </ThemedText>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>No items selected.</Text>
+            list.map((item) => (
+              <View key={item.meal.mealId} style={styles.selectedItem}>
+                <ThemedText>
+                  {item.meal.mealName} x {item.quantity}
+                </ThemedText>
+                <ThemedText>
+                  {(item.meal.price * item.quantity).toFixed(2)} ₪
+                </ThemedText>
+        </View>
+      ))
+    ) : (
+      <Text style={styles.emptyText}>No items selected.</Text>
+    )}
+
+    <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
+  </>
+)}
+            
+
+            {/* payment prompt + buttons only when tableNumber ≥ 0 */}
+            {tableNumber >= 0 && (
+              <>
+                <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+                <ThemedView style={styles.paymentmethods}>
+                  <TouchableOpacity
+                    style={styles.paymeth}
+                    onPress={async () => {
+                      await handleSendOrder();
+                    }}
+                  >
+                    <Image
+                      source={require("@/assets/images/money.png")}
+                      style={styles.image}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.paymeth}
+                    onPress={async () => {
+                      await handleSendOrder();
+                    }}
+                  >
+                    <Image
+                      source={require("@/assets/images/payment-method.png")}
+                      style={styles.image}
+                    />
+                  </TouchableOpacity>
+                </ThemedView>
+              </>
             )}
-
-            <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
-            <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
-
-            <ThemedView style={styles.paymentmethods}>
-              <TouchableOpacity
-                style={styles.paymeth}
-                onPress={async () => {
-                  await handleSendOrder();
-                }}
-              >
-                <Image
-                  source={require("@/assets/images/money.png")}
-                  style={styles.image}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.paymeth}
-                onPress={async () => {
-                  await handleSendOrder();
-                }}
-              >
-                <Image
-                  source={require("@/assets/images/payment-method.png")}
-                  style={styles.image}
-                />
-              </TouchableOpacity>
-            </ThemedView>
           </>
         }
       />

@@ -17,5 +17,6 @@ export type WaiterTableProps = {
     markOrderReadyAction?: ()=>void
     setter?:React.Dispatch<React.SetStateAction<WaiterTableProps[]>>
     hub? : signalR.HubConnection | null
+    isOccupied?: boolean
 
 }

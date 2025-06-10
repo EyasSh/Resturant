@@ -84,6 +84,7 @@ export default function Waiter() {
                   tables.map((t) => ({
                     tableNumber: t.tableNumber,
                     waiterid: t.waiterId,
+                    isOccupied: t.isOccupied
                   }))
                   
                 );
@@ -103,6 +104,7 @@ export default function Waiter() {
                   tables.map((t) => ({
                     tableNumber: t.tableNumber,
                     waiterid: t.waiterId,
+                    isOccupied: t.isOccupied
                   }))
                 );
                 return;
@@ -111,6 +113,7 @@ export default function Waiter() {
                 tables.map((t) => ({
                   tableNumber: t.tableNumber,
                   waiterid: t.waiterId,
+                  isOccupied: t.isOccupied
                 }))
               );
             })
@@ -118,7 +121,8 @@ export default function Waiter() {
               setTables(
                 tables.map((t) => ({
                   tableNumber: t.tableNumber,
-                  waiterid: t.waiterId
+                  waiterid: t.waiterId,
+                  isOccupied: t.isOccupied
                 })))
             })
             }
@@ -132,7 +136,7 @@ export default function Waiter() {
         initSignalR();
       
        
-      }, [waiter?.id]);
+      }, [waiter?.id, tables]);
       
     useEffect(()=>{
       ShowMessageOnPlat("Tables updated")
@@ -180,6 +184,7 @@ export default function Waiter() {
               tables.map((t) => ({
                 tableNumber: t.tableNumber,
                 waiterid: t.waiterId,
+                isOccupied: t.isOccupied
               }))
             );
             return;
@@ -188,6 +193,7 @@ export default function Waiter() {
             tables.map((t) => ({
               tableNumber: t.tableNumber,
               waiterid: t.waiterId,
+              isOccupied: t.isOccupied
             }))
           );
         })
@@ -204,7 +210,8 @@ export default function Waiter() {
         setTables(
           tables.map((t) => ({
             tableNumber: t.tableNumber,
-            waiterid: t.waiterId
+            waiterid: t.waiterId,
+            isOccupied: t.isOccupied
           })))
       })
     }
@@ -254,18 +261,19 @@ export default function Waiter() {
                     </ThemedText>
                     {signalRConnection && tables.length > 0 ? (
                              <>
-                                {tables.map((table, index) => (
-                                <WaiterTableCard key={index} 
-                                    tableNumber={table.tableNumber}
-                                    peakOrderAction={()=>handlePeakOrder(index+1)}
-                                    occupyAction={()=>handleWaitTable(index+1)}
-                                    leaveAction={()=>handleLeaveTable(index+1)}
-                                    markOrderReadyAction={()=>handleMarkOrderReady(index+1)}
-                                    peakNeedAction={()=>handlePeakNeeds(index+1)}
-                                    waiterid={tables[index].waiterid}
-                                     setter={setTables}
-                                     />
-                                    
+                                {tables.map(table => (
+                                <WaiterTableCard
+                                  key={table.tableNumber}
+                                  tableNumber={table.tableNumber}
+                                  occupyAction={() => handleWaitTable(table.tableNumber)}
+                                  leaveAction={() => handleLeaveTable(table.tableNumber)}
+                                  peakOrderAction={() => handlePeakOrder(table.tableNumber)}
+                                  markOrderReadyAction={() => handleMarkOrderReady(table.tableNumber)}
+                                  peakNeedAction={() => handlePeakNeeds(table.tableNumber)}
+                                  isOccupied={table.isOccupied}
+                                  waiterid={table.waiterid}
+                                  setter={setTables}
+                                    />
                                 ))}
                             </>
                             ) : (

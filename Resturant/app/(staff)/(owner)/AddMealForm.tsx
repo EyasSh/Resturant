@@ -49,6 +49,11 @@ export default function AddMealForm() {
             alert("Can't add a no named OR free meal");
             return;
         }
+        if(price<0)
+        {
+            alert("Price can't be negative");
+            return;
+        }
         try{
             const token = await AsyncStorage.getItem('token');
             const res = await axios.post(`http://${ip.julian}:5256/api/owner/add/meal`,{

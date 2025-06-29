@@ -1,4 +1,3 @@
-
 import { ThemedView } from '@/components/ThemedView';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet,  Dimensions , ScrollView, ToastAndroid} from 'react-native';
@@ -13,7 +12,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '@/Routes/NavigationTypes';
 import { Order } from "@/Types/Order";
 import { Connection } from '@/Data/Hub';
-import Toast from 'react-native-toast-message';
 import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 import CurvedButton from '@/components/ui/CurvedButton';
 

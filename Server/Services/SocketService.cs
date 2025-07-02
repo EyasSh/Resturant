@@ -432,14 +432,7 @@ public class SocketService : Hub<IHubService>
         if (_userConnections.TryGetValue(sid, out string? mongoId))
         {
             _userConnections.TryRemove(sid, out _);
-            _tables.ForEach(t =>
-            {
-                if (t.UserId == id)
-                {
-                    t.UserId = string.Empty;
-                    t.CheckOccupation();
-                }
-            });
+           
 
             if (_userids2sid.TryGetValue(mongoId, out var sids))
             {

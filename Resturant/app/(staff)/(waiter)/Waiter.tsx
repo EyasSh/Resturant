@@ -91,7 +91,20 @@ export default function Waiter() {
                 ShowMessageOnPlat(tables[0].waiterId)
               }
             );
-      
+            connection.on("ReceiveTableMessage", (message:string,isOkay:boolean,userId:string,tableNumber:Number,_tables:TableProps[]) => {
+              if (!isOkay) {
+                ShowMessageOnPlat(message);
+                return;
+              }
+              setTables(
+                _tables.map((t) => ({
+                  tableNumber: t.tableNumber,
+                  waiterid: t.waiterId,
+                  isOccupied: t.isOccupied
+                }))
+              );
+              ShowMessageOnPlat(`Table ${tableNumber} is now occupied by ${userId}`);
+            })
             connection.on("ReceiveOrders", (orders: Order[]) => {
               if (!orders?.length) return;
               setOrders(orders);

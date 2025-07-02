@@ -68,6 +68,7 @@ useEffect(() => {},[buttonText])
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
+      <ThemedText> {props.isOccupied? "Occupied" :"Free"}</ThemedText>
             <CurvedButton 
                 title={buttonText}
                 action={() => {

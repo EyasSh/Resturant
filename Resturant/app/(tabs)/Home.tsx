@@ -209,7 +209,7 @@ export default function MainPage() {
     <ThemedView style={styles.wrapper}>
       <LogoutButton action={async () => await signalRConnection?.stop()} />
         <CurvedButton title="View Menu" action={() => navigation.navigate("Menu",{tableNumber: -1})} 
-          style={{backgroundColor:"yellow", alignSelf:"center",marginTop:10}}/>
+          style={{backgroundColor:"rgb(153, 0, 255)", alignSelf:"center",marginTop:10}}/>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
         <ThemedView style={styles.gridContainer}>
           {signalRConnection != null && tables.length > 0 &&

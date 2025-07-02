@@ -136,7 +136,7 @@ export default function Waiter() {
         initSignalR();
       
        
-      }, [waiter?.id, tables, signalRConnection]);
+      }, [waiter?.id]);
       
     useEffect(()=>{
       ShowMessageOnPlat("Tables updated")

@@ -1,6 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace Server.Models;
+
 public class Table
 {
     [BsonId]
@@ -12,6 +13,9 @@ public class Table
     public string? WaiterId { get; set; } = string.Empty;
     [BsonElement("userId")]
     public string? UserId { get; set; } = string.Empty;
+    [BsonIgnore]
+    [BsonElement("userName")]
+    public string? UserName { get; set; } = string.Empty;
     [BsonElement("isWindowSide")]
     public bool isWindowSide { get; set; } = false;
     [BsonElement("isOccupied")]

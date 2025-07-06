@@ -10,10 +10,10 @@ export class Connection {
     public static setHub(newHub: signalR.HubConnection | null): void {
       this.hub = newHub;
     }
-    public static connectHub = async (id: string, privilagelevel: string) => {
+    public static connectHub = async (id: string, privilagelevel: string, userName?: string) => {
       if(privilagelevel==="user"){
         const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://${ip.julian}:5256/hub?userid=${id}&privilagelevel=${privilagelevel}`)
+        .withUrl(`http://${ip.julian}:5256/hub?userid=${id}&privilagelevel=${privilagelevel}&name=${userName}`)
         .withAutomaticReconnect()   
         .build();
         await connection.start();

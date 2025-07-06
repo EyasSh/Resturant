@@ -21,6 +21,7 @@ import { Order } from "@/Types/Order";
   hub: signalR.HubConnection |null 
   onAssignUserToTable: ()=>Promise<void>
   onLeaveTable: (tableNumber:number)=>Promise<void>
+  userName?: string;
 }
 
 /**

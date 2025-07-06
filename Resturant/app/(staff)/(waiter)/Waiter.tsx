@@ -84,7 +84,8 @@ export default function Waiter() {
                   tables.map((t) => ({
                     tableNumber: t.tableNumber,
                     waiterid: t.waiterId,
-                    isOccupied: t.isOccupied
+                    isOccupied: t.isOccupied,
+                    userName: t.userName
                   }))
                   
                 );
@@ -100,7 +101,8 @@ export default function Waiter() {
                 _tables.map((t) => ({
                   tableNumber: t.tableNumber,
                   waiterid: t.waiterId,
-                  isOccupied: t.isOccupied
+                  isOccupied: t.isOccupied,
+                  userName: t.userName
                 }))
               );
               ShowMessageOnPlat(`Table ${tableNumber} is now occupied by ${userId}`);
@@ -117,7 +119,8 @@ export default function Waiter() {
                   tables.map((t) => ({
                     tableNumber: t.tableNumber,
                     waiterid: t.waiterId,
-                    isOccupied: t.isOccupied
+                    isOccupied: t.isOccupied,
+                    userName: t.userName
                   }))
                 );
                 return;
@@ -126,7 +129,8 @@ export default function Waiter() {
                 tables.map((t) => ({
                   tableNumber: t.tableNumber,
                   waiterid: t.waiterId,
-                  isOccupied: t.isOccupied
+                  isOccupied: t.isOccupied,
+                  userName: t.userName
                 }))
               );
             })
@@ -135,7 +139,8 @@ export default function Waiter() {
                 tables.map((t) => ({
                   tableNumber: t.tableNumber,
                   waiterid: t.waiterId,
-                  isOccupied: t.isOccupied
+                  isOccupied: t.isOccupied,
+                  userName: t.userName
                 })))
             })
             }
@@ -197,7 +202,8 @@ export default function Waiter() {
               tables.map((t) => ({
                 tableNumber: t.tableNumber,
                 waiterid: t.waiterId,
-                isOccupied: t.isOccupied
+                isOccupied: t.isOccupied,
+                userName: t.userName
               }))
             );
             return;
@@ -206,7 +212,8 @@ export default function Waiter() {
             tables.map((t) => ({
               tableNumber: t.tableNumber,
               waiterid: t.waiterId,
-              isOccupied: t.isOccupied
+              isOccupied: t.isOccupied,
+              userName: t.userName
             }))
           );
         })
@@ -224,7 +231,8 @@ export default function Waiter() {
           tables.map((t) => ({
             tableNumber: t.tableNumber,
             waiterid: t.waiterId,
-            isOccupied: t.isOccupied
+            isOccupied: t.isOccupied,
+            occupiedBy: t.userName
           })))
       })
     }
@@ -286,6 +294,7 @@ export default function Waiter() {
                                   isOccupied={table.isOccupied}
                                   waiterid={table.waiterid}
                                   setter={setTables}
+                                  userName={table.userName}
                                     />
                                 ))}
                             </>

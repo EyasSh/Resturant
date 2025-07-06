@@ -18,5 +18,6 @@ export type WaiterTableProps = {
     setter?:React.Dispatch<React.SetStateAction<WaiterTableProps[]>>
     hub? : signalR.HubConnection | null
     isOccupied?: boolean
+    userName?: string
 
 }

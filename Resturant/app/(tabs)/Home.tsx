@@ -28,6 +28,7 @@ export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
   const [userId, setUserId] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   const [orders, setOrders] = useState<Order[] | null>([]);
   const navigation = useNavigation<NavigationProp>();
 
@@ -66,7 +67,9 @@ export default function MainPage() {
       if (user) {
         const u = JSON.parse(user);
         setUserId(u.id);
-        connect(u.id);
+        setUserName(u.name);
+        alert(`Welcome ${u.name}`);
+        connect(u.id, u.name ?? ""); // Connect to the SignalR hub with the user ID and name
       } else {
         alert("No user found");
       }
@@ -143,12 +146,12 @@ export default function MainPage() {
    * If the connection fails, it displays an alert with the error message.
    * @param {string} id - The user ID to use for the connection.
    */
-  const connect = async (id: string) => {
+  const connect = async (id: string, name: string) => {
     if (!id) return;
 
    
     try {
-      const connection = await Connection.connectHub(id, "user");
+      const connection = await Connection.connectHub(id, "user", name);
       if(!connection) {
         alert("Failed to establish SignalR connection");
         return;

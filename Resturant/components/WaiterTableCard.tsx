@@ -31,6 +31,7 @@ export default function WaiterTableCard(props: WaiterTableProps) {
   const [currWaiterId, setCurrWaiterId] = useState<string | null>(null)
   const [waiterId, setWaiterId] = useState<string | null |undefined>("")
   const [buttonText, setButtonText] = useState<string>("")
+  const [userName, setUserName] = useState<string | undefined| null>(null)
   const hub = Connection.getHub()
 
   useEffect(() => {
@@ -49,10 +50,11 @@ export default function WaiterTableCard(props: WaiterTableProps) {
       }
       setCurrWaiterId(id)
       setWaiterId(props.waiterid)
+      setUserName(props.userName)
       
     }
     getId()
-  }, [props.waiterid])
+  }, [props.waiterid, props.userName])
   useEffect(() => {
     if (currWaiterId !== "" && waiterId === "") {
       setButtonText("Wait Table")
@@ -68,7 +70,7 @@ useEffect(() => {},[buttonText])
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
-      <ThemedText> {props.isOccupied? "Occupied" :"Free"}</ThemedText>
+      <ThemedText> {props.isOccupied?`Occupied by ${userName}` :"Free"}</ThemedText>
             <CurvedButton 
                 title={buttonText}
                 action={() => {

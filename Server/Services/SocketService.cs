@@ -1,4 +1,5 @@
 namespace Server.Services;
+
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -152,6 +153,7 @@ public class SocketService : Hub<IHubService>
         _tableToUser[tableNumber] = userId;
         _tables[tableNumber - 1].UserId = userId;
         _tables[tableNumber - 1].CheckOccupation();
+        _tables[tableNumber - 1].UserName = Context.GetHttpContext()?.Request.Query["name"].ToString() ?? string.Empty;
         System.Console.WriteLine($"User {userId} assigned to Table {tableNumber}, isOccupied: {_tables[tableNumber - 1].isOccupied}");
         await Groups.AddToGroupAsync(userId, tableNumber.ToString());
         await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true, userId, tableNumber, _tables);
@@ -249,6 +251,7 @@ public class SocketService : Hub<IHubService>
         var id = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
         _tables[tableNumber - 1].UserId = string.Empty;
         _tables[tableNumber - 1].isOccupied = false;
+        _tables[tableNumber - 1].UserName = string.Empty;
         await Clients.All.ReceiveTableLeaveMessage(_tables);
         await Groups.RemoveFromGroupAsync(id, tableNumber.ToString());
         _orders[tableNumber - 1] = null; // Clear the order for the table
@@ -340,16 +343,16 @@ public class SocketService : Hub<IHubService>
         await Clients.All.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
-        /// <summary>
-        /// Retrieves the user needs messages for a table.
-        /// </summary>
-        /// <param name="tableNumber">The table number to retrieve the messages for.</param>
-        /// <remarks>
-        /// This method is called when a waiter requests the messages for a table.
-        /// It checks if there are any messages stored for the table in the in-memory dictionary.
-        /// If there are messages, it sends them to the waiter.
-        /// Otherwise, it sends a failure message to the waiter.
-        /// </remarks>
+    /// <summary>
+    /// Retrieves the user needs messages for a table.
+    /// </summary>
+    /// <param name="tableNumber">The table number to retrieve the messages for.</param>
+    /// <remarks>
+    /// This method is called when a waiter requests the messages for a table.
+    /// It checks if there are any messages stored for the table in the in-memory dictionary.
+    /// If there are messages, it sends them to the waiter.
+    /// Otherwise, it sends a failure message to the waiter.
+    /// </remarks>
     public async Task GetUserNeeds(int tableNumber)
     {
         if (tableToNeeds.TryGetValue(tableNumber.ToString(), out var needs))
@@ -432,7 +435,7 @@ public class SocketService : Hub<IHubService>
         if (_userConnections.TryGetValue(sid, out string? mongoId))
         {
             _userConnections.TryRemove(sid, out _);
-           
+
 
             if (_userids2sid.TryGetValue(mongoId, out var sids))
             {

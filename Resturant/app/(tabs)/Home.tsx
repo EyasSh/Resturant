@@ -68,7 +68,6 @@ export default function MainPage() {
         const u = JSON.parse(user);
         setUserId(u.id);
         setUserName(u.name);
-        alert(`Welcome ${u.name}`);
         connect(u.id, u.name ?? ""); // Connect to the SignalR hub with the user ID and name
       } else {
         alert("No user found");

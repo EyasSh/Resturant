@@ -70,7 +70,7 @@ useEffect(() => {},[buttonText])
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
-      <ThemedText> {props.isOccupied?`Occupied by ${userName}` :"Free"}</ThemedText>
+      <ThemedText style={styles.waiterCardText}> {props.isOccupied?`Occupied by ${userName}` :"Free"}</ThemedText>
             <CurvedButton 
                 title={buttonText}
                 action={() => {
@@ -81,12 +81,7 @@ useEffect(() => {},[buttonText])
                     }
                     else if(buttonText==="Leave Table" && props.leaveAction) {
                       props.leaveAction(); setWaiterId("")
-                      hub?.on("ReceiveWaiterLeaveMessage",(tables:TableProps[]) => {
-                        if (props.setter) props.setter(tables.map((t) => ({
-                          tableNumber: t.tableNumber,
-                          waiterid: t.waiterId
-                        })))
-                      })
+                      
                     }
                     else alert("Table is being waited");
                 }}

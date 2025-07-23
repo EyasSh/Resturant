@@ -39,7 +39,7 @@ export class Connection {
         skipNegotiation: true,
         headers: {
           // this must be a valid HTTP(S) origin, not a ws:// URL
-          Origin: "http://10.0.0.162:19006",
+          Origin: `http://${ip.julian}:19006`,
         },
       })
       .withAutomaticReconnect()

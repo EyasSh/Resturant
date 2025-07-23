@@ -12,7 +12,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useTheme } from "@react-navigation/native";
 import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
-
+export const [items, setItems] = useState([
+        { label: 'Desserts', value: 'Desserts' },
+        { label: 'Main Dish', value: 'Main Dish' },
+        { label: 'Side Dish', value: 'Side Dish' },
+        { label: 'Beverages', value: 'Beverages' },
+        // change the all the drinks to beverages
+    
+    ]);
 /**
  * Component for adding a meal to the database and AsyncStorage.
  * Provides a form with three fields: name, price, and category.
@@ -27,14 +34,7 @@ export default function AddMealForm() {
     const [price, setPrice] = useState<number>(0);
     const [open, setOpen] = useState(false);
     const [category, setCategory] = useState<string | null>(null);
-    const [items, setItems] = useState([
-        { label: 'Desserts', value: 'Desserts' },
-        { label: 'Main Dish', value: 'Main Dish' },
-        { label: 'Side Dish', value: 'Side Dish' },
-        { label: 'beverages', value: 'beverages' },
-        // change the all the drinks to beverages
     
-    ]);
     
     /**
      * Handles the addition of a meal to the database and AsyncStorage.

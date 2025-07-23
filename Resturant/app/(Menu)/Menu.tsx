@@ -10,20 +10,20 @@ import {
   FlatList,
   ActivityIndicator,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
-import { TouchableOpacity } from "react-native";
 import { NavigationProp, RootStackParamList } from "@/Routes/NavigationTypes";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Order, ProtoOrder } from "@/Types/Order";
 import { Connection } from "@/Data/Hub";
 import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 import mealImages from "@/Types/MealImages";
-
-type ScreenProps = RouteProp<RootStackParamList, "Menu">;
+import { items } from "@/app/(staff)/(owner)/AddMealForm";
+import * as signalR from "@microsoft/signalr";
 
 export type Meal = {
   mealId: string;
@@ -32,12 +32,8 @@ export type Meal = {
   category: string;
 };
 
-/**
- * Displays the menu items and allows users to select items to add to their order.
- * If there is an error fetching the menu items, an error message is displayed.
- * If the user is not authenticated, they are redirected to the login screen.
- * @returns {JSX.Element} The Menu component
- */
+type ScreenProps = RouteProp<RootStackParamList, "Menu">;
+
 export default function Menu() {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<ProtoOrder[]>([]);
@@ -48,8 +44,12 @@ export default function Menu() {
   const { tableNumber } = route.params || { tableNumber: 0 };
   const [hubConnection, setHubConnection] = useState<signalR.HubConnection | null>(null);
 
+  // Filter dropdown state
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const categories = ["All", ...items.map((i) => i.value)];
+
   const handleSendOrderRef = useRef<() => Promise<void>>(async () => {});
-  // … (the same useEffect blocks for fetching meals & setting up SignalR) …
 
   useEffect(() => {
     async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
@@ -74,13 +74,13 @@ export default function Menu() {
         const token = await AsyncStorage.getItem("token");
         if (!token) throw new Error("User is not authenticated.");
 
-        const response = await axios.get(`http://${ip.julian}:5256/api/user/meals`, {
-          headers: { "X-Auth-Token": token },
-        });
-
+        const response = await axios.get<{ meals: Meal[] }>(
+          `http://${ip.julian}:5256/api/user/meals`,
+          { headers: { "X-Auth-Token": token } }
+        );
         if (response.status !== 200) throw new Error("Failed to fetch meals.");
 
-        const data: Meal[] = response.data.meals;
+        const data = response.data.meals;
         setMenuItems(Array.isArray(data) ? data : []);
 
         const conn = await waitForHubConnection();
@@ -108,8 +108,7 @@ export default function Menu() {
         setList([]); // Clear the order list after sending
         if (navigation.canGoBack()) {
           navigation.goBack();
-        }
-        else{
+        } else {
           navigation.navigate("Tabs");
         }
       } else {
@@ -128,15 +127,13 @@ export default function Menu() {
 
     if (hubConnection && hubConnection.state === "Connected") {
       const order: Order = {
-        tableNumber: tableNumber,
+        tableNumber,
         orders: list,
         total: Number(calculateTotal()),
         isReady: false,
       };
-
       try {
-        hubConnection.invoke("OrderMeal", order);
-       
+        await hubConnection.invoke("OrderMeal", order);
       } catch (err) {
         console.error("Failed to send order:", err);
         alert("Error sending order to the server.");
@@ -147,37 +144,43 @@ export default function Menu() {
   };
 
   function addItemToList(item: Meal) {
-    setList((prevList) => {
-      const existingIndex = prevList.findIndex((i) => i.meal.mealId === item.mealId);
-      if (existingIndex >= 0) {
-        const updatedList = [...prevList];
-        updatedList[existingIndex].quantity += 1;
-        return updatedList;
+    setList((prev) => {
+      const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx].quantity += 1;
+        return updated;
       } else {
-        return [...prevList, { meal: item, quantity: 1 }];
+        return [...prev, { meal: item, quantity: 1 }];
       }
     });
   }
 
   function removeItemFromList(item: Meal) {
-    setList((prevList) => {
-      const existingIndex = prevList.findIndex((i) => i.meal.mealId === item.mealId);
-      if (existingIndex >= 0) {
-        const updatedList = [...prevList];
-        if (updatedList[existingIndex].quantity > 1) {
-          updatedList[existingIndex].quantity -= 1;
-          return updatedList;
+    setList((prev) => {
+      const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
+      if (idx >= 0) {
+        const updated = [...prev];
+        if (updated[idx].quantity > 1) {
+          updated[idx].quantity -= 1;
+          return updated;
         } else {
-          return prevList.filter((i) => i.meal.mealId !== item.mealId);
+          return prev.filter((i) => i.meal.mealId !== item.mealId);
         }
       }
-      return prevList;
+      return prev;
     });
   }
 
   function calculateTotal() {
-    return list.reduce((total, item) => total + item.meal.price * item.quantity, 0).toFixed(2);
+    return list.reduce((sum, i) => sum + i.meal.price * i.quantity, 0).toFixed(2);
   }
+
+  // Apply category filter
+  const filteredItems =
+    selectedCategory === "All"
+      ? menuItems
+      : menuItems.filter((m) => m.category === selectedCategory);
 
   if (loading) {
     return (
@@ -198,106 +201,92 @@ export default function Menu() {
 
   return (
     <ThemedView style={styles.container}>
+      {/* Filter Dropdown */}
+      <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={styles.filterSelector}
+          onPress={() => setFilterOpen((v) => !v)}
+        >
+          <ThemedText>{selectedCategory}</ThemedText>
+          <Image
+            source={require("@/assets/images/expand.png")}
+            style={styles.filterIcon}
+          />
+        </TouchableOpacity>
+        {filterOpen && (
+          <ThemedView style={styles.filterOptions}>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                style={styles.filterOption}
+                onPress={() => {
+                  setSelectedCategory(cat);
+                  setFilterOpen(false);
+                }}
+              >
+                <ThemedText>{cat}</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
+        )}
+      </View>
+
       <FlatList
-        data={menuItems}
+        data={filteredItems}
         keyExtractor={(item) => item.mealId}
         renderItem={({ item }) => {
-          const selectedItem = list.find((i) => i.meal.mealId === item.mealId);
-          const currentQuantity = selectedItem ? selectedItem.quantity : 0;
+          const selected = list.find((i) => i.meal.mealId === item.mealId);
+          const qty = selected ? selected.quantity : 0;
           const imageKey = item.mealName.replace(/\s+/g, "");
           const sourceImage =
             mealImages[imageKey] ?? require("@/assets/images/no-pictures.png");
 
           return (
             <ThemedView style={styles.menuItem}>
-              {/* LEFT: Image */}
               <Image source={sourceImage} style={styles.listImage} resizeMode="cover" />
-
-              {/* MIDDLE: Text block */}
               <View style={styles.textContainer}>
                 <ThemedText style={styles.name}>{item.mealName}</ThemedText>
                 <ThemedText style={styles.category}>{item.category}</ThemedText>
                 <ThemedText style={styles.price}>{item.price.toFixed(2)} ₪</ThemedText>
-                {currentQuantity > 0 && (
-                  <ThemedText style={styles.quantity}>x{currentQuantity}</ThemedText>
-                )}
+                {qty > 0 && <ThemedText style={styles.quantity}>x{qty}</ThemedText>}
               </View>
-
-              {/* RIGHT: Add/Remove buttons – only when tableNumber ≥ 0 */}
               {tableNumber >= 0 && (
                 <View style={styles.buttonContainer}>
-                  <CurvedButton
-                    title="Add"
-                    action={() => addItemToList(item)}
-                    style={styles.addButton}
-                  />
-                  <CurvedButton
-                    title="Remove"
-                    action={() => removeItemFromList(item)}
-                    style={styles.removeButton}
-                  />
+                  <CurvedButton title="Add" action={() => addItemToList(item)} style={styles.addButton} />
+                  <CurvedButton title="Remove" action={() => removeItemFromList(item)} style={styles.removeButton} />
                 </View>
               )}
             </ThemedView>
           );
         }}
         ListFooterComponent={
-          <>
-          {tableNumber >= 0 && (
-          <>
-            <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
-
-            {list.length > 0 ? (
-            list.map((item) => (
-              <View key={item.meal.mealId} style={styles.selectedItem}>
-                <ThemedText>
-                  {item.meal.mealName} x {item.quantity}
-                </ThemedText>
-                <ThemedText>
-                  {(item.meal.price * item.quantity).toFixed(2)} ₪
-                </ThemedText>
-        </View>
-      ))
-    ) : (
-      <Text style={styles.emptyText}>No items selected.</Text>
-    )}
-
-    <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
-  </>
-)}
-            
-
-            {/* payment prompt + buttons only when tableNumber ≥ 0 */}
-            {tableNumber >= 0 && (
-              <>
-                <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
-                <ThemedView style={styles.paymentmethods}>
-                  <TouchableOpacity
-                    style={styles.paymeth}
-                    onPress={async () => {
-                      await handleSendOrder();
-                    }}
-                  >
-                    <Image
-                      source={require("@/assets/images/money.png")}
-                      style={styles.image}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.paymeth}
-                    onPress={async () => {
-                      await handleSendOrder();
-                    }}
-                  >
-                    <Image
-                      source={require("@/assets/images/payment-method.png")}
-                      style={styles.image}
-                    />
-                  </TouchableOpacity>
-                </ThemedView>
-              </>
-            )}
-          </>
+          tableNumber >= 0 ? (
+            <>
+              <ThemedText style={styles.subtitle}>Your Selections:</ThemedText>
+              {list.length > 0 ? (
+                list.map((i) => (
+                  <View key={i.meal.mealId} style={styles.selectedItem}>
+                    <ThemedText>
+                      {i.meal.mealName} x {i.quantity}
+                    </ThemedText>
+                    <ThemedText>{(i.meal.price * i.quantity).toFixed(2)} ₪</ThemedText>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyText}>No items selected.</Text>
+              )}
+              <ThemedText style={styles.total}>Total: {calculateTotal()} ₪</ThemedText>
+              <ThemedText style={styles.ptext}>So what's it gonna be?</ThemedText>
+              <ThemedView style={styles.paymentmethods}>
+                <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+                  <Image source={require("@/assets/images/money.png")} style={styles.image} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.paymeth} onPress={handleSendOrder}>
+                  <Image source={require("@/assets/images/payment-method.png")} style={styles.image} />
+                </TouchableOpacity>
+              </ThemedView>
+            </>
+          ) : null
         }
       />
     </ThemedView>
@@ -308,7 +297,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 30,
-  
   },
   loadingContainer: {
     flex: 1,
@@ -325,7 +313,41 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /***** LIST ITEM STYLES *****/
+  // Filter styles
+  filterContainer: {
+    marginVertical: 12,
+    zIndex: 10,
+  },
+  filterSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    padding: 10,
+   
+  },
+  filterIcon: {
+    width: 16,
+    height: 16,
+    marginLeft: 8,
+  },
+  filterOptions: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    
+  },
+  filterOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    
+  },
+
+  // Menu item styles
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -378,7 +400,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
 
-  /***** FOOTER & PAYMENT STYLES (unchanged) *****/
+  // Footer & payment
   subtitle: {
     fontSize: 20,
     fontWeight: "bold",

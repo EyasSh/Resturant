@@ -29,8 +29,8 @@ public class UserController : ControllerBase
      using services such as an email service ETC
      </summary>
     */
-    public UserController(MongoDBWrapper dBWrapper, IConfiguration conf
-    , IHubContext<SocketService> hubContext, EmailService emailService,
+    public UserController(MongoDBWrapper dBWrapper, 
+     EmailService emailService,
     SecurityManager securityManager
     )
     {

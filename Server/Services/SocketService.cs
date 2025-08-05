@@ -249,6 +249,7 @@ public class SocketService : Hub<IHubService>
     public async Task LeaveTable(int tableNumber)
     {
         var id = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
+        _tableToUser[tableNumber] = string.Empty;
         _tables[tableNumber - 1].UserId = string.Empty;
         _tables[tableNumber - 1].isOccupied = false;
         _tables[tableNumber - 1].UserName = string.Empty;

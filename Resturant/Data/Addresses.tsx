@@ -1,5 +1,5 @@
 const ip={
-    julian:"192.168.78.70".trim(), //Continue last digit here
+    julian:"192.168.253.70".trim(), //Continue last digit here
     nitc:"192.168.122.19" //Continue last digit here too
 }
 export default ip

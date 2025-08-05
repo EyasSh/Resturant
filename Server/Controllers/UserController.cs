@@ -16,10 +16,10 @@ namespace Server.Controllers;
 /// </summary>
 public class UserController : ControllerBase
 {
-    private readonly IHubContext<SocketService> _hubContext;
+   
     IMongoCollection<User> _users;
     IMongoCollection<Meal> _meals;
-    IMongoCollection<Table> _tables;
+    
     private readonly EmailService _emailService;
 
     private readonly SecurityManager _securityManager;
@@ -36,8 +36,7 @@ public class UserController : ControllerBase
     {
         _users = dBWrapper.Users;
         _meals = dBWrapper.Meals;
-        _tables = dBWrapper.Tables;
-        _hubContext = hubContext;
+        
         _emailService = emailService;
         _securityManager = securityManager;
     }

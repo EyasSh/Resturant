@@ -353,6 +353,7 @@ public class SocketService : Hub<IHubService>
     /// It checks if there are any messages stored for the table in the in-memory dictionary.
     /// If there are messages, it sends them to the waiter.
     /// Otherwise, it sends a failure message to the waiter.
+    /// This method is accessed by the waiter to get the needs of the users at a specific table.
     /// </remarks>
     public async Task GetUserNeeds(int tableNumber)
     {

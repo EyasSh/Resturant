@@ -7,8 +7,7 @@ import { NavigationProp } from "@/Routes/NavigationTypes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from '@microsoft/signalr';
 import CurvedButton from "./ui/CurvedButton";
-import { useRoute, RouteProp } from '@react-navigation/native';
-import { Order } from "@/Types/Order";
+
 
  export type TableProps = {
   tableNumber: number;
@@ -104,7 +103,6 @@ export default function TableCard(props: TableProps) {
    * - If the table is not occupied, it calls the callback function to assign the
    *   current user to the table.
    */
-
   const handlePress = async () => {
     if (!currentUserId) return;
 
@@ -127,6 +125,16 @@ export default function TableCard(props: TableProps) {
     }
   };
 
+/**
+ * Handles the event when the current user wants to leave the table.
+ * 
+ * @async
+ * @remarks
+ * This function first checks if there is a current user ID. If not, it returns early.
+ * It retrieves the user data from AsyncStorage to verify the user's identity.
+ * If the current user is the one assigned to the table and the `onLeaveTable` callback is provided,
+ * it invokes the callback to handle the leave action.
+ */
   const handleLeave = async () => {
     if (!currentUserId) return;
 

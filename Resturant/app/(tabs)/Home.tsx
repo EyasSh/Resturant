@@ -14,11 +14,22 @@ import { Order } from "@/Types/Order";
 import { Connection } from '@/Data/Hub';
 import ShowMessageOnPlat from '@/components/ui/ShowMessageOnPlat';
 import CurvedButton from '@/components/ui/CurvedButton';
-
 const screenWidth = Dimensions.get("window").width;
 const numColumns = screenWidth > 600 ? 3 : 2;
 const cardWidth = Math.max((screenWidth / numColumns) - 30, 150);
 
+/**
+ * The main page of the application, displaying a grid of table cards.
+ * 
+ * The component fetches the list of tables from the server upon mounting, and
+ * sets up SignalR event listeners for handling various server notifications
+ * (user connection, table occupation, table leaving, and order ready).
+ * 
+ * The component also handles the user assigning themselves to a table and
+ * leaving a table.
+ * 
+ * @returns {JSX.Element} The main page of the application.
+ */
 export default function MainPage() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [signalRConnection, setSignalRConnection] = useState<signalR.HubConnection | null>(null);
@@ -27,6 +38,10 @@ export default function MainPage() {
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
+  /**
+   * Fetches the list of tables from the server and updates the state with the result.
+   * The function also handles errors by displaying an alert to the user.
+   */
     const fetchTables = async () => {
       const token = await AsyncStorage.getItem("token");
       try {
@@ -41,6 +56,21 @@ export default function MainPage() {
       }
     };
 
+    /**
+     * Fetches the user data from AsyncStorage and updates the component's state
+     * with the user's id and name. If the user is found, the connect function is
+     * called to establish a SignalR connection using the user's id and name.
+     * If no user is found, an alert is displayed to the user.
+     * 
+     * @async
+     * @returns {Promise<void>} A Promise that resolves when the user data is successfully
+     * fetched and the state is updated, or rejects with an error if the request fails.
+     * 
+     * @remarks
+     * This function is called when the component mounts, and it is responsible for
+     * setting up the SignalR connection using the user's id and name. If the user
+     * is not found, an alert is displayed to the user.
+     */
     const fetchUser = async () => {
       const user = await AsyncStorage.getItem("user");
       if (user) {
@@ -77,7 +107,6 @@ useEffect(() => {
  * - "ReceiveOrderReadyMessage": Clears order information from AsyncStorage when 
  *   an order is ready, and writes a tombstone to prevent stale restores.
  */
-
   const registerListeners = () => {
     signalRConnection.off("ConnectNotification");
     signalRConnection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
@@ -153,6 +182,17 @@ useEffect(() => {
 }, [signalRConnection]);
 
 
+/**
+ * Establishes a SignalR connection with the server using the user's id and name.
+ * When the connection is established, it shows a message to the user and sets
+ * the component's state with the connection object.
+ * If the connection fails, it shows an alert to the user.
+ * @async
+ * @param {string} id The user's id to use for the SignalR connection.
+ * @param {string} name The user's name to use for the SignalR connection.
+ * @returns {Promise<void>} A Promise that resolves when the connection is established,
+ * or rejects with an error if the connection fails.
+ */
   const connect = async (id: string, name: string) => {
     if (!id) return;
     try {
@@ -171,6 +211,18 @@ useEffect(() => {
     }
   };
 
+/**
+ * Assigns a user to a specified table if they are not already seated at another table.
+ * 
+ * @async
+ * @param {string} userId - The ID of the user to be assigned to the table.
+ * @param {number} tableNumber - The number of the table to which the user should be assigned.
+ * 
+ * @remarks
+ * If the user is already seated at a different table, a message is shown and the function returns early.
+ * Otherwise, it invokes the SignalR method to assign the user to the table and navigates to the Menu screen.
+ * Displays an error message if an exception occurs during the process.
+ */
   const handleAssignUserToTable = async (userId: string, tableNumber: number) => {
     try {
       const existingTable = tables.find(t => t.userId === userId && t.tableNumber !== tableNumber);
@@ -186,6 +238,17 @@ useEffect(() => {
     }
   };
 
+/**
+ * Handles the event when a user wants to leave a table.
+ * 
+ * @async
+ * @param {number} tableNumber - The number of the table the user wants to leave.
+ * 
+ * @remarks
+ * If a SignalR connection is established, it invokes the 'LeaveTable' method on the server with the specified table number.
+ * Listens for the 'ReceiveTableLeaveMessage' event to update the table state and display a message to the user.
+ * Catches and handles errors occurring during the process, displaying an error message if the operation fails.
+ */
   const handleLeaveTable = async (tableNumber: number) => {
     try {
       if(signalRConnection){

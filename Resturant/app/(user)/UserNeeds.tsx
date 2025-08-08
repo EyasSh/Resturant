@@ -7,7 +7,6 @@ import { NeedMessageProps, SelectedNeedMessages } from "@/Types/NeedMessageProps
 import CurvedButton from "@/components/ui/CurvedButton";
 import { useRoute } from "@react-navigation/native";
 import { Connection } from "@/Data/Hub";
-import { QuickMessage } from "@/Types/QuickMessage";
 import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 
 /**

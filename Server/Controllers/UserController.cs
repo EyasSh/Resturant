@@ -4,11 +4,10 @@ using MongoDB.Driver;
 using Server.DB;
 using Server.Models;
 using Server.Services;
-using Microsoft.AspNetCore.SignalR;
 using Server.Security;
-using System.Net.Sockets;
 
 namespace Server.Controllers;
+
 [ApiController]
 [Route("api/user")] // Base route for all actions in this controller
 /// <summary>
@@ -16,10 +15,10 @@ namespace Server.Controllers;
 /// </summary>
 public class UserController : ControllerBase
 {
-   
+
     IMongoCollection<User> _users;
     IMongoCollection<Meal> _meals;
-    
+
     private readonly EmailService _emailService;
 
     private readonly SecurityManager _securityManager;
@@ -29,14 +28,14 @@ public class UserController : ControllerBase
      using services such as an email service ETC
      </summary>
     */
-    public UserController(MongoDBWrapper dBWrapper, 
+    public UserController(MongoDBWrapper dBWrapper,
      EmailService emailService,
     SecurityManager securityManager
     )
     {
         _users = dBWrapper.Users;
         _meals = dBWrapper.Meals;
-        
+
         _emailService = emailService;
         _securityManager = securityManager;
     }
@@ -91,7 +90,6 @@ public class UserController : ControllerBase
     /// </summary>
     /// <returns>A successful status code (200) if the sign-up request was
     /// successful.</returns>
-
     [AllowAnonymous]
     [HttpPost("signup")] // Route: api/user/signup
     public async Task<IActionResult> SignUp([FromBody] SignupRequest request)
@@ -176,7 +174,6 @@ public class UserController : ControllerBase
     /// This action is restricted to authorized users.
     /// </summary>
     /// <returns>A successful status code (200) along with the list of tables as a JSON payload.</returns>
-
     [Authorize]
     [HttpGet("tables")]
     public IActionResult GetTables()
@@ -197,6 +194,17 @@ public class WaiterController : ControllerBase
 {
     IMongoCollection<Waiter> _waiters;
     private readonly SecurityManager _securityManager;
+    /// <summary>
+    /// A controller for managing waiters and waiter actions in the system.
+    /// </summary>
+    /// <param name="dBWrapper">The MongoDB wrapper for the database.</param>
+    /// <param name="securityManager">The security manager for encrypting and decrypting passwords.</param>
+    /// <remarks>
+    /// The controller contains the following actions:
+    /// <list type="bullet">
+    /// <item><description>Authenticate a waiter and provide access to the system.</description></item>
+    /// </list>
+    /// </remarks>
     public WaiterController(MongoDBWrapper dBWrapper, SecurityManager securityManager)
     {
         _waiters = dBWrapper.Waiters;
@@ -254,6 +262,16 @@ public class OwnerController : ControllerBase
     IMongoCollection<QuickMessage> _messages;
     private readonly SocketService _socketService;
     private readonly SecurityManager _securityManager;
+    /// <summary>
+    /// A controller for managing restaurant owners and owner actions in the system.
+    /// The controller contains the following actions:
+    /// <list type="bullet">
+    /// <item><description>Authenticate an owner and provide access to the system.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="dBWrapper">An instance of the MongoDB wrapper class.</param>
+    /// <param name="securityManager">An instance of the security manager class.</param>
+    /// <param name="socketService">An instance of the socket service class.</param>
     public OwnerController(MongoDBWrapper dBWrapper, SecurityManager securityManager,
     SocketService socketService)
     {
@@ -499,7 +517,6 @@ public class OwnerController : ControllerBase
     /// or if shifting other table numbers is not possible due to occupied tables.
     /// The table is removed from the database and from the SocketService list if all conditions are met.
     /// </remarks>
-
     [Authorize]
     [HttpDelete("delete/tables")]
     public async Task<IActionResult> DeleteTable([FromQuery] int number)
@@ -648,7 +665,12 @@ public class OwnerController : ControllerBase
         return Ok(new { success = true, message = deleted.Message });
     }
 
-    // DELETE api/owner/delete/messages
+
+    /// <summary>
+    /// Deletes multiple quick messages from the database. This action is restricted to authorized users.
+    /// </summary>
+    /// <param name="request">Contains the list of quick message IDs to be deleted.</param>
+    /// <returns>A successful status code (200) with the count of deleted messages, or a bad request status code (400) if the restaurant is not empty or no IDs are provided, or a not found status code (404) if no messages are found for the given IDs.</returns>
     [HttpDelete("delete/messages")]
     public async Task<IActionResult> DeleteMessages([FromBody] BulkDeleteRequest request)
     {
@@ -672,11 +694,19 @@ public class OwnerController : ControllerBase
         return Ok(new { success = true, deletedCount = result.DeletedCount });
     }
 
+    /// <summary>
+    /// Checks whether the restaurant is empty by ensuring that all tables are not occupied and have no assigned user IDs.
+    /// </summary>
+    /// <returns>true if the restaurant is empty, false otherwise.</returns>
     private bool EnsureRestaurantEmpty()
     {
         return SocketService._tables.All(t => string.IsNullOrEmpty(t.UserId) && t.isOccupied == false);
     }
 
+    /// <summary>
+    /// Retrieves the list of quick messages from the database. This action is restricted to authorized users.
+    /// </summary>
+    /// <returns>A successful status code (200) along with the list of quick messages as a JSON payload.</returns>
     [Authorize]
     [HttpGet("messages")]
     public async Task<IActionResult> GetMessages()

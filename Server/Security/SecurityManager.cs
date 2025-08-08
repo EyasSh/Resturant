@@ -1,5 +1,3 @@
-using System;
-using BCrypt.Net;
 using Server.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,6 +12,15 @@ public class SecurityManager
 {
     private IConfiguration _conf;
     private EmailService _emailService;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SecurityManager"/> class.
+    /// </summary>
+    /// <param name="conf">The configuration settings.</param>
+    /// <param name="emailService">The email service used for sending emails.</param>
+    /// <remarks>
+    /// This constructor sets up the security manager with the necessary configuration and email service dependencies required for handling security operations such as JWT token generation and email-based two-factor authentication.
+    /// </remarks>
+
     public SecurityManager(IConfiguration conf, EmailService emailService)
     {
         _conf = conf;

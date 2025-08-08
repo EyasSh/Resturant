@@ -26,6 +26,15 @@ function PeakNeeds() {
     useEffect(() => {}, [needs]);
 
     useEffect(() => {
+/**
+ * Fetches the user needs messages for a specific table.
+ * 
+ * This function invokes the "GetUserNeeds" method on the SignalR connection 
+ * using the specified table number. It also listens for messages from the 
+ * server via the "ReceiveMessagesToWaiter" event, updating the state with 
+ * the received messages. If an error occurs during the process, it logs 
+ * the error to the console.
+ */
         const getNeeds = () => {
             try {
                 connection?.invoke("GetUserNeeds", tableNumber);

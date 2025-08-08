@@ -1,11 +1,10 @@
 import { useState } from "react";
 import ip from "../../../Data/Addresses";
-import {router} from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import ThemedInput from "@/components/ThemedInput";
 import CurvedButton from "@/components/ui/CurvedButton";
-import { StyleSheet, ToastAndroid } from "react-native";
+import { StyleSheet} from "react-native";
 import Logo from "@/components/ui/Logo";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";

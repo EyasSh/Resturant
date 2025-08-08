@@ -48,6 +48,9 @@ public class ProtoOrder
         Quantity = quantity;
     }
 }
+/// <summary>
+/// Represents an order in the restaurant.
+/// </summary>
 public class Order
 {
     [BsonId]
@@ -61,6 +64,14 @@ public class Order
     public double Total { get; set; } = 0;
     public bool IsReady { get; set; } = false;
     public Order() { }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Order"/> class.
+    /// </summary>
+    /// <param name="orders">The orders.</param>
+    /// <remarks>
+    /// This constructor is used to create a new order
+    /// directly from an array of ProtoOrders.
+    /// </remarks>
     public Order(ProtoOrder[] orders)
     {
         Orders = orders;

@@ -1,7 +1,11 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace Server.Models;
-
+/// <summary>
+/// Represents a table in the restaurant.
+/// This class is used to encapsulate the properties of a table, including its number, associated waiter, user, and occupancy status.
+/// It also includes properties to indicate whether the table is window-side and its capacity.
+/// </summary>
 public class Table
 {
     [BsonId]

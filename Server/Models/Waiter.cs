@@ -1,6 +1,9 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace Server.Models;
+/// <summary>
+/// Represents a waiter in the restaurant.
+/// </summary>
 public class Waiter
 {
     [BsonId]
@@ -25,6 +28,9 @@ public class Waiter
         Phone = phone;
     }
 }
+/// <summary>
+/// Represents an owner in the restaurant.
+/// </summary>
 public class Owner : Waiter
 {
     [BsonElement("restaurantNumber")]

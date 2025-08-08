@@ -509,7 +509,6 @@ public class SocketService : Hub<IHubService>
     /// Asynchronously fetches a list of quick messages from the message collection in the database.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation, containing a list of QuickMessage objects.</returns>
-
     private async Task<List<QuickMessage>> FetchMessages()
     {
         var msgs = await _messageCollection.Find(_ => true).ToListAsync();
@@ -525,7 +524,6 @@ public class SocketService : Hub<IHubService>
     /// The HTML includes a styled table listing each meal item with its quantity, price, and line total,
     /// along with the overall total price of the order. The currency is formatted in shekels (₪).
     /// </remarks>
-
     private string GenerateEmailRecieptString(Order order)
     {
         if (order == null || order.Orders == null || order.Orders.Length == 0)

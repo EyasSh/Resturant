@@ -63,6 +63,14 @@ export default function Menu() {
   const categories = ["All", ...items.map((i) => i.value)];
 
   useEffect(() => {
+/**
+ * Waits for the SignalR hub connection to reach the "Connected" state within a specified timeout period.
+ *
+ * @param {number} [timeout=5000] - The maximum time to wait for the hub connection in milliseconds.
+ * @returns {Promise<signalR.HubConnection | null>} - A promise that resolves to the connected hub instance
+ * if successful, or null if the timeout is reached before the connection is established.
+ */
+
   async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
     const start = Date.now();
     return new Promise((resolve) => {
@@ -78,6 +86,18 @@ export default function Menu() {
       }, 100);
     });
   }
+
+/**
+ * Initializes the menu component by performing several tasks:
+ * - Sets loading state to true at the beginning and false at the end.
+ * - Checks for and handles "tombstone" entries in AsyncStorage to determine if 
+ *   a previously ready order exists, clearing stale orders if necessary.
+ * - Restores a saved order from AsyncStorage for the current table if no 
+ *   tombstone is handled and the order is not ready.
+ * - Fetches and sets the menu items from the server using the user's authentication token.
+ * - Attempts to establish a SignalR hub connection for real-time updates.
+ * - Handles errors by setting an error state with the error message.
+ */
 
   async function init() {
     try {
@@ -156,6 +176,14 @@ export default function Menu() {
   // Persist the current draft ONLY while not ready.
   useEffect(() => {
     if (tableNumber < 0) return; // browsing menu, no table
+    
+    /**
+     * Persists the current draft order to AsyncStorage.
+     * If the list is empty, it simply removes the stored order.
+     * Otherwise, it computes the total and stores a draft order
+     * with the table number, orders, total, and readiness status.
+     * Ignores any storage errors.
+     */
     const persist = async () => {
       try {
         if (list.length === 0) {
@@ -183,6 +211,13 @@ export default function Menu() {
   useEffect(() => {
     if (!hubConnection) return;
 
+    /**
+     * Called by the hub when the order has been successfully stored.
+     * If `isOkay` is true, shows a success message with the table number.
+     * If `isOkay` is false, shows a failure message.
+     * @param {boolean} isOkay Whether the order was stored successfully.
+     * @param {Order} order The order that was stored.
+     */
     const onSuccess = (isOkay: boolean, order: Order) => {
       if (isOkay) {
         ShowMessageOnPlat(`Order sent successfully for table ${order.tableNumber}`);
@@ -202,6 +237,15 @@ export default function Menu() {
   useEffect(() => {
     if (!hubConnection) return;
 
+/**
+ * Handles the event when an order becomes ready.
+ * 
+ * Clears the local storage for the order and updates the UI to reflect that 
+ * the order is ready, specifically for the current table.
+ * 
+ * @param {Order} order - The order object that has been marked as ready.
+ * @param {number} tblNum - The table number associated with the order.
+ */
     const onOrderReady = async (order: Order, tblNum: number) => {
       if (!order) return;
       if (order.tableNumber !== tableNumber) return;
@@ -220,6 +264,16 @@ export default function Menu() {
     return () => hubConnection.off("ReceiveOrderReadyMessage", onOrderReady);
   }, [hubConnection, tableNumber]);
 
+  /**
+   * Handles the button press for sending the order to the server.
+   * @function
+   * @async
+   * @throws {Error} If the hub connection is not connected or there is an error sending the order.
+   * @description
+   * If the table number is 0 or there are no items in the list, shows an alert with instructions.
+   * If the hub connection is not connected, shows an alert with the hub connection state.
+   * Otherwise, sends the order to the server and stores it in the local storage until the order is ready.
+   */
   const handleSendOrder = async () => {
     if (tableNumber === 0 || list.length === 0) {
       alert(
@@ -241,12 +295,21 @@ export default function Menu() {
     try {
       await hubConnection.invoke("OrderMeal", order);
       await AsyncStorage.setItem("order", JSON.stringify(order)); // ensure it's there until ready
+      navigation.pop();
     } catch (err) {
       console.error("Failed to send order:", err);
       alert("Error sending order to the server.");
     }
   };
 
+  /**
+   * Adds a meal to the list of items to order.
+   * @param {Meal} item The meal to add to the list.
+   * @description
+   * If the meal is already in the list, increments the quantity of that meal.
+   * Otherwise, adds the meal to the list with a quantity of 1.
+   * @returns {void}
+   */
   function addItemToList(item: Meal) {
     setList((prev) => {
       const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
@@ -259,6 +322,14 @@ export default function Menu() {
     });
   }
 
+  /**
+   * Removes a meal from the list of items to order.
+   * @param {Meal} item The meal to remove from the list.
+   * @description
+   * If the meal is in the list and has a quantity greater than 1, decrements the quantity.
+   * Otherwise, removes the meal from the list.
+   * @returns {void}
+   */
   function removeItemFromList(item: Meal) {
     setList((prev) => {
       const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
@@ -274,6 +345,10 @@ export default function Menu() {
     });
   }
 
+  /**
+   * Calculates the total price of all items in the list.
+   * @returns {string} The total price as a string, rounded to two decimal places.
+   */
   function calculateTotal() {
     return list.reduce((sum, i) => sum + i.meal.price * i.quantity, 0).toFixed(2);
   }

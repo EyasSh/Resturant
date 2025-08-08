@@ -5,10 +5,18 @@ import ip from "@/Data/Addresses";
 export class Connection {
   private static hub: signalR.HubConnection | null = null;
 
+  /**
+   * Sets the active hub connection.
+   * @param conn The active hub connection.
+   */
   public static setHub(conn: signalR.HubConnection) {
     this.hub = conn;
   }
 
+  /**
+   * Gets the active hub connection.
+   * @returns The active hub connection.
+   */
   public static getHub() {
     return this.hub;
   }

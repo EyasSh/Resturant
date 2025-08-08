@@ -43,7 +43,9 @@ function RemoveQuickMessage() {
     if (Platform.OS === 'android') ToastAndroid.show(msg, ToastAndroid.SHORT);
     else Alert.alert(msg);
   };
-
+/**
+ * Fetches the quick messages from the server.
+ */
   const fetchQuickMessages = useCallback(async () => {
     setLoading(true);
     try {
@@ -64,12 +66,19 @@ function RemoveQuickMessage() {
     fetchQuickMessages();
   }, [fetchQuickMessages]);
 
+  /**
+   * Toggles the selection of a quick message.
+   * @param {string} id The ID of the quick message to toggle.
+   */
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   }, []);
 
+  /**
+   * Removes the selected quick messages from the server.
+   */
   const handleRemove = useCallback(async () => {
     if (!selectedIds.length) return;
     setRemoving(true);

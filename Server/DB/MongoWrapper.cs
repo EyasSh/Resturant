@@ -17,6 +17,11 @@ public class MongoDBWrapper
     public IMongoCollection<Table> Tables { get; init; }
     public IMongoCollection<QuickMessage> QuickMessages { get; init; }
 
+    /// <summary>
+    /// Initializes the MongoDB client and database, and sets up collections.
+    /// </summary>
+    /// <param name="configuration">The configuration to use for setting up the MongoDB client and database.</param>
+    /// <exception cref="ArgumentException">Thrown if the MongoDB configuration is missing or invalid.</exception>
     public MongoDBWrapper(IConfiguration configuration)
     {
         // Fetch values directly using GetValue<T>

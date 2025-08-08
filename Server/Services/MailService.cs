@@ -3,6 +3,10 @@ using Mailjet.Client.Resources;
 using Newtonsoft.Json.Linq;
 namespace Server.Services
 {
+    /// <summary>
+    /// Represents a service for sending emails using the Mailjet API.
+    /// This service is initialized with the Mailjet API key and secret from the configuration.
+    /// </summary>
     public class EmailService
     {
         public string? _apiKey = "";

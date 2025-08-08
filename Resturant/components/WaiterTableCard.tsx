@@ -6,6 +6,26 @@ import { ThemedText } from './ThemedText';
 import CurvedButton from '@/components/ui/CurvedButton';
 import { WaiterTableProps } from '@/Types/WaiterTableProps';
 
+/**
+ * A table card for waiters.
+ *
+ * This component displays a table number, occupation status, and a main button that
+ * allows a waiter to wait a table if it is free or leave a table if they are
+ * currently waiting it. If the waiter is waiting the table, they will also see
+ * additional actions to peak at the customer's needs or order, or to mark the order
+ * as ready.
+ *
+ * @param {WaiterTableProps} props - The properties for this component:
+ *   - `tableNumber`: The number of the table.
+ *   - `waiterid`: The id of the waiter currently waiting the table, if any.
+ *   - `isOccupied`: Whether the table is occupied by a customer.
+ *   - `userName`: The username of the waiter currently waiting the table.
+ *   - `occupyAction`: An action to wait the table.
+ *   - `leaveAction`: An action to leave the table.
+ *   - `peakOrderAction`: An action to peak at the customer's order.
+ *   - `peakNeedAction`: An action to peak at the customer's needs.
+ *   - `markOrderReadyAction`: An action to mark the order as ready.
+ */
 export default function WaiterTableCard(props: WaiterTableProps) {
   const { tableNumber, waiterid, isOccupied, userName } = props;
 
@@ -13,6 +33,16 @@ export default function WaiterTableCard(props: WaiterTableProps) {
   const [currWaiterId, setCurrWaiterId] = useState<string | null>(null);
 
   useEffect(() => {
+/**
+ * Retrieves the current waiter's ID from AsyncStorage and updates the component's state.
+ *
+ * @async
+ * @returns {Promise<void>} A promise that resolves when the waiter ID is successfully fetched and updated in the state.
+ *
+ * @remarks
+ * This function accesses AsyncStorage to obtain the stored waiter object, parses it to extract the waiter's ID, and sets the state with the retrieved ID. If no waiter object is found, the state is updated with null.
+ */
+
     const getId = async () => {
       const stored = await AsyncStorage.getItem('waiter');
       const id = stored ? JSON.parse(stored).id : null;
@@ -29,6 +59,14 @@ export default function WaiterTableCard(props: WaiterTableProps) {
   if (isFree) mainButtonText = 'Wait Table';
   else if (isSelf) mainButtonText = 'Leave Table';
 
+  /**
+   * Handles the main button action for the WaiterTableCard component.
+   *
+   * If the table is free, waits the table by calling the occupyAction
+   * prop. If the table is being waited by the current waiter, leaves the
+   * table by calling the leaveAction prop. If someone else is waiting, does
+   * nothing.
+   */
   const mainButtonAction = () => {
     if (isFree) {
       // Wait table

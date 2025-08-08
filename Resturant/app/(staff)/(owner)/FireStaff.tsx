@@ -33,7 +33,6 @@ export default function FireStaff() {
  * maps the waiters' data to ensure proper handling of various field names and updates
  * the state with the list of waiters. If an error occurs, it is caught and handled.
  */
-
     const fetchWaiters = async () => {
         try {
             const token = await AsyncStorage.getItem('token');

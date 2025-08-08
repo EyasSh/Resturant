@@ -74,7 +74,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 });
 
 
-// CORS Policy
+/// <summary>
+/// Configures CORS policy to allow requests from specific origins.
+/// </summary>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllHosts", policy =>

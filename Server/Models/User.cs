@@ -2,6 +2,9 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace Server.Models
 {
+    /// <summary>
+    /// Represents a user in the system.
+    /// </summary>
     public class User
     {
         [BsonId]

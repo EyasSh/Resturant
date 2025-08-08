@@ -61,6 +61,10 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
+  /**
+   * Clean AsyncStorage by clearing all stored data. This is mainly used
+   * for debugging purposes when we want to start fresh.
+   */
     const clean= async()=>{
       await AsyncStorage.clear();
       console.log("AsyncStorage cleared");

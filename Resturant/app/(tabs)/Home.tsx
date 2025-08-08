@@ -57,53 +57,101 @@ export default function MainPage() {
     fetchTables();
   }, []);
 
-  useEffect(() => {
-    if (!signalRConnection) return;
+useEffect(() => {
+  if (!signalRConnection) return;
 
-    const registerListeners = () => {
-      signalRConnection.off("ConnectNotification");
-      signalRConnection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
+/**
+ * Registers SignalR event listeners for handling various server notifications.
+ * 
+ * The listeners handle the following events:
+ * 
+ * - "ConnectNotification": Updates the table state and stores the session ID 
+ *   in AsyncStorage upon successful connection.
+ * 
+ * - "ReceiveTableMessage": Updates the table state and displays a message when 
+ *   a user occupies a table.
+ * 
+ * - "ReceiveTableLeaveMessage": Updates the table state when a user leaves a 
+ *   table.
+ * 
+ * - "ReceiveOrderReadyMessage": Clears order information from AsyncStorage when 
+ *   an order is ready, and writes a tombstone to prevent stale restores.
+ */
+
+  const registerListeners = () => {
+    signalRConnection.off("ConnectNotification");
+    signalRConnection.on("ConnectNotification", async (sid: string, isOkay: boolean, tables: TableProps[]) => {
+      if (isOkay) {
+        ShowMessageOnPlat("Connected to the server");
+        await AsyncStorage.setItem("sid", sid);
+        setTables(tables);
+      }
+    });
+
+    signalRConnection.off("ReceiveTableMessage");
+    signalRConnection.on(
+      "ReceiveTableMessage",
+      (message: string, isOkay: boolean, userId: string, tableNumber: number, tables: TableProps[]) => {
         if (isOkay) {
-          ShowMessageOnPlat("Connected to the server");
-          await AsyncStorage.setItem("sid", sid);
           setTables(tables);
+          ShowMessageOnPlat(`Table ${tableNumber} is now occupied by user ${userId}`);
         }
-      });
+      }
+    );
 
-      signalRConnection.off("ReceiveTableMessage");
-      signalRConnection.on("ReceiveTableMessage",
-        (message: string, isOkay: boolean, userId: string, tableNumber: number, tables: TableProps[]) => {
-          if (isOkay) {
-            setTables(tables);
-            ShowMessageOnPlat(`Table ${tableNumber} is now occupied by user ${userId}`);
+    signalRConnection.off("ReceiveTableLeaveMessage");
+    signalRConnection.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
+      setTables(tables);
+    });
+
+    // 🔧 Re-engineered: make Home nuke storage exactly like Menu does + add a tombstone
+    signalRConnection.off("ReceiveOrderReadyMessage");
+    signalRConnection.on("ReceiveOrderReadyMessage", async (order: Order, tableNumber: number) => {
+      try {
+        // Only clear if the saved order matches this table
+        const raw = await AsyncStorage.getItem("order");
+        if (raw) {
+          const local: Order = JSON.parse(raw);
+          if (local.tableNumber === order.tableNumber) {
+            await AsyncStorage.removeItem("order");
+
+            // Verify removal; if some race re-wrote it, force an empty/ready object
+            const check = await AsyncStorage.getItem("order");
+            if (check) {
+              const tombstone: Order = {
+                tableNumber: order.tableNumber,
+                orders: [],
+                total: 0,
+                isReady: true,
+              };
+              await AsyncStorage.setItem("order", JSON.stringify(tombstone));
+            }
           }
         }
-      );
 
-      signalRConnection.off("ReceiveTableLeaveMessage");
-      signalRConnection.on("ReceiveTableLeaveMessage", (tables: TableProps[]) => {
-        setTables(tables);
-      });
+        // Write a tombstone (defensive): if Menu mounts later, it can choose to ignore stale restores
+        await AsyncStorage.setItem(
+          "order:tombstone",
+          JSON.stringify({ tableNumber: order.tableNumber, ts: Date.now() })
+        );
+      } catch {
+        // swallow
+      } finally {
+        ShowMessageOnPlat(`Order is ready at table ${tableNumber}`);
+      }
+    });
+  };
 
-      // Critical: when order becomes ready, delete customer's local "order"
-      signalRConnection.off("ReceiveOrderReadyMessage");
-      signalRConnection.on("ReceiveOrderReadyMessage", async (_order: Order, _tableNumber: number) => {
-        try {
-          await AsyncStorage.removeItem("order");
-        } catch {}
-        ShowMessageOnPlat(`Order is ready at table ${_tableNumber}`);
-      });
-    };
+  registerListeners();
 
-    registerListeners();
+  return () => {
+    signalRConnection.off("ConnectNotification");
+    signalRConnection.off("ReceiveTableMessage");
+    signalRConnection.off("ReceiveTableLeaveMessage");
+    signalRConnection.off("ReceiveOrderReadyMessage");
+  };
+}, [signalRConnection]);
 
-    return () => {
-      signalRConnection.off("ConnectNotification");
-      signalRConnection.off("ReceiveTableMessage");
-      signalRConnection.off("ReceiveTableLeaveMessage");
-      signalRConnection.off("ReceiveOrderReadyMessage");
-    };
-  }, [signalRConnection]);
 
   const connect = async (id: string, name: string) => {
     if (!id) return;

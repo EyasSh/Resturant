@@ -6,6 +6,13 @@ using Microsoft.AspNetCore.SignalR;
 using MongoDB.Driver;
 using Server.DB;
 using Server.Models;
+using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Net;
+using System.Globalization;
+
 /// <summary>
 /// Interface for the SignalR hub service.
 /// </summary>
@@ -25,31 +32,79 @@ public interface IHubService
     Task ReceiveMessagesToWaiter(string[] msgs);
     Task ReceiveSuccessOrFail(string message);
 }
+
 /// <summary>
 /// SignalR service for handling real-time communication between clients.
 /// </summary>
 public class SocketService : Hub<IHubService>
 {
-    public SocketService(MongoDBWrapper dBWrapper)
+    public SocketService(MongoDBWrapper dBWrapper, IConfiguration configuration)
     {
         _tableCollection = dBWrapper.Tables;
         _messageCollection = dBWrapper.QuickMessages;
+        _userCollection = dBWrapper.Users;
+
+        _emailService = new EmailService(configuration);
     }
+
     IMongoCollection<Table> _tableCollection;
     IMongoCollection<QuickMessage> _messageCollection;
-    public static readonly ConcurrentDictionary<string, string> _userConnections = new(); // sid => MongoDB ID
-    public static readonly ConcurrentDictionary<string, string> _waiterConnections = new(); // sid => MongoDB ID
-    public static readonly ConcurrentDictionary<string, string> _ownerConnections = new(); // sid => MongoDB ID
-    public static readonly ConcurrentDictionary<string, HashSet<string>> _userids2sid = new(); // MongoDB ID => Set of sids
-    public static readonly ConcurrentDictionary<string, HashSet<string>> _waiterids2sid = new(); // MongoDB ID => Set of sids
-    public static readonly ConcurrentDictionary<string, string> _tableConnections = new(); // Table ID => Waiter ID
-    public static List<Table> _tables = new(); // List of tables
-    public static List<Order?> _orders = new(); // List of orders
+    IMongoCollection<User> _userCollection;
 
-    // Map tables to assigned users and waiters
-    public static readonly ConcurrentDictionary<int, string> _tableToUser = new(); // Table ID => User ID
-    public static readonly ConcurrentDictionary<int, string> _tableToWaiter = new(); // Table ID => Waiter ID
-    public static ConcurrentDictionary<string, SelectedNeedMessages> tableToNeeds = new(); //Table number=> needs of the user
+    EmailService _emailService;
+
+    public static readonly ConcurrentDictionary<string, string> _userConnections = new();   // sid => MongoDB User ID
+    public static readonly ConcurrentDictionary<string, string> _waiterConnections = new(); // sid => MongoDB Waiter ID
+    public static readonly ConcurrentDictionary<string, string> _ownerConnections = new();  // sid => MongoDB Owner ID
+
+    public static readonly ConcurrentDictionary<string, HashSet<string>> _userids2sid = new();   // UserID => set of sids
+    public static readonly ConcurrentDictionary<string, HashSet<string>> _waiterids2sid = new(); // WaiterID => set of sids
+
+    public static readonly ConcurrentDictionary<int, string> _tableToUser = new();   // TableNumber => UserID
+    public static readonly ConcurrentDictionary<int, string> _tableToWaiter = new(); // TableNumber => WaiterID
+
+    public static readonly ConcurrentDictionary<string, SelectedNeedMessages> tableToNeeds = new(); // TableNumber(string) => needs
+
+    public static List<Table> _tables = new();   // In-memory tables snapshot
+    public static List<Order?> _orders = new();  // In-memory orders per table index (tableNumber - 1)
+
+    #region Group Helpers (use connectionIds, not userId/waiterId)
+    private Task AddUserToTableGroup(string userId, int tableNumber)
+    {
+        if (_userids2sid.TryGetValue(userId, out var sids) && sids.Count > 0)
+        {
+            return Task.WhenAll(sids.Select(sid => Groups.AddToGroupAsync(sid, tableNumber.ToString())));
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveUserFromTableGroup(string userId, int tableNumber)
+    {
+        if (_userids2sid.TryGetValue(userId, out var sids) && sids.Count > 0)
+        {
+            return Task.WhenAll(sids.Select(sid => Groups.RemoveFromGroupAsync(sid, tableNumber.ToString())));
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task AddWaiterToTableGroup(string waiterId, int tableNumber)
+    {
+        if (_waiterids2sid.TryGetValue(waiterId, out var sids) && sids.Count > 0)
+        {
+            return Task.WhenAll(sids.Select(sid => Groups.AddToGroupAsync(sid, tableNumber.ToString())));
+        }
+        return Task.CompletedTask;
+    }
+
+    private Task RemoveWaiterFromTableGroup(string waiterId, int tableNumber)
+    {
+        if (_waiterids2sid.TryGetValue(waiterId, out var sids) && sids.Count > 0)
+        {
+            return Task.WhenAll(sids.Select(sid => Groups.RemoveFromGroupAsync(sid, tableNumber.ToString())));
+        }
+        return Task.CompletedTask;
+    }
+    #endregion
 
     /// <summary>
     /// Called when a new connection is established.
@@ -65,11 +120,10 @@ public class SocketService : Hub<IHubService>
     {
         if (_tables.Count == 0 || _tableCollection.CountDocuments(FilterDefinition<Table>.Empty) == 0)
         {
-            System.Console.WriteLine("Tables are null or empty.");
+            Console.WriteLine("Tables are null or empty.");
             _tables.Clear();
             _tables.AddRange(await _tableCollection.Find(_ => true).ToListAsync());
             _orders = Enumerable.Repeat<Order?>(null, _tables.Count).ToList();
-
         }
 
         var sid = Context.ConnectionId;
@@ -84,7 +138,6 @@ public class SocketService : Hub<IHubService>
                     var waiterid = httpContext.Request.Query["waiterid"].ToString() ?? string.Empty;
                     _waiterConnections[sid] = waiterid;
 
-                    // Add or update sid in HashSet
                     _waiterids2sid.AddOrUpdate(waiterid,
                         new HashSet<string> { sid },
                         (key, existingSids) =>
@@ -104,14 +157,12 @@ public class SocketService : Hub<IHubService>
 
                     Console.WriteLine($"Owner connected sid: {sid}\n ownerid: {ownerId}");
                     await Clients.Caller.ConnectNotification(sid, true, _tables);
-
                 }
                 else if (privilageLevel == "user" && httpContext.Request.Query.ContainsKey("userid"))
                 {
                     var userid = httpContext.Request.Query["userid"].ToString() ?? string.Empty;
                     _userConnections[sid] = userid;
 
-                    // Add or update sid in HashSet
                     _userids2sid.AddOrUpdate(userid,
                         new HashSet<string> { sid },
                         (key, existingSids) =>
@@ -144,21 +195,27 @@ public class SocketService : Hub<IHubService>
         Console.WriteLine($"Assigning user {userId} to table {tableNumber}");
         var sid = Context.ConnectionId;
 
-        // Check if user is already in a table
+        // If user already seated, notify caller
         if (_tables.Count > 0 && _tables.Any(t => t.UserId == userId) && _tableToUser.Any(kv => kv.Value == userId))
         {
             await Clients.Caller.ReceiveTableMessage("User Already in a table.", false, userId, 0, _tables);
+            return;
         }
-        // Assign user to a table if he is not already in one
+
+        // Assign user
         _tableToUser[tableNumber] = userId;
-        _tables[tableNumber - 1].UserId = userId;
-        _tables[tableNumber - 1].CheckOccupation();
-        _tables[tableNumber - 1].UserName = Context.GetHttpContext()?.Request.Query["name"].ToString() ?? string.Empty;
-        System.Console.WriteLine($"User {userId} assigned to Table {tableNumber}, isOccupied: {_tables[tableNumber - 1].isOccupied}");
-        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
+        var idx = tableNumber - 1;
+        _tables[idx].UserId = userId;
+        _tables[idx].CheckOccupation();
+        _tables[idx].UserName = Context.GetHttpContext()?.Request.Query["name"].ToString() ?? string.Empty;
+
+        // Add ALL current connections for this user to the table group
+        await AddUserToTableGroup(userId, tableNumber);
+
         await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true, userId, tableNumber, _tables);
-        System.Console.WriteLine($"User {userId} joined Table {tableNumber}");
-        // Store user ID in dictionary
+        Console.WriteLine($"User {userId} joined Table {tableNumber}");
+
+        // Track this connection
         _userConnections[sid] = userId;
         _userids2sid.AddOrUpdate(userId,
             new HashSet<string> { sid },
@@ -168,6 +225,7 @@ public class SocketService : Hub<IHubService>
                 return existingSids;
             });
     }
+
     /// <summary>
     /// Sends the given quick messages to the waiter of the given table number.
     /// </summary>
@@ -178,36 +236,36 @@ public class SocketService : Hub<IHubService>
     {
         try
         {
-            if (_tables[needs.TableNumber - 1].WaiterId == null || _tables[needs.TableNumber - 1].WaiterId == string.Empty)
+            if (string.IsNullOrEmpty(_tables[needs.TableNumber - 1].WaiterId))
             {
                 await Clients.Caller.ReceiveSuccessOrFail("No waiter assigned to this table.");
                 return;
             }
-            System.Console.WriteLine($"Sending messages to waiter for Table {needs.TableNumber}");
+
+            Console.WriteLine($"Sending messages to waiter for Table {needs.TableNumber}");
             if (needs.messages == null || needs.messages.Length == 0)
             {
                 await Clients.Caller.ReceiveSuccessOrFail("No messages to send.");
                 return;
             }
-            // Store the messages in the dictionary
+
+            // Store messages
             tableToNeeds.AddOrUpdate(needs.TableNumber.ToString(), needs, (key, oldValue) => needs);
+
+            // Send to table group (will reach waiter if assigned to group)
             await Clients.Group(needs.TableNumber.ToString()).ReceiveMessagesToWaiter(needs.messages);
             await Clients.Caller.ReceiveSuccessOrFail("Messages sent to waiter successfully.");
         }
         catch (Exception ex)
         {
-            System.Console.WriteLine($"Error sending messages to waiter: {ex.Message}");
+            Console.WriteLine($"Error sending messages to waiter: {ex.Message}");
             await Clients.Caller.ReceiveSuccessOrFail($"Failed to send messages: {ex.Message}.");
         }
         finally
         {
-            System.Console.WriteLine($"Finished sending messages to waiter for Table {needs.TableNumber}");
-
+            Console.WriteLine($"Finished sending messages to waiter for Table {needs.TableNumber}");
         }
-
-
     }
-
 
     /// <summary>
     /// Sends a meal order to the server.
@@ -223,9 +281,10 @@ public class SocketService : Hub<IHubService>
         if (order != null && order.Orders != null)
         {
             int tableNumber = order.TableNumber;
-            System.Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
-            _orders[order.TableNumber - 1] = order;
+            Console.WriteLine($"Order for Table {tableNumber} received: {order.Orders.Length} items");
+            _orders[tableNumber - 1] = order;
             await Clients.Caller.ReceiveOrderSuccessMessage(true, order);
+
             var context = Context.GetHttpContext();
             if (context == null) return;
             string id = context.Request.Query["userid"].ToString() ?? string.Empty;
@@ -236,8 +295,8 @@ public class SocketService : Hub<IHubService>
             Console.WriteLine("Order is null.");
             await Clients.Caller.ReceiveOrderSuccessMessage(false, null);
         }
-
     }
+
     /// <summary>
     /// Removes the user from the table and sends a message to all users about the table's updated status.
     /// </summary>
@@ -248,42 +307,40 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public async Task LeaveTable(int tableNumber)
     {
-        var id = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
-        _tableToUser[tableNumber] = string.Empty;
-        _tables[tableNumber - 1].UserId = string.Empty;
-        _tables[tableNumber - 1].isOccupied = false;
-        _tables[tableNumber - 1].UserName = string.Empty;
-        await Clients.All.ReceiveTableLeaveMessage(_tables);
-        await Groups.RemoveFromGroupAsync(id, tableNumber.ToString());
-        _orders[tableNumber - 1] = null; // Clear the order for the table
-        await Clients.All.ReceiveOrders(_orders); // Send updated orders to all clients
-        tableToNeeds.TryRemove(tableNumber.ToString(), out _); // Clear the messages for the table
-        _orders[tableNumber - 1] = null; // Clear the order for the table
-        await Clients.All.ReceiveOrders(_orders); // Send updated orders to all clients
-        System.Console.WriteLine($"User {id} left Table {tableNumber}");
+        var userId = Context.GetHttpContext()?.Request.Query["userid"].ToString() ?? string.Empty;
 
+        _tableToUser[tableNumber] = string.Empty;
+        var idx = tableNumber - 1;
+        _tables[idx].UserId = string.Empty;
+        _tables[idx].isOccupied = false;
+        _tables[idx].UserName = string.Empty;
+
+        // Remove ALL user connections from the table group
+        await RemoveUserFromTableGroup(userId, tableNumber);
+
+        // Clear order for the table (once)
+        _orders[idx] = null;
+        await Clients.All.ReceiveOrders(_orders);
+
+        // Clear needs
+        tableToNeeds.TryRemove(tableNumber.ToString(), out _);
+
+        await Clients.All.ReceiveTableLeaveMessage(_tables);
+        Console.WriteLine($"User {userId} left Table {tableNumber}");
     }
+
     /// <summary>
     /// Assigns a waiter to a table and adds them to the SignalR group.
     /// </summary>
     public async Task AssignWaiterToTable(string waiterId, int tableNumber)
     {
-        // grab context values
-        var httpWaiterId = Context.GetHttpContext()
-                                 ?.Request
-                                 .Query["waiterid"]
-                                 .ToString()
-                             ?? string.Empty;
+        var httpWaiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
         var connectionId = Context.ConnectionId;
 
-        // validate tableNumber
         var idx = tableNumber - 1;
         if (idx < 0 || idx >= _tables.Count)
         {
-            await Clients.Caller
-                         .ReceiveWaiterAssignMessage(
-                             $"Invalid table number: {tableNumber}",
-                             _tables);
+            await Clients.Caller.ReceiveWaiterAssignMessage($"Invalid table number: {tableNumber}", _tables);
             return;
         }
 
@@ -292,10 +349,7 @@ public class SocketService : Hub<IHubService>
         // only assign if there is no waiter yet
         if (!string.IsNullOrEmpty(table.WaiterId))
         {
-            await Clients.Caller
-                         .ReceiveWaiterAssignMessage(
-                             $"Table {tableNumber} is already occupied by waiter {table.WaiterId}",
-                             _tables);
+            await Clients.Caller.ReceiveWaiterAssignMessage($"Table {tableNumber} is already occupied by waiter {table.WaiterId}", _tables);
             return;
         }
 
@@ -303,35 +357,21 @@ public class SocketService : Hub<IHubService>
         table.WaiterId = waiterId;
         _tableToWaiter[tableNumber] = waiterId;
 
-        // add the connection to the group for that table
-        await Groups.AddToGroupAsync(connectionId, tableNumber.ToString());
+        // Add ALL waiter connections to the group
+        await AddWaiterToTableGroup(waiterId, tableNumber);
 
-        // broadcast to everyone the new state
-        await Clients.All
-                     .ReceiveWaiterAssignMessage(
-                         $"Waiter {waiterId} joined Table {tableNumber}",
-                         _tables);
+        // broadcast
+        await Clients.All.ReceiveWaiterAssignMessage($"Waiter {waiterId} joined Table {tableNumber}", _tables);
         Console.WriteLine($"Waiter {waiterId} joined Table {tableNumber}");
 
-        // track this waiter’s connection
+        // track this connection
         _waiterConnections[connectionId] = waiterId;
-        _waiterids2sid.AddOrUpdate(
-            waiterId,
-            new HashSet<string> { connectionId },
-            (key, set) => { set.Add(connectionId); return set; }
-        );
+        _waiterids2sid.AddOrUpdate(waiterId, new HashSet<string> { connectionId }, (key, set) => { set.Add(connectionId); return set; });
     }
 
-
     /// <summary>
-    /// Sends the order for a table to the waiter.
+    /// Sends the order for a table to the waiter who requested it.
     /// </summary>
-    /// <param name="tableNumber">The table number to send the order for.</param>
-    /// <remarks>
-    /// This method is called when a waiter requests the order for a table.
-    /// It checks if the waiter is assigned to the table and if there is an order for the table.
-    /// If both conditions are met, it sends the order to the waiter.
-    /// </remarks>
     public async Task PeakOrder(int tableNumber)
     {
         var order = _orders[tableNumber - 1];
@@ -341,20 +381,14 @@ public class SocketService : Hub<IHubService>
             Console.WriteLine($"No order found for Table {tableNumber}");
             return;
         }
-        await Clients.All.SendOrder(order);
+        // Only send to the caller (the waiter who asked)
+        await Clients.Caller.SendOrder(order);
         Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
     }
+
     /// <summary>
     /// Retrieves the user needs messages for a table.
     /// </summary>
-    /// <param name="tableNumber">The table number to retrieve the messages for.</param>
-    /// <remarks>
-    /// This method is called when a waiter requests the messages for a table.
-    /// It checks if there are any messages stored for the table in the in-memory dictionary.
-    /// If there are messages, it sends them to the waiter.
-    /// Otherwise, it sends a failure message to the waiter.
-    /// This method is accessed by the waiter to get the needs of the users at a specific table.
-    /// </remarks>
     public async Task GetUserNeeds(int tableNumber)
     {
         if (tableToNeeds.TryGetValue(tableNumber.ToString(), out var needs))
@@ -366,85 +400,74 @@ public class SocketService : Hub<IHubService>
             await Clients.Caller.ReceiveSuccessOrFail("No messages found for this table.");
         }
     }
+
     /// <summary>
     /// Retrieves a list of quick messages from the message collection in MongoDB and sends them to the caller.
     /// </summary>
-    /// <remarks>
-    /// This method is called to fetch all quick messages stored in the database and deliver them to the client that initiated the request.
-    /// </remarks>
     public async Task GetQuickMsgs()
     {
-        var msgs = FetchMessages();
-        await Clients.Caller.ReceiveQuickMessageList(msgs.Result);
+        var msgs = await FetchMessages();
+        await Clients.Caller.ReceiveQuickMessageList(msgs);
     }
+
     /// <summary>
     /// Removes a waiter from a table and updates all clients about the table's updated status.
     /// </summary>
-    /// <param name="tableNumber">The table number the waiter is leaving.</param>
-    /// <remarks>
-    /// This method is called when a waiter stops waiting at a table.
-    /// It sets the waiter ID of the table to an empty string and sends a message to all clients about the table's updated status.
-    /// </remarks>
     public async Task StopWaitingTable(int tableNumber)
     {
-        var sid = Context.ConnectionId;
         var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
+
         _tables[tableNumber - 1].WaiterId = string.Empty;
+
+        // Remove ALL waiter connections from the table group
+        await RemoveWaiterFromTableGroup(waiterId, tableNumber);
+
         await Clients.All.ReceiveWaiterLeaveMessage(_tables);
-        await Groups.RemoveFromGroupAsync(sid, tableNumber.ToString());
         Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
     }
 
     /// <summary>
     /// Marks a meal order as ready and sends a message to all users at the table and the waiter with the order details.
     /// </summary>
-    /// <param name="tableNumber">The table number the order is for.</param>
-    /// <remarks>
-    /// This method is called when a waiter marks an order as ready from the waiter app.
-    /// It sets the order's IsReady property to true and sends a message to all users at the table and the waiter with the order details.
-    /// </remarks>
     public async Task MarkOrderAsReady(int tableNumber)
     {
-        System.Console.WriteLine($"Marking order for Table {tableNumber} as ready");
+        Console.WriteLine($"Marking order for Table {tableNumber} as ready");
         var order = _orders[tableNumber - 1];
         if (order != null && order.Orders != null)
         {
-            System.Console.WriteLine($"Order for Table {tableNumber} marked as ready: {order.Orders.Length} items");
+            Console.WriteLine($"Order for Table {tableNumber} marked as ready: {order.Orders.Length} items");
             order.IsReady = true;
-            Console.WriteLine($"Order for Table {tableNumber} marked as ready.");
+
+            // Notify everyone in the table group (users + waiter connections added earlier)
             await Clients.Group(tableNumber.ToString()).ReceiveOrderReadyMessage(order, tableNumber);
-            System.Console.WriteLine($"Order for Table {tableNumber} sent to waiter.");
+            Console.WriteLine($"Order for Table {tableNumber} ready event broadcast to group.");
+            var userOnTable = _tables[tableNumber - 1].UserId;
+            string userEmail = _userCollection.Find(x => x.Id == userOnTable).FirstOrDefault()?.Email ?? string.Empty;
+            string emailBody = GenerateEmailRecieptString(order);
+            await _emailService.SendEmailAsync(userEmail, $"Order for Table {tableNumber} at {DateTime.Now}", emailBody);
         }
         else
         {
             Console.WriteLine($"No order found for Table {tableNumber}");
         }
     }
+
     /// <summary>
     /// Handles the disconnection of a client from the server.
-    /// It removes the client connection ID from various connection dictionaries
-    /// based on their role (user, waiter, or owner) and updates the associated
-    /// signalR connection mappings. If a user or waiter has no more active
-    /// connections, their entry is removed from the mapping.
     /// </summary>
-    /// <param name="exception">The exception that occurred during disconnection, if any.</param>
-    /// <returns>A Task representing the asynchronous operation.</returns>
-
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var sid = Context.ConnectionId;
         var httpContext = Context.GetHttpContext();
-        var id = httpContext?.Request.Query["userid"].ToString() ?? string.Empty;
 
-        if (_userConnections.TryGetValue(sid, out string? mongoId))
+        if (_userConnections.TryGetValue(sid, out string? userMongoId))
         {
             _userConnections.TryRemove(sid, out _);
 
-
-            if (_userids2sid.TryGetValue(mongoId, out var sids))
+            if (_userids2sid.TryGetValue(userMongoId, out var sids))
             {
                 sids.Remove(sid);
-                if (sids.Count == 0) _userids2sid.TryRemove(mongoId, out _);
+                if (sids.Count == 0) _userids2sid.TryRemove(userMongoId, out _);
             }
         }
         else if (_waiterConnections.TryGetValue(sid, out string? waiterMongoId))
@@ -456,14 +479,16 @@ public class SocketService : Hub<IHubService>
                 sids.Remove(sid);
                 if (sids.Count == 0) _waiterids2sid.TryRemove(waiterMongoId, out _);
             }
+
+            // Clear waiter assignment on tables that reference this waiter
             _tables.ForEach(t =>
             {
-                if (t.WaiterId == id)
+                if (t.WaiterId == waiterMongoId)
                 {
                     t.WaiterId = string.Empty;
                 }
             });
-            System.Console.WriteLine("Waiter left all tables");
+            Console.WriteLine("Waiter left all tables");
         }
         else if (_ownerConnections.ContainsKey(sid))
         {
@@ -471,7 +496,7 @@ public class SocketService : Hub<IHubService>
         }
         else
         {
-            System.Console.WriteLine("Connection not found");
+            Console.WriteLine("Connection not found");
             return;
         }
 
@@ -480,10 +505,221 @@ public class SocketService : Hub<IHubService>
         await base.OnDisconnectedAsync(exception);
     }
 
+    /// <summary>
+    /// Asynchronously fetches a list of quick messages from the message collection in the database.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation, containing a list of QuickMessage objects.</returns>
+
     private async Task<List<QuickMessage>> FetchMessages()
     {
         var msgs = await _messageCollection.Find(_ => true).ToListAsync();
         return msgs;
     }
+    /// <summary>
+    /// Generates an HTML email receipt for a given order.
+    /// </summary>
+    /// <param name="order">The order containing details of the items purchased.</param>
+    /// <returns>A string representing the HTML structure of the email receipt.</returns>
+    /// <remarks>
+    /// If the order is null or contains no items, a message indicating no orders are found is returned.
+    /// The HTML includes a styled table listing each meal item with its quantity, price, and line total,
+    /// along with the overall total price of the order. The currency is formatted in shekels (₪).
+    /// </remarks>
 
+    private string GenerateEmailRecieptString(Order order)
+    {
+        if (order == null || order.Orders == null || order.Orders.Length == 0)
+        {
+            return "No orders found.";
+        }
+
+        // Currency helper (₪). Switch if you need locale-based formatting.
+        static string Money(decimal val) => $"{val:0.00} ₪";
+
+        var sbRows = new StringBuilder();
+
+        foreach (var line in order.Orders)
+        {
+            var name = WebUtility.HtmlEncode(line?.Meal?.MealName ?? "Item");
+            var qty = line?.Quantity ?? 0;
+
+            decimal price = 0m;
+            try
+            {
+                if (line?.Meal != null)
+                    price = Convert.ToDecimal(line.Meal.Price, CultureInfo.InvariantCulture);
+            }
+            catch { /* fallback stays 0m */ }
+
+            var lineTotal = price * qty;
+
+            sbRows.Append($@"
+          <tr>
+            <td class=""item"">{name}</td>
+            <td class=""qty"">x{qty}</td>
+            <td class=""price"">{Money(price)}</td>
+            <td class=""line"">{Money(lineTotal)}</td>
+          </tr>");
+        }
+
+        // Compute total if the Order.Total isn't reliable
+        decimal computedTotal = 0m;
+        try
+        {
+            computedTotal = order.Orders.Sum(p =>
+            {
+                decimal pprice = 0m;
+                try
+                {
+                    if (p?.Meal != null)
+                        pprice = Convert.ToDecimal(p.Meal.Price, CultureInfo.InvariantCulture);
+                }
+                catch { /* 0m */ }
+
+                return pprice * (p?.Quantity ?? 0);
+            });
+        }
+        catch { /* leave as 0m */ }
+
+        decimal total;
+        try
+        {
+            total = order.Total > 0 ? Convert.ToDecimal(order.Total, CultureInfo.InvariantCulture) : computedTotal;
+        }
+        catch
+        {
+            total = computedTotal;
+        }
+
+        var safeTable = WebUtility.HtmlEncode(order.TableNumber.ToString(CultureInfo.InvariantCulture));
+
+        var html = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"" />
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />
+  <title>Your order is ready</title>
+  <style>
+    body {{
+      margin: 0;
+      padding: 0;
+      background: #f6f6f6;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #222;
+    }}
+    .wrap {{
+      max-width: 560px;
+      margin: 24px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #eaeaea;
+    }}
+    .header {{
+      background: #111827;
+      color: #fff;
+      padding: 16px 20px;
+    }}
+    .header h1 {{
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }}
+    .meta {{
+      padding: 12px 20px 0 20px;
+      font-size: 13px;
+      color: #6b7280;
+    }}
+    .content {{
+      padding: 12px 20px 20px 20px;
+    }}
+    .table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }}
+    .table th {{
+      background: #f3f4f6;
+      text-align: left;
+      padding: 10px;
+      font-size: 13px;
+      border-bottom: 1px solid #e5e7eb;
+    }}
+    .table td {{
+      padding: 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }}
+    .item {{ width: 55%; }}
+    .qty  {{ width: 10%; white-space: nowrap; }}
+    .price{{ width: 15%; white-space: nowrap; text-align: right; }}
+    .line {{ width: 20%; white-space: nowrap; text-align: right; }}
+    .total-row {{
+      margin-top: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: left;
+    }}
+    .footer {{
+      padding: 14px 20px 18px 20px;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #f3f4f6;
+    }}
+    .badge {{
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 12px;
+      border-radius: 9999px;
+      background: #16a34a;
+      color: #fff;
+      font-weight: 600;
+      vertical-align: middle;
+    }}
+  </style>
+</head>
+<body>
+  <div class=""wrap"">
+    <div class=""header"">
+      <h1>Your order is ready ✅</h1>
+    </div>
+
+    <div class=""meta"">
+      <div>Table: <strong>#{safeTable}</strong></div>
+      <div>Status: <span class=""badge"">READY</span></div>
+    </div>
+
+    <div class=""content"">
+      <table class=""table"" role=""presentation"" cellspacing=""0"" cellpadding=""0"">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th style=""text-align:right"">Price</th>
+            <th style=""text-align:right"">Line</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sbRows}
+        </tbody>
+      </table>
+
+      <div class=""total-row"">Total: {Money(total)}</div>
+    </div>
+
+    <div class=""footer"">
+      Thanks for dining with us! If you have any questions, reply to this email.
+    </div>
+  </div>
+</body>
+</html>";
+
+        return html;
+    }
 }

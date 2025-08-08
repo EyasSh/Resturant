@@ -34,7 +34,6 @@ namespace Server.Services
         /// and sends it using the MailjetClient. If the response indicates failure,
         /// an exception is thrown with the error message from Mailjet.
         /// </remarks>
-
         public async Task SendEmailAsync(string to, string subject, string body)
         {
             MailjetClient client = new MailjetClient(_apiKey, _apiSecret);

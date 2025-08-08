@@ -32,6 +32,18 @@ export type Meal = {
 
 type ScreenProps = RouteProp<RootStackParamList, "Menu">;
 
+/**
+ * Renders the menu screen allowing users to browse meals, select items, and place orders.
+ *
+ * The `Menu` component manages the state of menu items, selected order list, loading status, 
+ * and handles interactions with a hub connection for real-time updates. It restores previous 
+ * orders from AsyncStorage, loads menu items from an API, and maintains a persistent order 
+ * draft while providing filtering options by category.
+ *
+ * The component also listens for server acknowledgments for successful order placements and 
+ * order readiness notifications. Users can add or remove items from their order, view the 
+ * total cost, and send orders to the server.
+ */
 export default function Menu() {
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<ProtoOrder[]>([]);
@@ -51,68 +63,95 @@ export default function Menu() {
   const categories = ["All", ...items.map((i) => i.value)];
 
   useEffect(() => {
-    async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
-      const start = Date.now();
-      return new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-          const conn = Connection.getHub();
-          if (conn && conn.state === "Connected") {
-            clearInterval(checkInterval);
-            resolve(conn);
-          } else if (Date.now() - start > timeout) {
-            clearInterval(checkInterval);
-            resolve(null);
-          }
-        }, 100);
-      });
-    }
+  async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        const conn = Connection.getHub();
+        if (conn && conn.state === "Connected") {
+          clearInterval(checkInterval);
+          resolve(conn);
+        } else if (Date.now() - start > timeout) {
+          clearInterval(checkInterval);
+          resolve(null);
+        }
+      }, 100);
+    });
+  }
 
-    async function init() {
+  async function init() {
+    try {
+      setLoading(true);
+
+      // --- Tombstone check (did Home already handle "ready" while we weren't here?) ---
+      let tombHit = false;
       try {
-        setLoading(true);
+        const tomb = await AsyncStorage.getItem("order:tombstone");
+        if (tomb) {
+          const parsed = JSON.parse(tomb);
+          const tNum = Number(parsed?.tableNumber);
+          if (!Number.isNaN(tNum) && tNum === tableNumber) {
+            // Kill any stale order and mark UI as "ready"
+            await AsyncStorage.removeItem("order");
+            await AsyncStorage.removeItem("order:tombstone");
+            setList([]);
+            setSavedOrderReady(true);
+            tombHit = true;
+          }
+        }
+      } catch {
+        // ignore tombstone parse/removal errors
+      }
 
-        // Hard reset UI before reading storage
+      if (!tombHit) {
+        // Hard reset UI before reading storage (only if no tombstone handled)
         setList([]);
         setSavedOrderReady(false);
 
-        // 1) Restore from AsyncStorage ONLY if key exists, for this table, and NOT ready
+        // Restore from AsyncStorage ONLY if key exists, for this table, and NOT ready
         if (tableNumber >= 0) {
-          const raw = await AsyncStorage.getItem("order");
-          if (raw) {
-            const saved: Order = JSON.parse(raw);
-            if (saved.tableNumber === tableNumber && saved.isReady === false) {
-              setList(saved.orders ?? []);
-            } // else: don't render anything
+          try {
+            const raw = await AsyncStorage.getItem("order");
+            if (raw) {
+              const saved: Order = JSON.parse(raw);
+              if (saved.tableNumber === tableNumber && saved.isReady === false) {
+                setList(saved.orders ?? []);
+              }
+            }
+          } catch {
+            // ignore restore errors
           }
         }
-
-        // 2) Load menu items
-        const token = await AsyncStorage.getItem("token");
-        if (!token) throw new Error("User is not authenticated.");
-        const resp = await axios.get<{ meals: Meal[] }>(
-          `http://${ip.julian}:5256/api/user/meals`,
-          { headers: { "X-Auth-Token": token } }
-        );
-        if (resp.status !== 200) throw new Error("Failed to fetch meals.");
-        setMenuItems(Array.isArray(resp.data.meals) ? resp.data.meals : []);
-
-        // 3) Hub
-        const conn = await waitForHubConnection();
-        if (conn) {
-          setHubConnection(conn);
-          ShowMessageOnPlat("Connected set at Menu");
-        } else {
-          ShowMessageOnPlat("SignalR connection not ready");
-        }
-      } catch (e: any) {
-        setError(e.message ?? "Unknown error");
-      } finally {
-        setLoading(false);
       }
-    }
 
-    init();
-  }, [tableNumber]);
+      // Load menu items
+      const token = await AsyncStorage.getItem("token");
+      if (!token) throw new Error("User is not authenticated.");
+      const resp = await axios.get<{ meals: Meal[] }>(
+        `http://${ip.julian}:5256/api/user/meals`,
+        { headers: { "X-Auth-Token": token } }
+      );
+      if (resp.status !== 200) throw new Error("Failed to fetch meals.");
+      setMenuItems(Array.isArray(resp.data.meals) ? resp.data.meals : []);
+
+      // Hub
+      const conn = await waitForHubConnection();
+      if (conn) {
+        setHubConnection(conn);
+        ShowMessageOnPlat("Connected set at Menu");
+      } else {
+        ShowMessageOnPlat("SignalR connection not ready");
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  init();
+}, [tableNumber]);
+
 
   // Persist the current draft ONLY while not ready.
   useEffect(() => {

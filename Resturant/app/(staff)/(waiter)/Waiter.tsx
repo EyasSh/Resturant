@@ -85,7 +85,14 @@ export default function Waiter() {
             userName: t.userName,
           })));
         };
-
+        const onReceiveWaiterLeaveMessage = (_tables : TableProps[]) => {
+          setTables(_tables.map((t) => ({
+            tableNumber: t.tableNumber,
+            waiterid: t.waiterId,
+            isOccupied: t.isOccupied,
+            userName: t.userName,
+          })));
+        }
         const onReceiveTableLeaveMessage = (_tables: TableProps[]) => {
           setTables(_tables.map((t) => ({
             tableNumber: t.tableNumber,
@@ -134,6 +141,7 @@ export default function Waiter() {
         connection.on('ReceiveTableLeaveMessage', onReceiveTableLeaveMessage);
         connection.on('SendOrder', onSendOrder);
         connection.on('ReceiveOrderReadyMessage', onReceiveOrderReadyMessage);
+        connection.on('ReceiveWaiterLeaveMessage', onReceiveWaiterLeaveMessage);
 
         setSignalRConnection(connection);
       } catch (error) {

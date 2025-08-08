@@ -702,7 +702,7 @@ public class SocketService : Hub<IHubService>
             <th>Item</th>
             <th>Qty</th>
             <th style=""text-align:right"">Price</th>
-            <th style=""text-align:right"">Line</th>
+            <th style=""text-align:right"">Total For Meal</th>
           </tr>
         </thead>
         <tbody>

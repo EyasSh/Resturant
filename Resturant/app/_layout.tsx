@@ -33,6 +33,7 @@ import RemoveQuickMessage from './(staff)/(owner)/RemoveQuickMessage';
 import PeakNeeds from './(staff)/(waiter)/PeakNeeds';
 import {StatusBar,SafeAreaView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -60,6 +61,11 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
+    const clean= async()=>{
+      await AsyncStorage.clear();
+      console.log("AsyncStorage cleared");
+    }
+    clean();
   }, [loaded]);
 
   if (!loaded) {

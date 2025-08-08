@@ -155,7 +155,7 @@ public class SocketService : Hub<IHubService>
         _tables[tableNumber - 1].CheckOccupation();
         _tables[tableNumber - 1].UserName = Context.GetHttpContext()?.Request.Query["name"].ToString() ?? string.Empty;
         System.Console.WriteLine($"User {userId} assigned to Table {tableNumber}, isOccupied: {_tables[tableNumber - 1].isOccupied}");
-        await Groups.AddToGroupAsync(userId, tableNumber.ToString());
+        await Groups.AddToGroupAsync(sid, tableNumber.ToString());
         await Clients.All.ReceiveTableMessage($"User {userId} joined Table {tableNumber}", true, userId, tableNumber, _tables);
         System.Console.WriteLine($"User {userId} joined Table {tableNumber}");
         // Store user ID in dictionary
@@ -304,7 +304,7 @@ public class SocketService : Hub<IHubService>
         _tableToWaiter[tableNumber] = waiterId;
 
         // add the connection to the group for that table
-        await Groups.AddToGroupAsync(httpWaiterId, tableNumber.ToString());
+        await Groups.AddToGroupAsync(connectionId, tableNumber.ToString());
 
         // broadcast to everyone the new state
         await Clients.All
@@ -387,10 +387,11 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public async Task StopWaitingTable(int tableNumber)
     {
+        var sid = Context.ConnectionId;
         var waiterId = Context.GetHttpContext()?.Request.Query["waiterid"].ToString() ?? string.Empty;
         _tables[tableNumber - 1].WaiterId = string.Empty;
         await Clients.All.ReceiveWaiterLeaveMessage(_tables);
-        await Groups.RemoveFromGroupAsync(waiterId, tableNumber.ToString());
+        await Groups.RemoveFromGroupAsync(sid, tableNumber.ToString());
         Console.WriteLine($"Waiter {waiterId} left Table {tableNumber}");
     }
 
@@ -404,6 +405,7 @@ public class SocketService : Hub<IHubService>
     /// </remarks>
     public async Task MarkOrderAsReady(int tableNumber)
     {
+        System.Console.WriteLine($"Marking order for Table {tableNumber} as ready");
         var order = _orders[tableNumber - 1];
         if (order != null && order.Orders != null)
         {

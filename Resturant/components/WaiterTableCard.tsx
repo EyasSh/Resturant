@@ -1,127 +1,82 @@
-import ip from '../Data/Addresses'
-import { use, useEffect, useState } from 'react'
-import { ThemedView } from './ThemedView'
-import { ThemedText } from './ThemedText'
-import { StyleSheet, Image } from 'react-native'
-import CurvedButton from '@/components/ui/CurvedButton'
-import { WaiterTableProps } from '@/Types/WaiterTableProps'
-import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/Routes/NavigationTypes';
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import {Connection} from '@/Data/Hub'
-import { TableProps } from './TableCard'
+import { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemedView } from './ThemedView';
+import { ThemedText } from './ThemedText';
+import CurvedButton from '@/components/ui/CurvedButton';
+import { WaiterTableProps } from '@/Types/WaiterTableProps';
 
-/**
- * A component representing a table card for a waiter.
- * The component displays a title, a button to wait the table, and if the waiter is waiting the table, a button to leave the table.
- * If the waiter is waiting the table, the component also displays 3 buttons: "Peak Needs", "Peak Order", and "Mark Order as ready"
- * Props:
- * - tableNumber: the number of the table
- * - waiterid: the id of the waiter waiting the table
- * - occupyAction: a function to be called when the waiter wants to wait the table
- * - leaveAction: a function to be called when the waiter wants to leave the table
- * - peakNeedAction: a function to be called when the waiter wants to view the needs of the table
- * - peakOrderAction: a function to be called when the waiter wants to view the order of the table
- * - markOrderReadyAction: a function to be called when the waiter wants to mark the order as ready
- * - setter: a function to be called when the waiter wants to update the state of the tables
- */
 export default function WaiterTableCard(props: WaiterTableProps) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [currWaiterId, setCurrWaiterId] = useState<string | null>(null)
-  const [waiterId, setWaiterId] = useState<string | null |undefined>("")
-  const [buttonText, setButtonText] = useState<string>("")
-  const [userName, setUserName] = useState<string | undefined| null>(null)
-  const hub = Connection.getHub()
+  const { tableNumber, waiterid, isOccupied, userName } = props;
+
+  // Only thing we need locally: *current waiter id* for comparison
+  const [currWaiterId, setCurrWaiterId] = useState<string | null>(null);
 
   useEffect(() => {
-/**
- * Retrieves the current waiter ID from AsyncStorage and updates the component's state.
- * If no waiter ID is found in AsyncStorage, an alert is displayed.
- * Sets the current waiter ID and updates the waiter ID from props.
- * This function is executed asynchronously.
- */
     const getId = async () => {
-      const stored = await AsyncStorage.getItem('waiter')
-      const id = stored ? JSON.parse(stored).id : null
-      if(!id) {
-        alert('No waiter id found')
-        return
-      }
-      setCurrWaiterId(id)
-      setWaiterId(props.waiterid)
-      setUserName(props.userName)
-      
-    }
-    getId()
-  }, [props.waiterid, props.userName])
-  useEffect(() => {
-    if (currWaiterId !== "" && waiterId === "") {
-      setButtonText("Wait Table")
-    } else if (currWaiterId === waiterId) {
-      setButtonText("Leave Table")
+      const stored = await AsyncStorage.getItem('waiter');
+      const id = stored ? JSON.parse(stored).id : null;
+      setCurrWaiterId(id);
+    };
+    getId();
+  }, []);
+
+  // Derive everything from props + currWaiterId (no extra local mirrors)
+  const isFree = !waiterid;                         // no one waiting this table
+  const isSelf = !!currWaiterId && waiterid === currWaiterId;
+
+  let mainButtonText = 'Table being waited';
+  if (isFree) mainButtonText = 'Wait Table';
+  else if (isSelf) mainButtonText = 'Leave Table';
+
+  const mainButtonAction = () => {
+    if (isFree) {
+      // Wait table
+      props.occupyAction?.();
+    } else if (isSelf) {
+      // Leave table
+      props.leaveAction?.();
     } else {
-      setButtonText("Table being waited")
+      // Someone else is waiting
+      // no-op or toast – keep as is to match your UX
     }
-  }, [currWaiterId, waiterId])
-  
-useEffect(() => {},[buttonText])
+  };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.waiterCardText}>Table {props.tableNumber}</ThemedText>
-      <ThemedText style={styles.waiterCardText}> {props.isOccupied?`Occupied by ${userName}` :"Free"}</ThemedText>
-            <CurvedButton 
-                title={buttonText}
-                action={() => {
-                    if (buttonText==="Wait Table" && props.occupyAction) {
-                      props.occupyAction(); 
-                      setWaiterId(currWaiterId);
+      <ThemedText style={styles.waiterCardText}>Table {tableNumber}</ThemedText>
+      <ThemedText style={styles.waiterCardText}>
+        {isOccupied ? `Occupied by ${userName ?? 'guest'}` : 'Free'}
+      </ThemedText>
 
-                    }
-                    else if(buttonText==="Leave Table" && props.leaveAction) {
-                      props.leaveAction(); setWaiterId("")
-                      
-                    }
-                    else alert("Table is being waited");
-                }}
-                style={buttonText==="Wait Table"? {backgroundColor:"#4800ff"}:{ backgroundColor:"#ff0a00"}}
-            />
-            {currWaiterId && waiterId && currWaiterId===waiterId && buttonText==="Leave Table" ? 
-            <>
-               <CurvedButton
-               title='Peak Needs'
-               action={() => {
-                 if (props.peakNeedAction) props.peakNeedAction();
-                 else alert("Peak Needs is not implemented");
-               }}
-               style={{backgroundColor:"#fc9b1c"}}
-              />
-             <CurvedButton 
-                 title="Peak Order" 
-                 action={() => {
-                     if (props.peakOrderAction) props.peakOrderAction();
-                     else alert("Peak Order is not implemented");
-                 }}
-                 
-                 style={{backgroundColor:"#fc9b1c"}}
-             />
-             
-             <CurvedButton
-                 title='Mark order as ready'
- 
-                 action={() => {
-                     if (props.markOrderReadyAction) props.markOrderReadyAction();
-                     else alert("Mark Order Ready is not implemented");
-                 }}
-                 style={{backgroundColor:"#4800ff"}} 
-             />
-             </>
-            :null}  
-            
-      
+      <CurvedButton
+        title={mainButtonText}
+        action={mainButtonAction}
+        style={isFree ? { backgroundColor: '#4800ff' } : isSelf ? { backgroundColor: '#ff0a00' } : undefined}
+      />
+
+      {/* Only show the extra actions if *you* are the waiter for this table */}
+      {isSelf ? (
+        <>
+          <CurvedButton
+            title="Peak Needs"
+            action={() => props.peakNeedAction?.()}
+            style={{ backgroundColor: '#fc9b1c' }}
+          />
+          <CurvedButton
+            title="Peak Order"
+            action={() => props.peakOrderAction?.()}
+            style={{ backgroundColor: '#fc9b1c' }}
+          />
+          <CurvedButton
+            title="Mark order as ready"
+            action={() => props.markOrderReadyAction?.()}
+            style={{ backgroundColor: '#4800ff' }}
+          />
+        </>
+      ) : null}
     </ThemedView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -142,4 +97,4 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-})
+});

@@ -638,7 +638,7 @@ public class OwnerController : ControllerBase
         {
             return BadRequest("Message cannot be empty.");
         }
-        var cursor = await _messages.FindAsync<QuickMessage>(message => message.Message == request.Message);
+        var cursor = await _messages.FindAsync<QuickMessage>(message => message.Message.Trim() == request.Message.Trim());
         if (cursor.Any())
         {
             return BadRequest("Message already exists.");
@@ -712,7 +712,7 @@ public class OwnerController : ControllerBase
     public async Task<IActionResult> GetMessages()
     {
         var dbfetch = await _messages.Find(_ => true).ToListAsync();
-        var messages = dbfetch.ToArray();
+        QuickMessage[] messages = dbfetch.ToArray();
         return Ok(messages);
     }
 }

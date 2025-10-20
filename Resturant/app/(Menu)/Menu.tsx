@@ -1,27 +1,38 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
   ActivityIndicator,
+  FlatList,
   Image,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import ip from "@/Data/Addresses";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CurvedButton from "@/components/ui/CurvedButton";
 import { NavigationProp, RootStackParamList } from "@/Routes/NavigationTypes";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Order, ProtoOrder } from "@/Types/Order";
 import { Connection } from "@/Data/Hub";
 import ShowMessageOnPlat from "@/components/ui/ShowMessageOnPlat";
 import mealImages from "@/Types/MealImages";
 import { items } from "@/app/(staff)/(owner)/AddMealForm";
 import * as signalR from "@microsoft/signalr";
+
+/* ===========================
+   Module-level (global) stuff
+   =========================== */
+
+// Per-table storage keys (avoid collisions)
+const orderKey = (tn: number) => `order:${tn}`;
+const tombKey = (tn: number) => `order:tombstone:${tn}`;
+
+// Track tombstones we already handled this session (avoid double nuking on remounts)
+const handledTombstones = new Set<number>();
 
 export type Meal = {
   mealId: string;
@@ -33,195 +44,191 @@ export type Meal = {
 type ScreenProps = RouteProp<RootStackParamList, "Menu">;
 
 /**
- * Renders the menu screen allowing users to browse meals, select items, and place orders.
- *
- * The `Menu` component manages the state of menu items, selected order list, loading status, 
- * and handles interactions with a hub connection for real-time updates. It restores previous 
- * orders from AsyncStorage, loads menu items from an API, and maintains a persistent order 
- * draft while providing filtering options by category.
- *
- * The component also listens for server acknowledgments for successful order placements and 
- * order readiness notifications. Users can add or remove items from their order, view the 
- * total cost, and send orders to the server.
+ * Initializes the component by hydrating the data and fetching the menu items.
+ * Also sets up the SignalR hub connection. If either fails, logs the error to the console.
+ * Finally, sets loading to false.
+ * @returns {void}
  */
 export default function Menu() {
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<ScreenProps>();
+  // Use -1 as “browse only”. If caller passes nothing, treat as browse.
+  const { tableNumber = -1 } = route.params ?? { tableNumber: -1 };
+
   const [menuItems, setMenuItems] = useState<Meal[]>([]);
   const [list, setList] = useState<ProtoOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<ScreenProps>();
-  const { tableNumber } = route.params || { tableNumber: 0 };
   const [hubConnection, setHubConnection] = useState<signalR.HubConnection | null>(null);
 
-  // For basic UI messaging (not strictly required, but handy)
+  // UI hint used when a previous order was completed while away
   const [savedOrderReady, setSavedOrderReady] = useState<boolean>(false);
 
-  // Filter dropdown
+  // Filter UI
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const categories = ["All", ...items.map((i) => i.value)];
 
-  useEffect(() => {
-/**
- * Waits for the SignalR hub connection to reach the "Connected" state within a specified timeout period.
- *
- * @param {number} [timeout=5000] - The maximum time to wait for the hub connection in milliseconds.
- * @returns {Promise<signalR.HubConnection | null>} - A promise that resolves to the connected hub instance
- * if successful, or null if the timeout is reached before the connection is established.
- */
+  // Prevent the persist effect from firing while we hydrate
+  const hydratingRef = useRef(true);
 
+  // ===== SignalR helper: wait until Connected (enum, not string) =====
   async function waitForHubConnection(timeout = 5000): Promise<signalR.HubConnection | null> {
     const start = Date.now();
     return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
+      const t = setInterval(() => {
         const conn = Connection.getHub();
-        if (conn && conn.state === "Connected") {
-          clearInterval(checkInterval);
+        if (conn && conn.state === signalR.HubConnectionState.Connected) {
+          clearInterval(t);
           resolve(conn);
         } else if (Date.now() - start > timeout) {
-          clearInterval(checkInterval);
+          clearInterval(t);
           resolve(null);
         }
       }, 100);
     });
   }
 
-/**
- * Initializes the menu component by performing several tasks:
- * - Sets loading state to true at the beginning and false at the end.
- * - Checks for and handles "tombstone" entries in AsyncStorage to determine if 
- *   a previously ready order exists, clearing stale orders if necessary.
- * - Restores a saved order from AsyncStorage for the current table if no 
- *   tombstone is handled and the order is not ready.
- * - Fetches and sets the menu items from the server using the user's authentication token.
- * - Attempts to establish a SignalR hub connection for real-time updates.
- * - Handles errors by setting an error state with the error message.
- */
+  // ======================
+  // Init (hydrate + fetch)
+  // ======================
+  useEffect(() => {
+    let mounted = true;
 
-  async function init() {
-    try {
-      setLoading(true);
-
-      // --- Tombstone check (did Home already handle "ready" while we weren't here?) ---
-      let tombHit = false;
+  /**
+   * Initializes the component by hydrating the data and fetching the menu items.
+   * Also sets up the SignalR hub connection. If either fails, logs the error to the console.
+   * Finally, sets loading to false.
+   */
+    async function init() {
       try {
-        const tomb = await AsyncStorage.getItem("order:tombstone");
-        if (tomb) {
-          const parsed = JSON.parse(tomb);
-          const tNum = Number(parsed?.tableNumber);
-          if (!Number.isNaN(tNum) && tNum === tableNumber) {
-            // Kill any stale order and mark UI as "ready"
-            await AsyncStorage.removeItem("order");
-            await AsyncStorage.removeItem("order:tombstone");
-            setList([]);
-            setSavedOrderReady(true);
-            tombHit = true;
-          }
-        }
-      } catch {
-        // ignore tombstone parse/removal errors
-      }
+        setLoading(true);
+        hydratingRef.current = true;
+        setError(null);
 
-      if (!tombHit) {
-        // Hard reset UI before reading storage (only if no tombstone handled)
-        setList([]);
-        setSavedOrderReady(false);
-
-        // Restore from AsyncStorage ONLY if key exists, for this table, and NOT ready
-        if (tableNumber >= 0) {
+        // ---- Tombstone handling (global per session) ----
+        if (tableNumber >= 0 && !handledTombstones.has(tableNumber)) {
           try {
-            const raw = await AsyncStorage.getItem("order");
-            if (raw) {
-              const saved: Order = JSON.parse(raw);
-              if (saved.tableNumber === tableNumber && saved.isReady === false) {
-                setList(saved.orders ?? []);
+            const tomb = await AsyncStorage.getItem(tombKey(tableNumber));
+            if (tomb) {
+              // If there’s any tomb for this table, nuke local draft and flip the “ready” flag
+              await AsyncStorage.removeItem(orderKey(tableNumber));
+              await AsyncStorage.removeItem(tombKey(tableNumber));
+              handledTombstones.add(tableNumber);
+              if (mounted) {
+                setList([]);
+                setSavedOrderReady(true);
               }
             }
           } catch {
-            // ignore restore errors
+            // ignore
           }
         }
-      }
 
-      // Load menu items
-      const token = await AsyncStorage.getItem("token");
-      if (!token) throw new Error("User is not authenticated.");
-      const resp = await axios.get<{ meals: Meal[] }>(
-        `http://${ip.julian}:5256/api/user/meals`,
-        { headers: { "X-Auth-Token": token } }
-      );
-      if (resp.status !== 200) throw new Error("Failed to fetch meals.");
-      setMenuItems(Array.isArray(resp.data.meals) ? resp.data.meals : []);
+        // ---- Restore draft if not already “ready” and we’re on a real table ----
+        if (tableNumber >= 0 && !handledTombstones.has(tableNumber)) {
+          try {
+            const raw = await AsyncStorage.getItem(orderKey(tableNumber));
+            if (raw) {
+              const saved: Order = JSON.parse(raw);
+              if (saved.tableNumber === tableNumber && saved.isReady === false) {
+                if (mounted) {
+                  setList(saved.orders ?? []);
+                  setSavedOrderReady(false);
+                }
+              } else if (mounted) {
+                setList([]);
+              }
+            } else if (mounted) {
+              setList([]);
+            }
+          } catch {
+            if (mounted) setList([]);
+          }
+        } else {
+          // Browsing or tomb handled: start clean unless we already set it above
+          if (mounted && tableNumber < 0) {
+            setList([]);
+            setSavedOrderReady(false);
+          }
+        }
 
-      // Hub
-      const conn = await waitForHubConnection();
-      if (conn) {
-        setHubConnection(conn);
-        ShowMessageOnPlat("Connected set at Menu");
-      } else {
-        ShowMessageOnPlat("SignalR connection not ready");
+        // ---- Fetch menu items ----
+        const token = await AsyncStorage.getItem("token");
+        if (!token) throw new Error("User is not authenticated.");
+        const resp = await axios.get<{ meals: Meal[] }>(
+          `http://${ip.julian}:5256/api/user/meals`,
+          { headers: { "X-Auth-Token": token } }
+        );
+        if (resp.status !== 200) throw new Error("Failed to fetch meals.");
+        if (mounted) setMenuItems(Array.isArray(resp.data.meals) ? resp.data.meals : []);
+
+        // ---- Hub connection ----
+        const conn = await waitForHubConnection();
+        if (mounted) {
+          if (conn) {
+            setHubConnection(conn);
+            ShowMessageOnPlat("Connected set at Menu");
+          } else {
+            setHubConnection(null);
+            ShowMessageOnPlat("SignalR connection not ready");
+          }
+        }
+      } catch (e: any) {
+        if (mounted) setError(e?.message ?? "Unknown error");
+      } finally {
+        if (mounted) {
+          hydratingRef.current = false; // allow persistence now
+          setLoading(false);
+        }
       }
-    } catch (e: any) {
-      setError(e?.message ?? "Unknown error");
-    } finally {
-      setLoading(false);
     }
-  }
 
-  init();
-}, [tableNumber]);
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, [tableNumber]);
 
-
-  // Persist the current draft ONLY while not ready.
+  // =======================
+  // Persist draft on change
+  // =======================
   useEffect(() => {
-    if (tableNumber < 0) return; // browsing menu, no table
-    
-    /**
-     * Persists the current draft order to AsyncStorage.
-     * If the list is empty, it simply removes the stored order.
-     * Otherwise, it computes the total and stores a draft order
-     * with the table number, orders, total, and readiness status.
-     * Ignores any storage errors.
-     */
+    if (hydratingRef.current) return;         // skip during hydration
+    if (tableNumber < 0) return;              // browsing only -> don’t persist
+
+/**
+ * Persist the current draft order to storage.
+ * If the list is empty, remove the persisted item instead.
+ * @ignore storage errors
+ */
     const persist = async () => {
       try {
         if (list.length === 0) {
-          await AsyncStorage.removeItem("order");
+          await AsyncStorage.removeItem(orderKey(tableNumber));
           return;
         }
         const total = Number(
           list.reduce((sum, i) => sum + i.meal.price * i.quantity, 0).toFixed(2)
         );
-        const draft: Order = {
-          tableNumber,
-          orders: list,
-          total,
-          isReady: false,
-        };
-        await AsyncStorage.setItem("order", JSON.stringify(draft));
+        const draft: Order = { tableNumber, orders: list, total, isReady: false };
+        await AsyncStorage.setItem(orderKey(tableNumber), JSON.stringify(draft));
       } catch {
-        // ignore
+        // ignore storage errors
       }
     };
     persist();
   }, [list, tableNumber]);
 
-  // Server ACK after sending (keep list as-is until ready)
+  // ====================
+  // Server ACK (success)
+  // ====================
   useEffect(() => {
     if (!hubConnection) return;
 
-    /**
-     * Called by the hub when the order has been successfully stored.
-     * If `isOkay` is true, shows a success message with the table number.
-     * If `isOkay` is false, shows a failure message.
-     * @param {boolean} isOkay Whether the order was stored successfully.
-     * @param {Order} order The order that was stored.
-     */
     const onSuccess = (isOkay: boolean, order: Order) => {
       if (isOkay) {
         ShowMessageOnPlat(`Order sent successfully for table ${order.tableNumber}`);
-        // Keep showing until ready
       } else {
         ShowMessageOnPlat("Failed to send order");
       }
@@ -233,26 +240,23 @@ export default function Menu() {
     return () => hubConnection.off("ReceiveOrderSuccessMessage", onSuccess);
   }, [hubConnection]);
 
-  // When order becomes READY: nuke storage + clear UI (for this table only)
+  // ===========================
+  // Order becomes READY handler
+  // ===========================
   useEffect(() => {
     if (!hubConnection) return;
 
-/**
- * Handles the event when an order becomes ready.
- * 
- * Clears the local storage for the order and updates the UI to reflect that 
- * the order is ready, specifically for the current table.
- * 
- * @param {Order} order - The order object that has been marked as ready.
- * @param {number} tblNum - The table number associated with the order.
- */
     const onOrderReady = async (order: Order, tblNum: number) => {
       if (!order) return;
       if (order.tableNumber !== tableNumber) return;
 
       try {
-        await AsyncStorage.removeItem("order");
+        await AsyncStorage.removeItem(orderKey(tableNumber));
+        // Write a tombstone for this table so if we navigate away and back, we won’t re-hydrate
+        await AsyncStorage.setItem(tombKey(tableNumber), JSON.stringify({ tableNumber }));
+        handledTombstones.add(tableNumber);
       } catch {}
+
       setList([]);
       setSavedOrderReady(true);
       ShowMessageOnPlat(`Order is ready for table ${tblNum}`);
@@ -264,52 +268,9 @@ export default function Menu() {
     return () => hubConnection.off("ReceiveOrderReadyMessage", onOrderReady);
   }, [hubConnection, tableNumber]);
 
-  /**
-   * Handles the button press for sending the order to the server.
-   * @function
-   * @async
-   * @throws {Error} If the hub connection is not connected or there is an error sending the order.
-   * @description
-   * If the table number is 0 or there are no items in the list, shows an alert with instructions.
-   * If the hub connection is not connected, shows an alert with the hub connection state.
-   * Otherwise, sends the order to the server and stores it in the local storage until the order is ready.
-   */
-  const handleSendOrder = async () => {
-    if (tableNumber === 0 || list.length === 0) {
-      alert(
-        `Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`
-      );
-      return;
-    }
-    if (!hubConnection || hubConnection.state !== "Connected") {
-      alert(`Hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
-      return;
-    }
-
-    const order: Order = {
-      tableNumber,
-      orders: list,
-      total: Number(calculateTotal()),
-      isReady: false,
-    };
-    try {
-      await hubConnection.invoke("OrderMeal", order);
-      await AsyncStorage.setItem("order", JSON.stringify(order)); // ensure it's there until ready
-      navigation.pop();
-    } catch (err) {
-      console.error("Failed to send order:", err);
-      alert("Error sending order to the server.");
-    }
-  };
-
-  /**
-   * Adds a meal to the list of items to order.
-   * @param {Meal} item The meal to add to the list.
-   * @description
-   * If the meal is already in the list, increments the quantity of that meal.
-   * Otherwise, adds the meal to the list with a quantity of 1.
-   * @returns {void}
-   */
+  // =================
+  // UI actions / calc
+  // =================
   function addItemToList(item: Meal) {
     setList((prev) => {
       const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
@@ -322,14 +283,16 @@ export default function Menu() {
     });
   }
 
-  /**
-   * Removes a meal from the list of items to order.
-   * @param {Meal} item The meal to remove from the list.
-   * @description
-   * If the meal is in the list and has a quantity greater than 1, decrements the quantity.
-   * Otherwise, removes the meal from the list.
-   * @returns {void}
-   */
+/**
+ * Removes an item from the list of meals to be ordered.
+ *
+ * @param {Meal} item - The meal to remove from the list.
+ *
+ * If the item is found in the list and has a quantity greater than 1, the quantity is
+ * decremented by 1. If the item is found in the list and has a quantity of 1, the
+ * item is removed from the list. If the item is not found in the list, the list
+ * remains unchanged.
+ */
   function removeItemFromList(item: Meal) {
     setList((prev) => {
       const idx = prev.findIndex((i) => i.meal.mealId === item.mealId);
@@ -345,23 +308,76 @@ export default function Menu() {
     });
   }
 
-  /**
-   * Calculates the total price of all items in the list.
-   * @returns {string} The total price as a string, rounded to two decimal places.
-   */
+/**
+ * Calculates the total cost of the current order.
+ * It iterates over the list of order items and sums up the cost of each item.
+ * The total cost is then formatted to two decimal places and returned as a string.
+ * @returns {string} The total cost of the order as a string, formatted to two decimal places.
+ */
   function calculateTotal() {
     return list.reduce((sum, i) => sum + i.meal.price * i.quantity, 0).toFixed(2);
   }
+
+/**
+ * Handle sending an order to the server.
+ * If the table number is invalid or no items are in the order, an alert is shown.
+ * If the hub connection is not connected, an alert is shown.
+ * Otherwise, the order is sent to the server and stored in AsyncStorage until it is marked as ready.
+ * If the request fails, an error alert is shown.
+ */
+const handleSendOrder = async () => {
+  if (tableNumber < 0 || list.length === 0) {
+    alert(
+      `Please select a table and add items to your order.\nTable: ${tableNumber}\nItems: ${list.length}`
+    );
+    return;
+  }
+
+  if (!hubConnection || hubConnection.state !== signalR.HubConnectionState.Connected) {
+    alert(`Hub is ${hubConnection?.state} or disconnected at table ${tableNumber}`);
+    return;
+  }
+
+  const order: Order = {
+    tableNumber,
+    orders: list,
+    total: Number(calculateTotal()),
+    isReady: false,
+  };
+
+  try {
+    // ✅ send to server
+    await hubConnection.invoke("OrderMeal", order);
+
+    // ✅ delete local draft immediately
+    await AsyncStorage.removeItem(orderKey(tableNumber));
+
+    // optional UI reset
+    setList([]);
+    setSavedOrderReady(false);
+
+    // navigate away or give feedback
+    ShowMessageOnPlat(`Order sent for table ${tableNumber}`);
+    navigation.pop();
+  } catch (err) {
+    console.error("Failed to send order:", err);
+    alert("Error sending order to the server.");
+  }
+};
+
 
   const filteredItems =
     selectedCategory === "All"
       ? menuItems
       : menuItems.filter((m) => m.category === selectedCategory);
 
+  // =========
+  // Rendering
+  // =========
   if (loading) {
     return (
       <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" />
         <ThemedText>Loading menu...</ThemedText>
       </ThemedView>
     );
@@ -423,7 +439,7 @@ export default function Menu() {
                 <ThemedText style={styles.price}>{item.price.toFixed(2)} ₪</ThemedText>
                 {qty > 0 && <ThemedText style={styles.quantity}>x{qty}</ThemedText>}
               </View>
-              {tableNumber >= 0 && list.length >= 0 && (
+              {tableNumber >= 0 && (
                 <View style={styles.buttonContainer}>
                   <CurvedButton
                     title="Add"

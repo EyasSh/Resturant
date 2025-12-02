@@ -76,7 +76,6 @@ export default function AddMealForm() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Add a meal</ThemedText>
-            <Logo/>
             <ThemedInput
                 placeholder="Name"
                 type="default"

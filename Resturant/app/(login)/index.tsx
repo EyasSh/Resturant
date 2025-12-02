@@ -107,10 +107,8 @@ export default function Login() {
     }
   };
   return (
-    
     <ThemedView style={styles.container}>
       <ThemedText style={styles.text}>Customer Login</ThemedText>
-      <Logo />
       <ThemedInput
         type="email-address"
         value={email}

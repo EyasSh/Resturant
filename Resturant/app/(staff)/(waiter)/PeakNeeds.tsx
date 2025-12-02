@@ -1,57 +1,68 @@
 import { useState, useEffect } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from "@/Routes/NavigationTypes";
-import { StyleSheet } from 'react-native';
 import { Connection } from '@/Data/Hub';
 import { useTheme } from '@react-navigation/native';
 
-/**
- * Component to display the peak needs for a given table.
- *
- * @param {number} tableNumber - The table number to display peak needs for.
- *
- * This component will fetch the list of peak needs for the given table and display them
- * in a scrollable list. If there are no peak needs for the table, it will display a message
- * indicating that the customer does not need anything.
- */
 function PeakNeeds() {
     const route = useRoute<RouteProp<RootStackParamList, 'PeakNeeds'>>();
     const { tableNumber } = route.params as { tableNumber: number };
     const [needs, setNeeds] = useState<string[]>([]);
     const connection = Connection.getHub();
-    const { colors, dark } = useTheme();
+    const { dark } = useTheme();
 
-    useEffect(() => {}, [needs]);
+    // --------------------------------------------------------
+    // DELETE MESSAGE (Waiter action)
+    // --------------------------------------------------------
+    const deleteNeed = (msg: string) => {
+        // Remove from UI immediately
+        setNeeds(prev => prev.filter(n => n !== msg));
 
+        // Remove from server
+        connection?.invoke("DeleteUserNeed", tableNumber, msg)
+            .catch(err => console.error("Delete failed:", err));
+    };
+
+    // --------------------------------------------------------
+    // LOAD + LISTEN TO SIGNALR EVENTS
+    // --------------------------------------------------------
     useEffect(() => {
-/**
- * Fetches the user needs messages for a specific table.
- * 
- * This function invokes the "GetUserNeeds" method on the SignalR connection 
- * using the specified table number. It also listens for messages from the 
- * server via the "ReceiveMessagesToWaiter" event, updating the state with 
- * the received messages. If an error occurs during the process, it logs 
- * the error to the console.
- */
-        const getNeeds = () => {
-            try {
-                connection?.invoke("GetUserNeeds", tableNumber);
-                connection?.on("ReceiveMessagesToWaiter", (message: string[]) => {
-                    setNeeds(message);
-                });
-            } catch (error) {
-                console.error("Error fetching needs:", error);
+        if (!connection) return;
+
+        const handleReceive = (messages: string[]) => {
+            setNeeds(messages);
+        };
+
+        const handleDeleted = (tbl: number, msg: string) => {
+            if (tbl === tableNumber) {
+                setNeeds(prev => prev.filter(n => n !== msg));
             }
         };
-        getNeeds();
+
+        try {
+            // Ask server for current needs
+            connection.invoke("GetUserNeeds", tableNumber);
+
+            // Listeners
+            connection.on("ReceiveMessagesToWaiter", handleReceive);
+            connection.on("UserNeedDeleted", handleDeleted);
+
+        } catch (err) {
+            console.error("Error:", err);
+        }
 
         return () => {
-            connection?.off("ReceiveMessagesToWaiter");
+            connection.off("ReceiveMessagesToWaiter", handleReceive);
+            connection.off("UserNeedDeleted", handleDeleted);
         };
-    }, []);
+    }, [connection, tableNumber]);
 
+    // --------------------------------------------------------
+    // UI
+    // --------------------------------------------------------
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.heading}>
@@ -62,19 +73,27 @@ function PeakNeeds() {
                 <ThemedText style={styles.emptyText}>
                     The customer does not need anything
                 </ThemedText>
-                ) : (
-                    <ThemedView style={styles.messagesContainer}>
-                        {needs.slice().reverse().map((msg, idx) => (
-                            <ThemedView style={[styles.messageBox, { backgroundColor: dark ? "#0c0c0e" : "#f0f0f0" }]} key={idx}>
-                                    <ThemedText  style={styles.message}>
-                                        {msg}
-                                    </ThemedText>
+            ) : (
+                <ThemedView style={styles.messagesContainer}>
+                    {needs.slice().reverse().map((msg, idx) => (
+                        <Pressable key={idx} onPress={() => deleteNeed(msg)}>
+                            <ThemedText style={{ textAlign: 'center', marginBottom: 5, color: dark ? '#aaa' : '#555' }}>
+                                (Tap to mark as served)
+                            </ThemedText>
+                            <ThemedView
+                                style={[
+                                    styles.messageBox,
+                                    { backgroundColor: dark ? "#0c0c0e" : "#f0f0f0" }
+                                ]}
+                            >
+                                <ThemedText style={styles.message}>
+                                    {msg}
+                                </ThemedText>
                             </ThemedView>
-                        
+                        </Pressable>
                     ))}
                 </ThemedView>
-)}
-
+            )}
         </ThemedView>
     );
 }
@@ -99,17 +118,11 @@ const styles = StyleSheet.create({
     },
     message: {
         fontSize: 21,
-        marginVertical: 5,
-        padding: 10,
-        borderRadius: 10,
-        width: '100%',
         textAlign: 'center',
+        padding: 10,
+        width: "100%",
     },
-    messageBox:{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+    messageBox: {
         marginBottom: 10,
         borderRadius: 10,
         padding: 10,
@@ -117,9 +130,7 @@ const styles = StyleSheet.create({
     messagesContainer: {
         width: '100%',
         flexDirection: 'column',
-        alignItems: 'flex-start',
-      },
-      
+    },
 });
 
 export default PeakNeeds;

@@ -61,7 +61,6 @@ export default function OwnerLogin() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Owner Login</ThemedText>
-            <Logo />
             <ThemedInput
                 placeholder="Email"
                 type='email-address'

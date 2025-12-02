@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { Alert, StyleSheet, Image, Platform } from 'react-native';
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -19,6 +19,7 @@ import LogoutButton from '@/components/LogoutButton';
  */
 export default function Profile() {
   const [name, setName] = useState(null);
+  const [Email, setEmail] = useState(null);
 
   useEffect(() => {
   /**
@@ -34,6 +35,7 @@ export default function Profile() {
         if (user) {
           const parsedUser = JSON.parse(user);
           setName(parsedUser?.name ?? 'Guest');
+          setEmail(parsedUser?.email ?? 'No Email')
         } else {
           alert('User not found in AsyncStorage.');
         }
@@ -44,11 +46,17 @@ export default function Profile() {
 
     fetchUser();
   }, []);
+ 
+
 
   return (
     <ThemedView style={styles.titleContainer}>
       <ThemedText style={styles.text}>Welcome to the Profile page</ThemedText>
       <ThemedText style={styles.text}>{name ? name : 'Guest'}</ThemedText>
+      <ThemedText style={styles.text}>{Email ? Email : 'Guest' }</ThemedText>
+      <LogoutButton action={function (): void | Promise<void> | null {
+        throw new Error('Function not implemented.');
+      } } />
     </ThemedView>
   );
 }

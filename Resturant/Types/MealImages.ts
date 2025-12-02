@@ -8,4 +8,5 @@ export default {
   PotatoWedges:      require(`${commonImageRoute}PotatoWedges.jpg`),
   Lobster:      require(`${commonImageRoute}Lobster.jpg`),
   CheeseCake:      require(`${commonImageRoute}CheeseCake.jpg`),
+  Tea:      require(`${commonImageRoute}Tea.png`),
 } as {[key: string]: number};

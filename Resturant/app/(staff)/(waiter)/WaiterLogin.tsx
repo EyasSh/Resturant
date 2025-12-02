@@ -60,7 +60,6 @@ export default  function WaiterLogin() {
     return (
         <ThemedView style={styles.container}>
             <ThemedText style={styles.text}>Waiter Login</ThemedText>
-            <Logo />
             <ThemedInput 
             type="email-address" 
             placeholder="Email" 

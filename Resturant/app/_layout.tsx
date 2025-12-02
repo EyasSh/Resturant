@@ -52,7 +52,6 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const Stack = createStackNavigator();
   const insets = useSafeAreaInsets();
@@ -61,7 +60,7 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
-  /**
+   /**
    * Clean AsyncStorage by clearing all stored data. This is mainly used
    * for debugging purposes when we want to start fresh.
    */

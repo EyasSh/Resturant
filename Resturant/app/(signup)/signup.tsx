@@ -111,7 +111,6 @@ export default function Signup() {
 
     return (
         <ThemedView style={styles.container}>
-            <Logo />
             <ThemedText style={styles.header}>Sign up</ThemedText>
             <ThemedInput 
                 type="text"
